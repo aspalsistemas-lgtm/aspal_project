@@ -145,8 +145,25 @@ Errores:
 - 503 · `{ "ok": false, "error": "no_configurada" }` si faltan
   `MAILCHIMP_API_KEY` o `MAILCHIMP_AUDIENCE_ID`.
 
-Pendiente antes del lanzamiento: rate limit en el Vercel Firewall; el endpoint
-no limita por IP.
+**Rate limit (pendiente de aplicar en Vercel; no es código del repo).** El
+endpoint no limita por IP: la limitación se hace con una regla del Vercel
+Firewall. Regla a crear en el proyecto de producción (Settings → Firewall →
+Rules), definida el 2026-10-01:
+
+| Campo        | Valor                                                        |
+| ------------ | ------------------------------------------------------------ |
+| Nombre       | `suscripcion-rate-limit`                                     |
+| Condición    | Request Path `equals` `/api/suscripcion` **y** Method `POST` |
+| Acción       | Rate Limit                                                   |
+| Límite       | 10 peticiones por IP cada 10 minutos (ventana fija)          |
+| Al superarlo | Deny (429) durante el resto de la ventana                    |
+
+Por qué esos números: una persona que se equivoca varias veces con el
+formulario no llega a 10 envíos en 10 minutos; un bot que intenta altas en
+serie lo supera en segundos. El 429 lo recibe `lib/suscripcion.ts` como
+`estado: "error"` y el formulario muestra el aviso genérico, que es el
+comportamiento correcto. Al aplicarla, mover el punto 1.1 de
+`docs/sprints/deuda-tecnica.md` a «Resueltos».
 
 ---
 

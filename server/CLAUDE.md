@@ -207,7 +207,10 @@ endpoints son públicos. Lo que sí se protege:
 - **Tiempo máximo:** 4 s por llamada a Mailchimp (`AbortSignal.timeout`),
   dentro de los 10 s de la función de Vercel.
 - **Pendiente antes del lanzamiento:** regla de rate limit en el Vercel
-  Firewall para `POST /api/suscripcion` (el endpoint no limita por IP).
+  Firewall para `POST /api/suscripcion` (el endpoint no limita por IP). La
+  regla concreta, 10 peticiones por IP cada 10 minutos con 429 al superarlo,
+  está en `docs/api/endpoints.md`; se aplica desde el panel de Vercel, no
+  desde el repo.
 
 ---
 

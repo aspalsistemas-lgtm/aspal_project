@@ -21,9 +21,9 @@ i18n (el sitio es solo en español).
 
 ### P1 · Seguridad y datos
 
-| #   | Punto                                                                                                                                                                                                                    | Archivos                                                   | Esfuerzo |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- | -------- |
-| 1.1 | **Rate limit de `POST /api/suscripcion`.** El endpoint no limita por IP; la regla del Vercel Firewall está pendiente desde el PR E1. No es código del repo: es configuración de Vercel que exige autorización explícita. | Vercel Firewall (fuera del repo) · `docs/api/endpoints.md` | S        |
+| #   | Punto                                                                                                                                                                                                                                                                                                                                               | Archivos                         | Esfuerzo |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | -------- |
+| 1.1 | **Rate limit de `POST /api/suscripcion`: documentado, pendiente de aplicar en Vercel.** La regla (10 peticiones por IP cada 10 minutos, 429 al superarlo) está especificada en `docs/api/endpoints.md` desde el 2026-10-01. Falta crearla en Settings → Firewall del proyecto de producción; no es código del repo. Al aplicarla, mover aquí abajo. | Vercel Firewall (fuera del repo) | S        |
 
 ### P2 · Contratos API
 
