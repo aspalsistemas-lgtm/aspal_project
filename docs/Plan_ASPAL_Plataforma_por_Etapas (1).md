@@ -12,22 +12,22 @@ Los pilotos serán **ANPR** y **ASPAL Asociaciones Profesionales de América Lat
 
 ## 2. Decisiones ya tomadas
 
-| Tema | Decisión |
-| --- | --- |
-| Producto | Una plataforma para múltiples asociaciones, comenzando con ANPR y ASPAL. |
-| Arquitectura inicial | Aplicación modular integrada, con API; extraer servicios solo cuando exista una necesidad operativa comprobada. |
-| Infraestructura y datos | AWS para la nueva plataforma, PostgreSQL como base de datos y Amazon SES para correos operativos. |
-| Acceso | Correo electrónico, Google y Facebook desde el lanzamiento. La integración con proveedores institucionales queda preparada para una etapa posterior. |
-| Cuentas | Accesos separados entre asociaciones; una persona puede ser miembro individual y representante institucional dentro de una misma asociación. |
-| Contrato SaaS | Suscripción anual; precio, comisión y días de prueba configurables por cliente. |
-| Prueba vencida | Tres meses de acceso de solo lectura. |
-| Membresías | Individuales e institucionales, incluidas variantes gratuitas, de estudiante y vitalicias; altas automáticas tras pago y registros manuales. |
-| Representantes | Cada asociación define si el número permitido por plan institucional es fijo o ilimitado. |
-| Cobros | Stripe Connect: cada asociación recibe sus cobros y ASPAL obtiene la comisión configurada por cliente. La suscripción que paga la asociación a ASPAL es un flujo distinto. |
-| Facturación CFDI | Posterior al primer lanzamiento. |
-| Página pública | Subdominio dentro de ASPAL, con logo, colores y contenido propio por asociación. |
-| Eventos | Inscripción, entradas de pago, cupos, descuentos, check-in y certificados. |
-| Correos iniciales | Confirmación de cuenta y pago, renovaciones y mensajes de eventos. |
+| Tema                    | Decisión                                                                                                                                                                   |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Producto                | Una plataforma para múltiples asociaciones, comenzando con ANPR y ASPAL.                                                                                                   |
+| Arquitectura inicial    | Aplicación modular integrada, con API; extraer servicios solo cuando exista una necesidad operativa comprobada.                                                            |
+| Infraestructura y datos | AWS para la nueva plataforma, PostgreSQL como base de datos y Amazon SES para correos operativos.                                                                          |
+| Acceso                  | Correo electrónico, Google y Facebook desde el lanzamiento. La integración con proveedores institucionales queda preparada para una etapa posterior.                       |
+| Cuentas                 | Accesos separados entre asociaciones; una persona puede ser miembro individual y representante institucional dentro de una misma asociación.                               |
+| Contrato SaaS           | Suscripción anual; precio, comisión y días de prueba configurables por cliente.                                                                                            |
+| Prueba vencida          | Tres meses de acceso de solo lectura.                                                                                                                                      |
+| Membresías              | Individuales e institucionales, incluidas variantes gratuitas, de estudiante y vitalicias; altas automáticas tras pago y registros manuales.                               |
+| Representantes          | Cada asociación define si el número permitido por plan institucional es fijo o ilimitado.                                                                                  |
+| Cobros                  | Stripe Connect: cada asociación recibe sus cobros y ASPAL obtiene la comisión configurada por cliente. La suscripción que paga la asociación a ASPAL es un flujo distinto. |
+| Facturación CFDI        | Posterior al primer lanzamiento.                                                                                                                                           |
+| Página pública          | Subdominio dentro de ASPAL, con logo, colores y contenido propio por asociación.                                                                                           |
+| Eventos                 | Inscripción, entradas de pago, cupos, descuentos, check-in y certificados.                                                                                                 |
+| Correos iniciales       | Confirmación de cuenta y pago, renovaciones y mensajes de eventos.                                                                                                         |
 
 ## 3. Punto de partida: sitio existente
 
@@ -121,24 +121,24 @@ Se conservarán las páginas institucionales, el sistema visual, el catálogo de
 
 ## 6. Secuencia de lanzamiento
 
-| Lanzamiento | Etapas | Resultado |
-| --- | --- | --- |
-| Primera versión comercial | 0–5 | Clientes, identidad, membresías, pagos, página pública, eventos, correos, reportes e IA administrativa. |
-| Segunda versión | 6–7 | Comunidad y biblioteca/contenido por asociación. |
-| Expansión | 8 | Integraciones y capacidades avanzadas según clientes y operación real. |
+| Lanzamiento               | Etapas | Resultado                                                                                               |
+| ------------------------- | ------ | ------------------------------------------------------------------------------------------------------- |
+| Primera versión comercial | 0–5    | Clientes, identidad, membresías, pagos, página pública, eventos, correos, reportes e IA administrativa. |
+| Segunda versión           | 6–7    | Comunidad y biblioteca/contenido por asociación.                                                        |
+| Expansión                 | 8      | Integraciones y capacidades avanzadas según clientes y operación real.                                  |
 
 La división en etapas ordena el desarrollo y la validación; **las etapas 0–5 componen la primera versión comercial**, no ocho productos separados.
 
 ## 7. Riesgos y controles del plan
 
-| Riesgo | Control propuesto |
-| --- | --- |
-| Mezclar datos de asociaciones | Resolver el ámbito de asociación en cada operación; aplicar permisos y controles en PostgreSQL; probar cruces entre clientes. |
-| Confundir identidad, membresía y rol | Modelar por separado la persona, su acceso, sus membresías y sus representaciones institucionales. |
-| Duplicar o perder efectos de un pago | Registrar estados y procesar confirmaciones de Stripe de forma repetible y auditable. |
-| Ampliar demasiado el primer lanzamiento | Cerrar cada etapa mediante casos completos de ANPR y ASPAL antes de abrir otra. |
-| Hacer que IA publique información incorrecta | Usar datos aprobados, mostrar el borrador y exigir autorización explícita para publicar o enviar. |
-| Migrar demasiadas piezas a la vez | Mantener WordPress, Mailchimp y el sitio público mientras la nueva API y sus flujos se estabilizan. |
+| Riesgo                                       | Control propuesto                                                                                                             |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Mezclar datos de asociaciones                | Resolver el ámbito de asociación en cada operación; aplicar permisos y controles en PostgreSQL; probar cruces entre clientes. |
+| Confundir identidad, membresía y rol         | Modelar por separado la persona, su acceso, sus membresías y sus representaciones institucionales.                            |
+| Duplicar o perder efectos de un pago         | Registrar estados y procesar confirmaciones de Stripe de forma repetible y auditable.                                         |
+| Ampliar demasiado el primer lanzamiento      | Cerrar cada etapa mediante casos completos de ANPR y ASPAL antes de abrir otra.                                               |
+| Hacer que IA publique información incorrecta | Usar datos aprobados, mostrar el borrador y exigir autorización explícita para publicar o enviar.                             |
+| Migrar demasiadas piezas a la vez            | Mantener WordPress, Mailchimp y el sitio público mientras la nueva API y sus flujos se estabilizan.                           |
 
 ## 8. Próximo trabajo de definición
 
