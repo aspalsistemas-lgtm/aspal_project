@@ -3,13 +3,13 @@ title: Plataforma ASPAL — Etapa 0: preparación y decisiones
 type: feat
 status: draft
 date: 2026-10-01
-origin: docs/Plan_ASPAL_Plataforma_por_Etapas (1).md · docs/database-design.md · tabla de opciones tecnológicas (1 oct 2026)
+origin: docs/plan-plataforma-por-etapas.md · docs/database-design.md · tabla de opciones tecnológicas (1 oct 2026)
 ---
 
 # feat: Plataforma ASPAL — Etapa 0: preparación y decisiones
 
 > Aterriza la **Etapa 0** del plan de la plataforma
-> (`docs/Plan_ASPAL_Plataforma_por_Etapas (1).md`) sobre el repositorio: fija las
+> (`docs/plan-plataforma-por-etapas.md`) sobre el repositorio: fija las
 > decisiones técnicas que el plan deja abiertas, propone el modelo de dominio
 > inicial y deja listo el backlog de la Etapa 1. Cada decisión lleva su estado:
 > las **cerradas** se implementan tal cual; las **propuestas** se implementan

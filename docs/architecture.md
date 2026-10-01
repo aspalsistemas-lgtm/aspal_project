@@ -2,7 +2,9 @@
 
 Documento de referencia técnica. Para arrancar el proyecto ve al
 [README](../README.md); para las reglas que deben seguir los agentes de IA, a
-[CLAUDE.md](../CLAUDE.md).
+[CLAUDE.md](../CLAUDE.md) y [AGENTS.md](../AGENTS.md). Las decisiones costosas
+de revertir están en [adr/](adr/); el catálogo de endpoints, en
+[api/endpoints.md](api/endpoints.md).
 
 ## Panorama
 
@@ -18,17 +20,21 @@ de solo lectura y sin estado.
 **Rutas** (`wouter`): se definen en `client/src/lib/rutas.ts` y se cablean en
 `client/src/App.tsx`.
 
-| Ruta            | Página                                                                                                                |
-| --------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `/`             | Home institucional. Consume `/api/posts` y `/api/podcasts` solo en `ContenidoReciente`, que se oculta si la API falla |
-| `/nosotros`     | Quiénes somos                                                                                                         |
-| `/mapa-de-ruta` | Mapa de Ruta: las 7 etapas paso a paso                                                                                |
-| `/plataforma`   | Contenido de producto SaaS                                                                                            |
-| `/blog`         | Listado de artículos con filtro por categoría                                                                         |
-| `/blog/:slug`   | Artículo individual                                                                                                   |
-| `/podcast`      | Listado de episodios                                                                                                  |
-| `/componentes`  | Catálogo interno de componentes con demos y código (noindex, sin enlace en el menú)                                   |
-| `*`             | 404                                                                                                                   |
+| Ruta              | Página                                                                                                                |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `/`               | Home institucional. Consume `/api/posts` y `/api/podcasts` solo en `ContenidoReciente`, que se oculta si la API falla |
+| `/nosotros`       | Quiénes somos                                                                                                         |
+| `/que-hacemos`    | Los cuatro pilares                                                                                                    |
+| `/nuestro-equipo` | Equipo operativo                                                                                                      |
+| `/mapa-de-ruta`   | Mapa de Ruta: las 7 etapas paso a paso                                                                                |
+| `/plataforma`     | Contenido de producto SaaS                                                                                            |
+| `/unete`          | Suscripción al boletín (formulario completo)                                                                          |
+| `/eventos`        | Eventos (en preparación) con suscripción compacta                                                                     |
+| `/blog`           | Listado de artículos con portada y «Ver más» (el filtro por categoría se retiró)                                      |
+| `/blog/:slug`     | Artículo individual                                                                                                   |
+| `/podcast`        | Listado de episodios con «Ver más»                                                                                    |
+| `/componentes`    | Catálogo interno de componentes con demos y código (noindex, sin enlace en el menú)                                   |
+| `*`               | 404                                                                                                                   |
 
 **Catálogo (`/componentes`):** va en el bundle único (≈8–10 KB gzip, ~4–5 %).
 Cargarlo aparte exigiría Suspense + precarga antes de `hydrateRoot`; se revisa
@@ -36,27 +42,31 @@ si supera ~20 KB gzip. El catálogo no registra analítica (guardia en
 `registrarEvento`).
 
 **Estado:** TanStack Query para estado de servidor; hooks de React para estado
-local. Hooks propios en `client/src/hooks/` (`use-mobile`, `use-toast`).
+local. Hooks propios en `client/src/hooks/` (`use-lista-paginada`,
+`use-en-cliente`, `use-animar-al-ver`, `use-mobile`, `use-toast`).
 
 **Estilos:** Tailwind CSS como base, shadcn/ui (variante New York) para las
-primitivas accesibles, tipografía Montserrat. La paleta
-institucional (pizarra, miel y noche) y el resto de decisiones visuales están
-en [design-guidelines.md](design-guidelines.md).
+primitivas accesibles, tipografía Montserrat. La paleta institucional
+(pizarra, miel y noche) y el resto de decisiones visuales están en
+[design.md](../design.md), en la raíz.
 
-**Organización de componentes:**
+**Organización de componentes** (detalle y reglas en `design.md` §1):
 
 ```
 components/
-  layout/     Header, Footer, ScrollToTop
-  sections/   HeroSection, FeaturesGrid, FeatureCard, ProblemSection,
-              TestimonialsSection, TestimonialCard, CTASection,
-              LogoCarousel, CommunityGraphics, AnimatedSection
-  content/    BlogCard, EpisodioFila, VerMas…
-  ui/         primitivas shadcn/ui — solo las que se usan
+  layout/         Banda, HeroInstitucional, Header, Footer, PatronPanal, FotoHero,
+                  ErrorBoundary, ScrollToTop, ScrollRestoration, CabeceraRuta…
+  institucional/  PilarCard, PerfilCard, RutaTimeline, MuroAliados, CifraAnimada…
+  content/        BlogCard, EpisodioFila, PortadaArticulo, FranjaPodcast, VerMas…
+  forms/          FormSuscripcion
+  ui/             primitivas shadcn/ui — solo las que se usan
+  sections/       legado de /plataforma (HeroSection, FeaturesGrid…)
 ```
 
-Las secciones entran con animaciones de framer-motion al hacer scroll.
-Los elementos interactivos y significativos llevan `data-testid`.
+Cada componente está registrado en `client/src/catalogo/registro.ts` y se ve en
+`/componentes`. Las entradas de página animan solo el desplazamiento, nunca la
+opacidad (prerender). Los elementos interactivos y significativos llevan
+`data-testid`.
 
 ## Backend
 
@@ -188,19 +198,21 @@ Ramas: `main` → producción · `staging` → preview.
 
 ## Dependencias externas
 
-**UI:** primitivas de Radix (avatar, collapsible, navigation-menu, slot, toast,
+**UI:** primitivas de Radix (collapsible, navigation-menu, slot, toast,
 tooltip), Lucide para iconos, class-variance-authority para variantes,
 framer-motion para animación.
 
 **Utilidades:** date-fns con locale español para fechas, clsx y tailwind-merge
 para composición de clases.
 
-**Servicios referenciados desde la UI:** redes sociales, YouTube para el vídeo
-de portada, y el sistema de registro externo en asociacionesprofesionales.org.
+**Servicios referenciados desde la UI:** redes sociales, el sistema de
+registro externo en asociacionesprofesionales.org y GTM/GA4 vía
+`window.dataLayer` (`lib/analitica.ts`).
 
-**Assets:** en `client/src/assets/` (~11 MB versionados) — logotipos ASPAL para
-fondo claro y oscuro, logos de aliados (ANPR México, Expo Mascotas, World Urban
-Parks) e ilustraciones de producto.
+**Assets:** en `client/src/assets/` (~520 KB versionados; `check-assets`
+impide huérfanos e imágenes de más de 250 KB) — logotipo ASPAL para fondo
+claro, isotipo, logo de Parksys e ilustraciones. Los originales en alta viven en
+`docs/marca/`.
 
 ## Historia
 

@@ -3,7 +3,7 @@
 Descripción general del sitio público de ASPAL (Asociaciones Profesionales de
 Latinoamérica): qué es, qué ofrece, cómo está construido y cómo se opera. Para
 el detalle técnico ve a [architecture.md](architecture.md); para la guía
-visual, a [design-guidelines.md](design-guidelines.md).
+visual, a [design.md](../design.md).
 
 - **Sitio:** <https://www.asociacionesprofesionales.org>
 - **Contenido editorial:** <https://comunidad.asociacionesprofesionales.org>
@@ -189,7 +189,7 @@ docs/               arquitectura, diseño, marca, planes y brainstorms
 - **Catálogo vivo:** `/componentes` muestra cada componente con su demo, su
   código y cuándo usarlo. Antes de crear un componente nuevo se busca aquí.
 
-El detalle está en [design-guidelines.md](design-guidelines.md).
+El detalle está en [design.md](../design.md).
 
 ## 7. Despliegue y operación
 

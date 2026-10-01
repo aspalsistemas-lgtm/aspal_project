@@ -51,37 +51,49 @@ Abre <http://localhost:5000>.
 
 ## Scripts
 
-| Comando         | Qué hace                                              |
-| --------------- | ----------------------------------------------------- |
-| `npm run dev`   | Express + Vite con HMR                                |
-| `npm run build` | Cliente a `dist/public/`, servidor a `dist/`          |
-| `npm run start` | Sirve el build de producción                          |
-| `npm run check` | Typecheck de `client/`, `server/`, `shared/` y `api/` |
+| Comando                | Qué hace                                                       |
+| ---------------------- | -------------------------------------------------------------- |
+| `npm run dev`          | Express + Vite con HMR                                         |
+| `npm run build`        | Assets → cliente → SSR → prerender → servidor (`dist/`)        |
+| `npm run start`        | Sirve el build de producción                                   |
+| `npm run check`        | Typecheck de `client/`, `server/`, `shared/` y `api/` + assets |
+| `npm run lint`         | ESLint (`lint:fix` corrige)                                    |
+| `npm run format:check` | Prettier (`format` escribe)                                    |
+| `npm test`             | Vitest, una pasada (`test:watch` en vigilancia)                |
 
 ## Estructura
 
 ```
-shared/wordpress/     ⚠️ fuente única: tipos, transformación y endpoints
-server/               Express para desarrollo y self-hosted
+shared/
+  wordpress/          ⚠️ fuente única: tipos, transformación y endpoints /api/*
+  suscripcion/        validación compartida, rutas y cliente de Mailchimp
+server/               Express para desarrollo y self-hosted (solo wiring)
 api/index.ts          función serverless de Vercel (solo wiring)
 client/src/
+  pages/              una página por ruta (inicio, nosotros, blog, podcast, unete…)
   components/
-    layout/           Header, Footer, ScrollToTop
-    sections/         bloques de la landing
-    content/          BlogCard, PodcastCard
+    layout/           bandas, hero, cabecera, pie, utilidades de navegación
+    institucional/    pilares, mapa de ruta, perfiles, aliados, cifras
+    content/          tarjetas de blog y podcast, contenido reciente
+    forms/            formulario de suscripción
     ui/               primitivas shadcn/ui en uso
-  pages/              home · blog · blog/:slug · podcast · 404
-docs/                 arquitectura y guía de diseño
+    sections/         legado de /plataforma
+  content/            textos institucionales como datos
+  catalogo/           registro y demos de /componentes
+  hooks/  lib/        hooks y utilidades
+scripts/              prerender, verificación de assets, conversión de imágenes
+docs/                 arquitectura, API, ADRs, deuda técnica, planes
 ```
 
-**La regla que no se rompe:** toda la lógica de WordPress —tipos, normalización
-y rutas `/api/*`— vive **solo** en `shared/wordpress/`. El servidor Express y la
-función de Vercel la montan; ninguno de los dos la reimplementa. Antes sí lo
-hacían y acabaron divergiendo.
+**La regla que no se rompe:** toda la lógica de WordPress y de la suscripción
+vive **solo** en `shared/`. El servidor Express y la función de Vercel la
+montan; ninguno de los dos la reimplementa. Antes sí lo hacían y acabaron
+divergiendo.
 
 ## API
 
-Todos los endpoints son públicos, de solo lectura y sin parámetros de auth.
+Todos los endpoints son públicos y sin autenticación. Catálogo completo con
+contratos y errores en [`docs/api/endpoints.md`](docs/api/endpoints.md).
 
 | Endpoint                              | Descripción                                                   |
 | ------------------------------------- | ------------------------------------------------------------- |
@@ -89,44 +101,56 @@ Todos los endpoints son públicos, de solo lectura y sin parámetros de auth.
 | `GET /api/posts/:slug`                | Post individual · `404` si no existe                          |
 | `GET /api/podcasts?per_page=N&page=P` | Episodios de la categoría `podcast`; total en `X-Total-Count` |
 | `GET /api/health`                     | Sonda de estado                                               |
+| `POST /api/suscripcion`               | Alta en Mailchimp (`pending`, doble confirmación)             |
 
 Los posts se devuelven ya normalizados (`TransformedPost`): el HTML se limpia
 para el extracto y la imagen destacada cae al primer `<img>` del contenido
 cuando WordPress no trae `wp:featuredmedia`.
 
-Ante un fallo de WordPress los endpoints devuelven lista vacía en vez de
-error: la landing debe renderizar aunque el blog esté caído.
+Si WordPress falla, el error se propaga y la API responde 5xx. Así el cliente
+distingue «no se pudo cargar» (y ofrece reintentar) de «no hay contenido». La
+home oculta el bloque de contenido reciente y el resto de la página no se ve
+afectado.
 
 ## Variables de entorno
 
-Ninguna es obligatoria — la API de WordPress es pública.
+Ninguna es obligatoria para arrancar — la API de WordPress es pública. Sin las
+de Mailchimp, `POST /api/suscripcion` responde 503.
 
-| Variable      | Default                                                         | Para qué                                            |
-| ------------- | --------------------------------------------------------------- | --------------------------------------------------- |
-| `PORT`        | `5000`                                                          | Puerto del servidor Express                         |
-| `WP_API_BASE` | `https://comunidad.asociacionesprofesionales.org/wp-json/wp/v2` | Origen del contenido                                |
-| `NODE_ENV`    | —                                                               | `development` activa Vite/HMR; si no, sirve `dist/` |
+| Variable                | Default                                                         | Para qué                                            |
+| ----------------------- | --------------------------------------------------------------- | --------------------------------------------------- |
+| `PORT`                  | `5000`                                                          | Puerto del servidor Express                         |
+| `WP_API_BASE`           | `https://comunidad.asociacionesprofesionales.org/wp-json/wp/v2` | Origen del contenido                                |
+| `NODE_ENV`              | —                                                               | `development` activa Vite/HMR; si no, sirve `dist/` |
+| `MAILCHIMP_API_KEY`     | —                                                               | Boletín; termina en el centro de datos (`…-us21`)   |
+| `MAILCHIMP_AUDIENCE_ID` | —                                                               | Boletín; id de la audiencia                         |
 
 ## Despliegue
 
 Vercel, configurado en `vercel.json`:
 
-- El cliente se construye a `dist/public/` y se sirve como estático.
+- El build genera un HTML prerenderizado por ruta estática en `dist/public/`,
+  más `404.html`, `spa.html`, `sitemap.xml` y `robots.txt`.
 - `api/index.ts` se despliega como función serverless para `/api/*`.
-- El resto de rutas cae al `index.html` (SPA fallback).
+- `/blog/:slug` se sirve desde `spa.html`; cualquier otra ruta desconocida
+  responde `404.html` con código 404. No hay fallback de SPA.
 
 Ramas: `main` → producción · `staging` → preview.
 
 ## Contribuir
 
 1. Rama desde `staging`.
-2. `npm run check` tiene que pasar antes de abrir PR — cubre también `api/`.
-3. Si tocas los endpoints, tócalos en `shared/wordpress/`, nunca en los dos
-   consumidores por separado.
+2. `npm run check`, `npm run lint`, `npm run format:check` y `npm test` tienen
+   que pasar antes de abrir PR (es lo que ejecuta CI). `check` cubre también
+   `api/`.
+3. Si tocas los endpoints, tócalos en `shared/`, nunca en los dos consumidores
+   por separado, y documéntalos en `docs/api/endpoints.md`.
+4. Commits en Conventional Commits (ver `CLAUDE.md` §5).
 
-Más contexto en [`docs/architecture.md`](docs/architecture.md) y
-[`docs/design-guidelines.md`](docs/design-guidelines.md). Si trabajas con
-agentes de IA, [`CLAUDE.md`](CLAUDE.md) es el contrato que deben seguir.
+Más contexto en [`docs/architecture.md`](docs/architecture.md),
+[`docs/plataforma.md`](docs/plataforma.md) y [`design.md`](design.md). Si
+trabajas con agentes de IA, [`CLAUDE.md`](CLAUDE.md) es el contrato que deben
+seguir y [`AGENTS.md`](AGENTS.md) las reglas estables.
 
 ## Licencia
 
