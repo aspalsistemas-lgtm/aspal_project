@@ -7,9 +7,14 @@ Contexto para agentes de IA que trabajen en este repositorio.
 Sitio público de ASPAL: landing + blog + podcast. React 18 (Vite) sobre un
 Express mínimo que hace de proxy sobre un WordPress headless.
 
-**No hay base de datos, sesiones, autenticación ni estado de servidor.** La única escritura es `POST /api/suscripcion`, que delega en Mailchimp y no guarda nada (decisión D8). Si una
-tarea parece necesitar cualquiera de esas cosas, es señal de que hay que
-confirmarla antes de implementarla, no de improvisar una capa nueva.
+**El sitio no tiene base de datos, sesiones, autenticación ni estado de servidor.** La única escritura es `POST /api/suscripcion`, que delega en Mailchimp y no guarda nada (decisión D8). Si una
+tarea del sitio parece necesitar cualquiera de esas cosas, es señal de que hay
+que confirmarla antes de implementarla, no de improvisar una capa nueva.
+
+La **plataforma SaaS** (plan en `docs/Plan_ASPAL_Plataforma_por_Etapas (1).md`,
+aterrizado en `docs/plans/2026-10-01-001-feat-plataforma-etapa-0-plan.md`) es
+una aplicación aparte, con PostgreSQL en AWS. Sus datos se rigen por la sección
+«Base de datos relacional» de este archivo; el sitio sigue sin estado.
 
 ## La regla que más importa
 
@@ -49,6 +54,27 @@ módulo.
 No redeclares la forma de un post en un componente. Estuvo declarada cinco
 veces —y en el cliente con el nombre equivocado (`WPPost` para la forma ya
 transformada)—. Importa `TransformedPost`.
+
+## Base de datos relacional
+
+Antes de implementar cualquier cambio que cree, modifique o elimine datos
+persistentes, lee y aplica **`docs/database-design.md`**. Esta guía es
+obligatoria para PostgreSQL, modelos del ORM, migraciones, consultas,
+importaciones e integraciones que escriban datos.
+
+Inspecciona primero el esquema, migraciones, tablas, columnas, relaciones e
+índices existentes. Para cada dato nuevo, determina si corresponde a una
+columna existente, una entidad nueva, una clave foránea, una tabla pivote o un
+hecho histórico. Respeta normalización, integridad referencial, aislamiento por
+asociación, permisos, historial e idempotencia. No uses JSON, columnas
+duplicadas o listas de identificadores como sustitutos de relaciones sin
+justificarlo.
+
+**Antes de escribir una migración**, entrega la propuesta breve especificada
+en la sección 6 de `docs/database-design.md`. Si falta una regla de negocio que
+altere el modelo, consúltala. Después de implementar, ejecuta verificaciones
+significativas de integridad, migración y aislamiento entre asociaciones, y
+mantén tipos y documentación consistentes.
 
 ## Comandos
 
