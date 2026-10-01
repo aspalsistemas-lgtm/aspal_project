@@ -1,7 +1,8 @@
-import express, { type Request, Response, NextFunction } from "express";
+import express from "express";
 import { createServer } from "http";
 import { registerApiRoutes } from "../shared/wordpress/routes";
 import { registrarRutasSuscripcion } from "../shared/suscripcion/rutas";
+import { manejadorDeErrores } from "../shared/errores";
 import { serveStatic } from "./static";
 import { setupVite, log } from "./vite";
 
@@ -56,13 +57,7 @@ app.use((req, res, next) => {
   registrarRutasSuscripcion(app);
   const server = createServer(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
-  });
+  app.use(manejadorDeErrores);
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
