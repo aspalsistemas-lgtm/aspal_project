@@ -61,6 +61,6 @@ i18n (el sitio es solo en español).
 
 ## Resueltos
 
-| #   | Punto                                                                                                                                                                 | Commit                                                | Fecha      |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ---------- |
-| 1.2 | Manejador de errores único en `shared/errores.ts`, montado por `server/index.ts` y `api/index.ts`; registra en consola en vez de relanzar; sin `any`. 6 tests nuevos. | sin commit (regla de la alineación: no crear commits) | 2026-10-01 |
+| #   | Punto                                                                                                                                                                 | Commit    | Fecha      |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| 1.2 | Manejador de errores único en `shared/errores.ts`, montado por `server/index.ts` y `api/index.ts`; registra en consola en vez de relanzar; sin `any`. 6 tests nuevos. | `96e3ab6` | 2026-10-01 |
