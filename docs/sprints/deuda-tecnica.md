@@ -24,7 +24,6 @@ i18n (el sitio es solo en español).
 | #   | Punto                                                                                                                                                                                                                    | Archivos                                                   | Esfuerzo |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- | -------- |
 | 1.1 | **Rate limit de `POST /api/suscripcion`.** El endpoint no limita por IP; la regla del Vercel Firewall está pendiente desde el PR E1. No es código del repo: es configuración de Vercel que exige autorización explícita. | Vercel Firewall (fuera del repo) · `docs/api/endpoints.md` | S        |
-| 1.3 | **Imports sin `.js` en `shared/` o `api/` pasan el typecheck y rompen en producción.** Añadir un test que lea los archivos y exija la extensión en todo import relativo (mismo patrón que `rutas.test.ts` «montaje»).    | `shared/**/*.ts`, `api/index.ts`, test nuevo               | S        |
 
 ### P2 · Contratos API
 
@@ -64,3 +63,4 @@ i18n (el sitio es solo en español).
 | #   | Punto                                                                                                                                                                 | Commit    | Fecha      |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
 | 1.2 | Manejador de errores único en `shared/errores.ts`, montado por `server/index.ts` y `api/index.ts`; registra en consola en vez de relanzar; sin `any`. 6 tests nuevos. | `96e3ab6` | 2026-10-01 |
+| 1.3 | Test `shared/extensiones.test.ts`: todo import relativo de `shared/` y `api/` (sin tests) lleva `.js` y apunta a un `.ts` existente.                                  | `4814183` | 2026-10-01 |
