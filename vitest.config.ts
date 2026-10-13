@@ -24,5 +24,17 @@ export default defineConfig({
       "server/**/*.test.ts",
       "scripts/**/*.test.ts",
     ],
+    // `npm run test:coverage`. Solo la lógica con tests propios (shared/, lib/,
+    // server/): los componentes no tienen tests en entorno node y bajarían el
+    // número sin decir nada útil.
+    coverage: {
+      provider: "v8",
+      include: ["shared/**/*.ts", "client/src/lib/**/*.ts", "server/**/*.ts"],
+      exclude: ["**/*.test.ts"],
+      reporter: ["text-summary", "text"],
+      // Medido el 2026-10-13 (87.65 · 93.86 · 95.18 · 87.65) y redondeado hacia
+      // abajo: el número no puede bajar. Se sube cuando mejore, nunca al revés.
+      thresholds: { statements: 87, branches: 93, functions: 95, lines: 87 },
+    },
   },
 });
