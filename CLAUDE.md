@@ -269,31 +269,25 @@ desde la cuenta de GitHub **Antonio1491** (ver Anexo A, «Cuenta de GitHub»).
 
 ```
 Fecha del bloque: 2026-10-13
-Rama:             staging (local). 168 commits por delante de origin/main y
-                  14 por delante de origin/staging (24b197f), sin push. Solo
-                  existen main y staging: las ramas de trabajo se fusionan en
-                  staging y se borran.
+Rama:             staging, sincronizada con origin/staging (último push e5b9343);
+                  177 commits por delante de origin/main. Solo existen main y
+                  staging: las ramas de trabajo se fusionan en staging y se borran.
+                  Los push salen con la cuenta Antonio1491 (Anexo A).
 
 Deuda técnica:    Registro vivo en docs/sprints/deuda-tecnica.md. Consultarlo
-                  antes de tocar shared/wordpress (contrato en inglés congelado),
-                  el formato de respuesta de /api/* o la estructura de
-                  client/src/components; al cerrar un punto, moverlo a
-                  "Resueltos" con su commit. Cerrados 1.2, 1.3 y 2.1; el 1.1 (rate
-                  limit en Vercel) espera acción manual; siguiente: 2.2.
-Método:           Toda funcionalidad nueva sigue SDD (ADR-0006): especificación
-                  con criterios de aceptación → contrato → tests → código.
+                  antes de tocar shared/wordpress, el formato de /api/* o
+                  client/src/components; al cerrar un punto, a "Resueltos" con su
+                  commit. Cerrados 1.2, 1.3, 2.1, 2.2, 3.2, 3.4 y 4.1. Quedan: 1.1
+                  (rate limit en Vercel, manual), 4.3/4.4/4.7 (piden autorización),
+                  4.5 (CSS muerto) y 3.1 (Atomic Design, con 3.3 y 4.2).
+Método:           SDD (ADR-0006): especificación con criterios de aceptación →
+                  contrato → tests → código → verificación.
 
-Cerrado y en prod: main = 2e9bd45 "Remove unused database layer". Producción
-                  NO tiene todavía el rediseño institucional, la suscripción,
-                  el prerender ni el catálogo: todo eso está en staging.
-                  - origin/staging (preview de Vercel): rediseño de home,
-                    Nosotros, Qué hacemos, Equipo, Mapa de Ruta, Blog y Podcast;
-                    POST /api/suscripcion; prerender + 404 real; /componentes;
-                    Node 22.x y .js en imports de api/.
-                  - solo en staging local (sin subir): manejador de errores
-                    único con ErrorDeAplicacion (shared/errores.ts), test de
-                    extensiones .js, plan v2 de la plataforma, guía de BD,
-                    ADR-0006 (SDD), documentación de contexto.
+Cerrado y en prod: main = 2e9bd45. Producción NO tiene todavía el rediseño
+                  institucional, la suscripción, el prerender ni el catálogo:
+                  todo está en origin/staging (preview de Vercel), junto con el
+                  manejador de errores único (ErrorDeAplicacion), el typecheck
+                  de tests, el plan v2 de la plataforma, la guía de BD y el ADR-0006.
 
 Runtime:          Node 22.22.0 local · npm 11.20.0 · engines 22.x
 
