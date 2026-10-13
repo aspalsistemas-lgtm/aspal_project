@@ -27,10 +27,9 @@ i18n (el sitio es solo en español).
 
 ### P2 · Contratos API
 
-| #   | Punto                                                                                                                                                                                                                                                     | Archivos                                                              | Esfuerzo |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | -------- |
-| 2.1 | **Infraestructura del sobre único para endpoints nuevos.** Crear `ErrorDeAplicacion(codigo, status, mensaje, campo?)` y el middleware que la formatea a `{ success: false, error }`, montado en los dos consumidores. Sin tocar los endpoints existentes. | `shared/errores.ts` (nuevo), `server/index.ts`, `api/index.ts`, tests | M        |
-| 2.2 | **Mensajes de error en inglés en `/api/posts*`** («Failed to fetch posts», «Post not found»). El contrato se congela en forma, pero el texto es visible y está en inglés en un sitio en español. Decidir si el texto cuenta como «forma».                 | `shared/wordpress/routes.ts`, `client.test.ts`                        | S        |
+| #   | Punto                                                                                                                                                                                                                                     | Archivos                                       | Esfuerzo |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | -------- |
+| 2.2 | **Mensajes de error en inglés en `/api/posts*`** («Failed to fetch posts», «Post not found»). El contrato se congela en forma, pero el texto es visible y está en inglés en un sitio en español. Decidir si el texto cuenta como «forma». | `shared/wordpress/routes.ts`, `client.test.ts` | S        |
 
 ### P3 · Convenciones
 
@@ -60,7 +59,8 @@ i18n (el sitio es solo en español).
 
 ## Resueltos
 
-| #   | Punto                                                                                                                                                                 | Commit    | Fecha      |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
-| 1.2 | Manejador de errores único en `shared/errores.ts`, montado por `server/index.ts` y `api/index.ts`; registra en consola en vez de relanzar; sin `any`. 6 tests nuevos. | `96e3ab6` | 2026-10-01 |
-| 1.3 | Test `shared/extensiones.test.ts`: todo import relativo de `shared/` y `api/` (sin tests) lleva `.js` y apunta a un `.ts` existente.                                  | `4814183` | 2026-10-01 |
+| #   | Punto                                                                                                                                                                                                                                                           | Commit    | Fecha      |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- |
+| 1.2 | Manejador de errores único en `shared/errores.ts`, montado por `server/index.ts` y `api/index.ts`; registra en consola en vez de relanzar; sin `any`. 6 tests nuevos.                                                                                           | `96e3ab6` | 2026-10-01 |
+| 1.3 | Test `shared/extensiones.test.ts`: todo import relativo de `shared/` y `api/` (sin tests) lleva `.js` y apunta a un `.ts` existente.                                                                                                                            | `4814183` | 2026-10-01 |
+| 2.1 | `ErrorDeAplicacion(codigo, status, mensaje, campo?)` en `shared/errores.ts`; el manejador común responde el sobre `{ success: false, error }` y deja el contrato `{ message }` de los errores comunes. Ya montado por ambos consumidores (1.2). 5 tests nuevos. | `aa35225` | 2026-10-13 |
