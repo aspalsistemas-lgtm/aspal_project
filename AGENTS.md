@@ -9,7 +9,14 @@ Sitio público de ASPAL (Asociaciones Profesionales de Latinoamérica): landing
 institucional, blog y podcast servidos desde un WordPress headless, y alta al
 boletín en Mailchimp.
 
-Una modificación debe proteger primero:
+Estas reglas describen **el sitio**. La plataforma SaaS (gestor de contenido,
+membresías, cobros) es una aplicación aparte, con base de datos y
+autenticación propias; se rige por `docs/plan-plataforma-por-etapas.md` y
+`docs/database-design.md`, y tendrá sus guías cuando exista su código. Al
+migrar el blog y el podcast, el sitio leerá de la API de la plataforma y seguirá
+sin estado.
+
+Una modificación al sitio debe proteger primero:
 
 - **El sitio sigue sin estado.** Sin base de datos, sesiones ni autenticación;
   la única escritura delega en Mailchimp y no guarda nada.

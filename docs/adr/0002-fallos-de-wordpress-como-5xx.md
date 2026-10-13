@@ -48,6 +48,12 @@ cargando, error (con reintento) y vacío. La home consume la API solo en
 - Toda vista que consuma `/api/*` maneja los tres estados; `blog.tsx` es la
   referencia.
 
+## Evolución prevista
+
+Nota del 2026-10-13. El principio (un fallo del origen de contenido sale como
+5xx, nunca como lista vacía) se mantiene cuando el origen pase de WordPress a
+la API de la plataforma (Etapa 2).
+
 ## Referencias
 
 - Commit `c2827ca` «Fase 0: excluir podcasts, propagar errores y sanear los metadatos del post»

@@ -57,7 +57,7 @@ una aplicación aparte, con PostgreSQL en AWS. Sus datos se rigen por
 ## 2. Stack
 
 ```
-Repo:       un solo paquete npm (sin workspaces) · Node 22.x · TypeScript 5.6 strict
+Repo:       un solo paquete npm (sin workspaces; pasará a monorepo, D1) · Node 22.x · TypeScript 5.6 strict
 Backend:    Express 4 · sin ORM ni BD · validación manual en shared/ · console como logger
 Frontend:   React 18 + Vite 5 + wouter 3 · Tailwind 3 + shadcn/ui (New York) · estado
             local con hooks de React · estado remoto con TanStack Query 5 · formularios
@@ -292,8 +292,10 @@ Runtime:          Node 22.22.0 local · npm 11.20.0 · engines 22.x
 Migraciones:      No aplica. El sitio no tiene BD. La plataforma aún no tiene
                   esquema ni código.
 
-En diseño:        Plataforma SaaS, Etapa 0 (plan draft con decisiones D1–D8;
-                  D6 identidad/afiliación pendiente de respuesta).
+En diseño:        Plataforma SaaS, Etapa 0 (plan v2: el gestor de contenido
+                  primero; D1, D3, D5 y D6 cerradas el 2026-10-13: monorepo,
+                  Fastify + Zod, Google sin Facebook, un login global). Pendiente:
+                  renderizado y publicación (D13) e inventario editorial.
 
 Archivos OK:      docs/, *.md de contexto (fase 2 de la alineación).
 Archivos NO:      Código, dependencias, .env*, vercel.json y estructura de

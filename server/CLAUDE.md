@@ -187,8 +187,9 @@ status, mensaje, campo?)` en `shared/` y un middleware que la formatee al
 
 ## 5. Seguridad
 
-No hay autenticación, tokens, roles ni middlewares de autorización: todos los
-endpoints son públicos. Lo que sí se protege:
+En el sitio no hay autenticación, tokens, roles ni middlewares de autorización:
+todos sus endpoints son públicos (la plataforma tendrá los suyos, aparte). Lo
+que sí se protege:
 
 - **Entrada:** `enteroAcotado` en paginación; `validarSuscripcion` recorta
   longitudes, elimina caracteres de control y de dirección, exige

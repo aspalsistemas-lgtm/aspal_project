@@ -51,6 +51,14 @@ dos entornos a la vez.
   suscripción; replicar ese test para cualquier módulo nuevo de `shared/`.
 - `npm run check` incluye `api/` en el typecheck.
 
+## Evolución prevista
+
+Nota del 2026-10-13. La regla sigue vigente. Al cerrar la Etapa 2 de la
+plataforma, el blog y el podcast dejan de salir de WordPress: `shared/wordpress/`
+cambiará su fuente por la API de la plataforma conservando el contrato de
+`/api/posts`, y se retirará solo cuando se valide el reemplazo. Si eso altera
+esta decisión, se registrará en un ADR nuevo.
+
 ## Referencias
 
 - Commit `365a70e` «Unificar la lógica de WordPress en shared/»

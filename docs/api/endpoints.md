@@ -4,6 +4,11 @@
 > ANTES de implementarse. Un endpoint que no está aquí no existe.
 > Prefijo global: `/api` (sin versión).
 
+Este catálogo es el de **la API del sitio**. La API de la plataforma tendrá su
+propio catálogo cuando exista. Al migrar el blog y el podcast, `/api/posts` y
+`/api/posts/:slug` conservan este contrato aunque su fuente pase de WordPress
+a la plataforma.
+
 Todos los endpoints son públicos: no hay autenticación. Los registra `shared/`
 (`registerApiRoutes` y `registrarRutasSuscripcion`) y los montan
 `server/index.ts` y `api/index.ts`. En Vercel, `/api/(.*)` se reescribe a la

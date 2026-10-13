@@ -9,12 +9,20 @@ origin: docs/plan-plataforma-por-etapas.md · docs/database-design.md · tabla d
 # feat: Plataforma ASPAL — Etapa 0: preparación y decisiones
 
 > Aterriza la **Etapa 0** del plan de la plataforma
-> (`docs/plan-plataforma-por-etapas.md`) sobre el repositorio: fija las
-> decisiones técnicas que el plan deja abiertas, propone el modelo de dominio
-> inicial y deja listo el backlog de la Etapa 1. Cada decisión lleva su estado:
-> las **cerradas** se implementan tal cual; las **propuestas** se implementan
-> según la recomendación, aisladas para poder cambiarlas; las **pendientes**
-> necesitan una respuesta del responsable antes de tocar código.
+> (`docs/plan-plataforma-por-etapas.md`, versión 2.x: el gestor de contenido
+> primero) sobre el repositorio: fija las decisiones técnicas que el plan deja
+> abiertas, propone el modelo de dominio inicial y deja listo el backlog de la
+> Etapa 1. Cada decisión lleva su estado: las **cerradas** se implementan tal
+> cual; las **propuestas** se implementan según la recomendación, aisladas para
+> poder cambiarlas; las **pendientes** necesitan una respuesta del responsable
+> antes de tocar código.
+>
+> **Revisión del 13 de octubre de 2026.** Este documento se escribió contra la
+> versión 1.0 del plan (membresías primero). La versión 2 cambia el orden de las
+> etapas y el piloto; esta revisión lo reconcilia y cierra las decisiones D1, D3,
+> D5 y D6. Numeración de etapas vigente: 0 preparación · 1 núcleo y aislamiento ·
+> 2 gestor de contenido · 3 membresías · 4 cobros · 5 comunidad y biblioteca ·
+> 6 eventos · 7 formación y expansión (incluye IA y SSO).
 
 ## 0. Instrucciones para agentes (Claude Code)
 
@@ -29,7 +37,9 @@ origin: docs/plan-plataforma-por-etapas.md · docs/database-design.md · tabla d
   recomendación y déjala en un solo módulo para que cambiarla sea trivial. Si
   sigue «pendiente», detente y pregunta: no inventes la regla de negocio.
 - Cada corte de la Etapa 1 (sección 8) llega desplegado a `staging` de AWS
-  antes de abrir el siguiente, y cierra con el caso real de ANPR y de ASPAL.
+  antes de abrir el siguiente, y cierra con el caso real de ASPAL y la prueba
+  contra una segunda organización de prueba (ficticia). ANPR es candidato a
+  siguiente piloto, no condición de cierre.
 - Los tests de **cruce entre asociaciones** (una asociación no ve ni modifica
   datos de otra) son condición de cierre de todas las etapas, no solo de la 1.
 
@@ -46,45 +56,52 @@ en el sitio y qué flujo se implementa primero.
 
 En este repositorio eso se traduce en:
 
-| Entregable del plan                              | Dónde queda                                                                         | Estado                          |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------- |
-| Mapa del sistema actual                          | `docs/plataforma.md` y `docs/architecture.md` (ya existen) + sección 2 de este plan | Hecho                           |
-| Estructura de módulos y decisiones técnicas      | Sección 3 (decisiones) y sección 7 (forma del repositorio)                          | Propuesto                       |
-| Modelo de dominio inicial                        | Sección 4                                                                           | Propuesto                       |
-| Reglas de negocio iniciales                      | Sección 5 (matriz)                                                                  | Por rellenar con el responsable |
-| Inventario de datos y recorridos de ANPR y ASPAL | Sección 6                                                                           | Pendiente de insumos            |
-| Backlog de la Etapa 1                            | Sección 8                                                                           | Propuesto                       |
+| Entregable del plan                         | Dónde queda                                                                         | Estado                          |
+| ------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------- |
+| Mapa del sistema actual                     | `docs/plataforma.md` y `docs/architecture.md` (ya existen) + sección 2 de este plan | Hecho                           |
+| Estructura de módulos y decisiones técnicas | Sección 3 (decisiones) y sección 7 (forma del repositorio)                          | Propuesto                       |
+| Modelo de dominio inicial                   | Sección 4                                                                           | Propuesto                       |
+| Reglas de negocio iniciales                 | Sección 5 (matriz)                                                                  | Por rellenar con el responsable |
+| Inventario de datos y recorridos de ASPAL   | Sección 6                                                                           | Pendiente de insumos            |
+| Backlog de la Etapa 1                       | Sección 8                                                                           | Propuesto                       |
 
 ## 2. Punto de partida: qué se conserva y qué cambia
 
 **Se conserva tal cual:** el sitio institucional (React 18 + Vite, prerender,
 Vercel), el sistema visual (pizarra, miel, noche; Montserrat; panal), el
-catálogo de componentes de `/componentes`, el blog y el podcast desde
-WordPress, y el boletín en Mailchimp.
+catálogo de componentes de `/componentes` y el boletín en Mailchimp. Mientras
+no se cierre la Etapa 2, el blog y el podcast siguen saliendo de WordPress.
 
 **Cambia de sitio:** el sistema visual y los componentes dejan de ser
 exclusivos del sitio y pasan a un paquete compartido (`packages/ui`) para que
-los paneles de la plataforma se vean igual (D1).
+los paneles de la plataforma se vean igual (D1). Al cerrar la Etapa 2, el blog
+y el podcast pasan a leerse de la API de la plataforma; el sitio sigue sin base
+de datos ni sesiones y conserva el contrato público de `/api/posts` y
+`/api/posts/:slug` (cambia la fuente, no el formato). `shared/wordpress/` se
+retira del sitio solo cuando se valide el reemplazo.
 
-**Se conecta progresivamente:** `/unete` (Etapa 3, planes e inscripción),
-`/eventos` (Etapa 4, eventos de ASPAL), `/plataforma` (deja de describir un
-producto genérico y describe el real).
+**Se conecta progresivamente:** `/unete` (Etapa 3, planes e inscripción, con
+cobro en la 4), `/eventos` (Etapa 6, eventos de ASPAL), `/plataforma` (deja de
+describir un producto genérico y describe el real).
 
 **Dónde vive cada dato tras la primera versión comercial:**
 
-| Dato                                                                              | Sistema                                             |
-| --------------------------------------------------------------------------------- | --------------------------------------------------- |
-| Textos institucionales, páginas del sitio                                         | Repositorio (`content/institucional/`)              |
-| Blog y podcast                                                                    | WordPress (sin cambios)                             |
-| Boletín                                                                           | Mailchimp (sin cambios)                             |
-| Asociaciones, contratos, cuentas, personas, membresías, eventos, pagos, auditoría | PostgreSQL de la plataforma (AWS)                   |
-| Cobros, cuentas conectadas, suscripciones de clientes                             | Stripe (la plataforma guarda referencias y estados) |
-| Correos operativos                                                                | SES (la plataforma guarda el registro de envío)     |
-| Logos, certificados y archivos                                                    | S3                                                  |
+| Dato                                                                              | Sistema                                                                          |
+| --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Textos institucionales, páginas del sitio                                         | Repositorio hoy; gestor de contenido de la plataforma de forma gradual (Etapa 2) |
+| Blog y podcast                                                                    | WordPress hasta la Etapa 2; gestor propio después                                |
+| MemberPress, comunidad (`comunidad.`) y cursos                                    | WordPress hasta que sus módulos (Etapas 3, 5 y 7) los sustituyan                 |
+| Boletín                                                                           | Mailchimp (sin cambios)                                                          |
+| Asociaciones, contratos, cuentas, personas, membresías, eventos, pagos, auditoría | PostgreSQL de la plataforma (AWS)                                                |
+| Cobros, cuentas conectadas, suscripciones de clientes                             | Stripe (la plataforma guarda referencias y estados)                              |
+| Correos operativos                                                                | SES (la plataforma guarda el registro de envío)                                  |
+| Logos, certificados y archivos                                                    | S3                                                                               |
 
 **Lo que hoy está en WordPress + MemberPress** (miembros actuales, comunidad en
-línea, cursos) es la fuente del inventario de la sección 6. No se migra en la
-Etapa 0.
+línea, cursos) es la fuente del inventario de miembros de la sección 6. No se
+migra en la Etapa 0 ni en la 2: WordPress se retira únicamente para blog y
+podcast. Ese contenido editorial tiene su propio inventario (entradas,
+episodios, audio, feeds, adjuntos, redirecciones; ver el plan, sección 9).
 
 ## 3. Decisiones
 
@@ -92,7 +109,7 @@ Formato: decisión, alternativas descartadas, motivo, consecuencias. Estado:
 **cerrada** (viene del plan), **propuesta** (recomendación de este documento,
 se implementa salvo objeción) o **pendiente** (necesita respuesta).
 
-### D1 · Forma del repositorio — propuesta
+### D1 · Forma del repositorio — cerrada (13 oct 2026)
 
 **Decisión:** un monorepo con npm workspaces:
 
@@ -128,7 +145,7 @@ contenedor y una base gestionada cubren las etapas 1–5. **Consecuencia:** hay
 que crear la cuenta de AWS (región, facturación, usuarios IAM) y el comodín
 DNS en la Etapa 1, corte 1.
 
-### D3 · Servidor de la plataforma — propuesta
+### D3 · Servidor de la plataforma — cerrada (13 oct 2026)
 
 **Decisión:** Fastify + Zod. **Descartado:** Express (lo que usa el sitio: sin
 validación de esquemas integrada), NestJS (mucha ceremonia para un equipo
@@ -149,14 +166,14 @@ explícito, que es lo que se querrá leer al auditar un cobro. **Consecuencia:**
 las migraciones se versionan con Drizzle Kit en el repositorio
 (`docs/database-design.md`, sección 5).
 
-### D5 · Autenticación — propuesta
+### D5 · Autenticación — propuesta (alcance de proveedores cerrado)
 
 **Decisión:** autenticación propia en la aplicación: sesiones en PostgreSQL y
 una librería TypeScript para el flujo (Better Auth, con Auth.js como
-alternativa). Al lanzamiento: correo (enlace o contraseña) y Google. Facebook
-queda preparado pero **condicionado** a que la audiencia lo pida: exige
-revisión de app de Meta, verificación de empresa y aviso de privacidad y
-términos publicados. SSO institucional (OIDC/SAML) en la Etapa 8, con un
+alternativa). Al lanzamiento: correo (enlace o contraseña) y **Google**.
+**Facebook queda fuera del alcance** (cerrado el 13 de octubre de 2026): exige
+revisión de app de Meta y verificación de empresa; solo se reconsidera si la
+audiencia lo pide. SSO institucional (OIDC/SAML) en la Etapa 7, con un
 plugin SAML/OIDC, WorkOS o Cognito **solo para ese caso**.
 
 **Descartado:** Amazon Cognito como acceso principal. **Motivo:** (1) la
@@ -166,13 +183,13 @@ identidad quedaría fuera de PostgreSQL y habría que mantener la
 correspondencia `sub` → cuenta, lo que complica el RLS; (3) de un _user pool_
 no se exportan contraseñas: salir de Cognito obliga a todos los usuarios a
 cambiarla. Lo que Cognito aporta (federación por institución) no hace falta
-hasta la Etapa 8.
+hasta la Etapa 7.
 
 **Consecuencia inmediata:** el aviso de privacidad y los términos del sitio,
 hoy «Próximamente», pasan a ser **bloqueantes** antes del primer OAuth y antes
 de Stripe.
 
-### D6 · Identidad, persona y afiliación — pendiente
+### D6 · Identidad, persona y afiliación — cerrada (13 oct 2026)
 
 `docs/database-design.md` separa **cuenta de acceso, persona, asociación
 cliente, institución miembro, representación, plan, membresía, rol y permiso**,
@@ -185,11 +202,10 @@ representaciones, roles) es independiente y no se hereda de una asociación a
 otra. «Accesos separados» se cumple como autorización, no como credenciales
 distintas.
 
-**Pregunta que cierra la decisión:** ¿una persona que es miembro de ANPR y de
-ASPAL debe tener **un solo login** o **dos cuentas distintas**? La
-recomendación es un login; si el producto exige dos cuentas, cambia el modelo
-de `cuenta_acceso` (sección 4) y hay que decidirlo antes del corte 3 de la
-Etapa 1.
+**Decisión del responsable (13 de octubre de 2026):** un solo login por
+persona. Una persona con membresía en varias asociaciones usa la misma cuenta
+de acceso; la autorización se resuelve por afiliación y nunca por coincidencia
+de correo.
 
 ### D7 · Roles y permisos — propuesta
 
@@ -223,7 +239,8 @@ operador (clientes, contratos, comisiones) viven en tablas de ámbito
 plataforma, separadas de ASPAL como asociación.
 
 **Consecuencia:** cada etapa incluye tests que intentan leer y escribir datos
-de ANPR con una sesión de ASPAL (y viceversa) y comprueban que se niega.
+de una asociación con una sesión de otra (ASPAL y la organización de prueba, y
+viceversa) y comprueban que se niega.
 
 ### D9 · Cobros de membresías y eventos — cerrada (Connect) + propuesta (forma)
 
@@ -238,7 +255,7 @@ guarda el `event.id` de Stripe como único y cada efecto (activar membresía,
 emitir inscripción) se deriva del estado registrado, nunca del orden de
 llegada (`database-design.md`, secciones 2 y 4). **Consecuencia:** la cuenta
 de Stripe de ASPAL debe estar en México y con Connect activado antes de la
-Etapa 3.
+Etapa 4.
 
 ### D10 · Suscripción de la asociación a ASPAL — propuesta
 
@@ -265,10 +282,10 @@ equipo, previsualización en desarrollo). Un _configuration set_ de SES por
 asociación para seguir rebotes y quejas por separado (vía SNS); la lista de
 supresión de SES es por cuenta de AWS, no por asociación. Remitente: el
 dominio de ASPAL con el nombre de la asociación como nombre visible; dominios
-propios por asociación (DKIM propio) en la Etapa 8.
+propios por asociación (DKIM propio) en la Etapa 7.
 
 **Consecuencia:** verificar el dominio y salir del _sandbox_ de SES lleva días
-de calendario: se pide en la Etapa 1, corte 1, aunque se use en la 3.
+de calendario: se pide en la Etapa 1, corte 1, aunque se use en la 3 o la 4.
 
 ### D12 · Trabajos en segundo plano — propuesta
 
@@ -291,16 +308,22 @@ el prerender del sitio. **Recomendación:** React Router 7, para no mantener
 un SSR a mano. Se decide en el corte 4 de la Etapa 1, cuando se construya la
 primera página pública.
 
+**Pendiente, ligado a la Etapa 2:** cómo se publica el contenido del gestor en
+el sitio público (prerender en el build con una reconstrucción al publicar, o
+renderizado en servidor o regeneración incremental) y cómo se conserva el 404
+real del ADR 0003. Se resuelve en el inventario de la Etapa 2, antes de
+construir la publicación; hasta entonces el prerender actual no cambia.
+
 ### D14 · Observabilidad, secretos y copias — propuesta
 
 Sentry (errores y trazas, API y paneles); logs del contenedor en CloudWatch;
 secretos en Secrets Manager (nunca en el repositorio ni en variables de CI);
 copias automáticas de RDS con un **ensayo de restauración** documentado antes
-de la Etapa 3. No son etapas, pero sin ellas la Etapa 3 no es lanzable.
+de la Etapa 4. No son etapas, pero sin ellas la Etapa 4 no es lanzable.
 
 ### D15 · IA administrativa — aplazada
 
-Como dice el plan: Etapa 5, borradores con revisión humana y acceso solo a
+Como dice el plan: Etapa 7, borradores con revisión humana y acceso solo a
 datos permitidos. El proveedor y la frontera de datos se deciden al abrirla;
 no se toca antes.
 
@@ -318,7 +341,7 @@ de cada migración (sección 6 de la guía), no el esquema definitivo.
 | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `asociacion`                           | Cliente de la plataforma: nombre, subdominio (único), logo, colores, zona horaria, estado                                                     |
 | `contrato`                             | Condiciones por cliente: precio anual, comisión, días de prueba, estado (prueba, activa, vencida, solo lectura), fechas; historial de cambios |
-| `cuenta_acceso`                        | Login: correo verificado (único), proveedor (correo, Google, Facebook), estado. **Nunca** es la clave de identidad de negocio                 |
+| `cuenta_acceso`                        | Login: correo verificado (único), proveedor (correo, Google), estado. **Nunca** es la clave de identidad de negocio                           |
 | `persona`                              | La persona física: nombre, datos de contacto. Una cuenta ↔ una persona                                                                        |
 | `rol_global` · `asignacion_rol_global` | Operador ASPAL y soporte                                                                                                                      |
 | `auditoria`                            | Acciones sensibles: quién, qué, sobre qué, cuándo, desde dónde                                                                                |
@@ -335,8 +358,9 @@ de cada migración (sección 6 de la guía), no el esquema definitivo.
 | `plan`                                       | Plan **ofrecido**: individual o institucional; gratuito, estudiante, vitalicio; precio, moneda, vigencia, beneficios, número de representantes          |
 | `membresia`                                  | Membresía **contratada**: persona o institución, plan, vigencia, origen (pago, alta manual, importación), estado; `membresia_historial` con cada cambio |
 | `cargo` · `pago` · `devolucion` · `comision` | Hechos financieros con referencia única de Stripe; el estado de la membresía se **deriva** de ellos                                                     |
-| `evento` · `tipo_entrada` · `descuento`      | Etapa 4                                                                                                                                                 |
-| `inscripcion` · `asistencia` · `certificado` | Etapa 4                                                                                                                                                 |
+| `contenido` · `version_contenido` · `medio`  | Etapa 2: publicaciones, páginas, bloques, versiones y medios del gestor (propuesta formal pendiente; ver sección 8)                                     |
+| `evento` · `tipo_entrada` · `descuento`      | Etapa 6                                                                                                                                                 |
+| `inscripcion` · `asistencia` · `certificado` | Etapa 6                                                                                                                                                 |
 | `envio_correo`                               | Registro de cada mensaje operativo y su resultado                                                                                                       |
 
 **Reglas que el modelo ya fija:**
@@ -352,8 +376,9 @@ de cada migración (sección 6 de la guía), no el esquema definitivo.
 
 ## 5. Matriz de reglas de negocio (inicial)
 
-El plan (sección 8) pide cerrarla antes de implementar cobros y eventos. Se
-rellena con el responsable; aquí queda la lista de casos y lo que cada uno
+El plan (sección 14) pide cerrarla antes de cobrar y de aplicar restricciones
+comerciales (Etapa 4), y antes de eventos (Etapa 6). Se rellena con el
+responsable; aquí queda la lista de casos y lo que cada uno
 debe definir.
 
 | Caso                      | Debe definir                                                                                                    | Estado      |
@@ -371,23 +396,35 @@ debe definir.
 
 ## 6. Inventario de datos actuales y recorridos
 
-**Inventario (insumo pendiente):** dónde están hoy los miembros de ANPR y de
-ASPAL (MemberPress en WordPress, hojas de cálculo, pasarela previa), con qué
-campos, cuántos registros, cuántos duplicados, y qué pagos históricos hay que
-conservar. De esto depende la importación de la Etapa 2 y si hace falta un
-periodo de operación en paralelo con la plataforma actual.
+**Inventario de contenido editorial (insumo pendiente, bloquea la Etapa 2):**
+entradas, episodios de podcast, borradores accesibles, autores, taxonomías,
+imágenes, adjuntos, incrustaciones, feeds, dónde se aloja el audio y qué
+redirecciones hacen falta (plan, sección 9). La API pública de WordPress puede
+no incluir borradores, versiones ni medios privados.
 
-**Recorridos (insumo pendiente):** para ANPR y para ASPAL, por separado:
+**Inventario de miembros (insumo pendiente, bloquea la Etapa 3):** dónde están
+hoy los miembros de ASPAL (y, cuando ANPR se incorpore, los de ANPR) en
+MemberPress, hojas de cálculo o pasarela previa, con qué campos, cuántos
+registros, cuántos duplicados, y qué pagos históricos hay que conservar. De
+esto depende la importación y si hace falta un periodo de operación en
+paralelo con la plataforma actual.
 
-1. Un miembro individual: descubre el plan, se registra, paga, accede, renueva.
-2. Una institución: se da de alta, designa representantes, los cambia, renueva.
-3. Un administrador: da de alta manual, consulta vigencias, ve renovaciones
+**Recorridos (insumo pendiente):** se escriben primero para ASPAL, en el orden
+de las etapas:
+
+1. Un autor: edita una página existente, la envía a revisión; otro usuario
+   autorizado la publica; se comprueba la página pública (Etapa 2).
+2. Un miembro individual: descubre el plan, se registra, paga, accede, renueva
+   (Etapas 3 y 4).
+3. Una institución: se da de alta, designa representantes, los cambia, renueva.
+4. Un administrador: da de alta manual, consulta vigencias, ve renovaciones
    próximas, exporta.
-4. Un evento: se publica, recibe inscripciones gratuitas y de pago, hace
-   check-in, emite certificados.
+5. Un evento: se publica, recibe inscripciones gratuitas y de pago, hace
+   check-in, emite certificados (Etapa 6).
 
-Cada recorrido se escribe en una página y se aprueba antes de abrir la etapa
-que lo implementa.
+Los de ANPR se escriben cuando se acuerde su incorporación como piloto. Cada
+recorrido se escribe en una página y se aprueba antes de abrir la etapa que lo
+implementa.
 
 ## 7. Trabajo de código de la Etapa 0
 
@@ -407,30 +444,38 @@ Un solo cambio, sin efecto funcional en el sitio:
 Cinco cortes; cada uno llega desplegado a `staging` de AWS antes de abrir el
 siguiente:
 
-| Corte                                    | Qué entrega                                                                                                                                                                   | Cierra cuando                                                 |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| 1 · Infraestructura mínima               | Cuenta AWS, CDK: contenedor, RDS, S3, SES (verificación de dominio y salida del sandbox pedidas), Secrets Manager, Sentry; CI que despliega; `/health`; migraciones corriendo | `app.asociacionesprofesionales.org/health` responde desde AWS |
-| 2 · Asociaciones y aislamiento           | `asociacion`, resolución por subdominio, RLS con contexto por transacción, página pública mínima con logo y colores                                                           | El test de cruce ANPR ↔ ASPAL se niega en lectura y escritura |
-| 3 · Acceso                               | `cuenta_acceso`, `persona`, sesiones, correo y Google; roles globales y de asociación; `puede()`                                                                              | Un administrador de ANPR entra y no ve nada de ASPAL          |
-| 4 · Panel de operador y de administrador | Alta de asociación, contrato (precio, comisión, prueba); marca de la asociación; decisión D13 tomada                                                                          | ASPAL da de alta a ANPR sin tocar código                      |
-| 5 · Estados y auditoría                  | Prueba, activa, vencida, solo lectura; registro de acciones sensibles                                                                                                         | Se cumple el cierre de la Etapa 1 del plan                    |
+| Corte                                    | Qué entrega                                                                                                                                                                   | Cierra cuando                                                                   |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| 1 · Infraestructura mínima               | Cuenta AWS, CDK: contenedor, RDS, S3, SES (verificación de dominio y salida del sandbox pedidas), Secrets Manager, Sentry; CI que despliega; `/health`; migraciones corriendo | `app.asociacionesprofesionales.org/health` responde desde AWS                   |
+| 2 · Asociaciones y aislamiento           | `asociacion`, resolución por subdominio, RLS con contexto por transacción, página pública mínima con logo y colores                                                           | El test de cruce ASPAL ↔ organización de prueba se niega en lectura y escritura |
+| 3 · Acceso                               | `cuenta_acceso` global, `persona`, sesiones, correo y Google; roles globales y de asociación; `puede()`; invitaciones y recuperación                                          | Un administrador de la organización de prueba entra y no ve nada de ASPAL       |
+| 4 · Panel de operador y de administrador | Alta de asociación, contrato (precio, comisión, prueba) con historial; módulos habilitados; marca de la asociación; decisión D13 tomada                                       | ASPAL da de alta a una organización sin tocar código                            |
+| 5 · Estados y auditoría                  | Prueba, activa, vencida, solo lectura; registro de acciones sensibles; archivos con ámbito; ensayo de restauración desde respaldo                                             | Se cumple el cierre de la Etapa 1 del plan                                      |
 
-Las etapas 2–5 siguen la misma mecánica: backlog con criterios de aceptación,
-cortes desplegados, cierre con el caso completo de ANPR y de ASPAL.
+La **Etapa 2 (gestor de contenido)** es la primera entrega operativa y tiene su
+propio backlog, que se escribe al cerrar la Etapa 1: contenido, medios, flujo
+editorial, tipos configurables acotados, plantillas de páginas, publicación y
+migración de blog y podcast. Antes hay que cerrar el inventario editorial y la
+decisión de renderizado (D13). Las etapas 3–7 siguen la misma mecánica: backlog
+con criterios de aceptación, cortes desplegados, cierre con el caso completo de
+ASPAL y de una segunda organización.
 
 ## 9. Preguntas para el responsable
 
 Las que cambian el modelo o el calendario; el resto se decide por la
 recomendación.
 
-1. **Identidad (D6):** ¿un solo login para una persona con membresía en varias
-   asociaciones, o cuentas distintas?
+Cerradas el 13 de octubre de 2026: identidad (D6, un solo login), Facebook
+(D5, fuera de alcance), forma del repositorio (D1) y servidor (D3). Quedan:
+
+1. **Contenido editorial (sección 6):** ¿dónde está el audio del podcast, qué
+   contenido de WordPress se migra y qué dominios editoriales siguen en uso?
 2. **Datos actuales (sección 6):** ¿dónde están hoy los miembros y pagos de
-   ANPR y de ASPAL, y hay que conservar el historial de pagos?
+   ASPAL, y hay que conservar el historial de pagos? (Etapa 3.)
 3. **Equipo:** ¿quién desarrolla y quién aprueba (producto, legal, finanzas)?
-   Determina el tamaño de los cortes.
-4. **Facebook Login (D5):** ¿imprescindible al lanzamiento o puede esperar a
-   que lo pida la audiencia?
+   Determina el tamaño de los cortes y la fecha objetivo de la Etapa 2.
+4. **Renderizado y publicación (D13):** cómo llega el contenido publicado al
+   sitio y cómo se conserva el 404 real.
 5. **Aviso de privacidad y términos:** ¿quién los redacta y cuándo? Bloquean
    OAuth y Stripe.
 6. **Cuentas:** AWS (¿existe?, ¿qué región?) y Stripe (¿cuenta mexicana con
@@ -442,10 +487,11 @@ recomendación.
 
 ## 10. Riesgos añadidos a los del plan
 
-| Riesgo                                                            | Control                                                                                                              |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Reestructurar el repositorio rompe el sitio sin que nadie lo note | El cambio de la sección 7 se hace solo, con el sitio desplegado en `staging` y comparado ruta a ruta antes de seguir |
-| Las decisiones «propuestas» se dan por cerradas sin revisión      | Este documento se revisa con el responsable antes del corte 1; cada decisión cambia de estado por escrito            |
-| Documentos legales llegan tarde                                   | Se piden en la Etapa 0 (pregunta 5) con fecha límite antes del corte 3                                               |
-| SES y Stripe tardan en habilitarse                                | Se solicitan en el corte 1 de la Etapa 1 aunque se usen en la 3                                                      |
-| Operar dos sistemas de miembros a la vez                          | El inventario de la sección 6 decide si hay periodo en paralelo y cuánto dura                                        |
+| Riesgo                                                            | Control                                                                                                                                |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Reestructurar el repositorio rompe el sitio sin que nadie lo note | El cambio de la sección 7 se hace solo, con el sitio desplegado en `staging` y comparado ruta a ruta antes de seguir                   |
+| Las decisiones «propuestas» se dan por cerradas sin revisión      | Este documento se revisa con el responsable antes del corte 1; cada decisión cambia de estado por escrito                              |
+| Documentos legales llegan tarde                                   | Se piden en la Etapa 0 (pregunta 5) con fecha límite antes del corte 3                                                                 |
+| SES y Stripe tardan en habilitarse                                | Se solicitan en el corte 1 de la Etapa 1 aunque se usen en la 3 o la 4                                                                 |
+| Apagar WordPress pierde contenido, medios o URLs                  | Solo para blog y podcast, con corte editorial, redirecciones y retorno temporal (plan, sección 9); MemberPress y comunidad no se tocan |
+| Operar dos sistemas de miembros a la vez                          | El inventario de la sección 6 decide si hay periodo en paralelo y cuánto dura                                                          |
