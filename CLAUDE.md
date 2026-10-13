@@ -7,17 +7,18 @@
 
 ## Documentos de Contexto
 
-| Archivo                              | Cuándo leerlo                                                                    |
-| ------------------------------------ | -------------------------------------------------------------------------------- |
-| `CLAUDE.md` (este)                   | Inicio de cada sesión. Reglas globales                                           |
-| `AGENTS.md`                          | Reglas estables para cualquier agente; sin estado de sesión                      |
-| `server/CLAUDE.md`                   | Al trabajar en `server/`, `api/` o `shared/` (backend y lógica compartida)       |
-| `client/CLAUDE.md`                   | Al trabajar en cualquier archivo de `client/`                                    |
-| `docs/api/endpoints.md`              | Al crear o modificar endpoints                                                   |
-| `design.md`                          | Al crear o modificar componentes o estilos                                       |
-| `docs/database-design.md`            | Antes de crear, modificar o eliminar datos persistentes (plataforma, PostgreSQL) |
-| `docs/plan-plataforma-por-etapas.md` | Antes de tocar cualquier cosa de la plataforma SaaS (decisiones de negocio)      |
-| `docs/sprints/deuda-tecnica.md`      | Antes de alinear código con estas convenciones; al cerrar un punto               |
+| Archivo                                                   | Cuándo leerlo                                                                    |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `CLAUDE.md` (este)                                        | Inicio de cada sesión. Reglas globales                                           |
+| `AGENTS.md`                                               | Reglas estables para cualquier agente; sin estado de sesión                      |
+| `server/CLAUDE.md`                                        | Al trabajar en `server/`, `api/` o `shared/` (backend y lógica compartida)       |
+| `client/CLAUDE.md`                                        | Al trabajar en cualquier archivo de `client/`                                    |
+| `docs/api/endpoints.md`                                   | Al crear o modificar endpoints                                                   |
+| `design.md`                                               | Al crear o modificar componentes o estilos                                       |
+| `docs/database-design.md`                                 | Antes de crear, modificar o eliminar datos persistentes (plataforma, PostgreSQL) |
+| `docs/plan-plataforma-por-etapas.md`                      | Antes de tocar cualquier cosa de la plataforma SaaS (decisiones de negocio)      |
+| `docs/sprints/deuda-tecnica.md`                           | Antes de alinear código con estas convenciones; al cerrar un punto               |
+| `docs/adr/0006-desarrollo-guiado-por-especificaciones.md` | Antes de construir cualquier funcionalidad o módulo nuevo                        |
 
 > Claude Code carga los CLAUDE.md del directorio activo hacia arriba automáticamente.
 > En caso de conflicto entre documentos, `design.md` prevalece para todo lo visual,
@@ -398,6 +399,23 @@ componente o una vista:
    en `client/src/catalogo/demos-*.tsx`. Una carpeta nueva en `components/`
    exige añadirla a `CATEGORIAS_POR_CARPETA` del test. Solo `.tsx`.
 4. Un componente que deja de usarse se borra: el mismo test lo detecta.
+
+### Cómo se construye una funcionalidad (SDD)
+
+Regla de desarrollo de toda funcionalidad o módulo nuevo, del sitio y de la
+plataforma (ADR-0006; el detalle operativo está en `AGENTS.md`):
+
+1. **Especificación** con criterios de aceptación numerados (`CA-1`…); se
+   presenta y se espera aprobación antes de escribir código.
+2. **Contrato** primero y ejecutable (`endpoints.md`, `database-design.md`,
+   tipos y validación en `shared/`).
+3. **Tests** derivados de los criterios, que citan el `CA-n`; test primero en
+   lógica de negocio, permisos, dinero, aislamiento y bugs.
+4. **Código limpio** y cambio mínimo.
+5. **Terminado** = especificación al día, criterios con test en verde,
+   validaciones con salida real y diff revisado.
+
+Un cambio trivial (texto, typo, formato) queda exento.
 
 ### Verificar el trabajo
 

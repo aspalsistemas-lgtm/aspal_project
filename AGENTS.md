@@ -94,6 +94,40 @@ Una modificación al sitio debe proteger primero:
 - Mantener compatibilidad hacia atrás en la API `/api/*`, salvo que la tarea
   exija y documente una ruptura.
 
+## Desarrollo guiado por especificaciones
+
+Toda funcionalidad o módulo nuevo sigue **SDD** (ADR-0006). Orden fijo:
+especificación → contrato → tests → código → verificación. La especificación
+manda: si el código se desvía, se corrige primero la especificación.
+
+1. **Especificación.** Problema, alcance (y qué queda fuera) y **criterios de
+   aceptación numerados** (`CA-1`, `CA-2`…), verificables, con casos de error y
+   límites. Formato: _Dado_ / _cuando_ / _entonces_. Para esfuerzo M o L, un plan
+   en `docs/plans/` con la sección «Criterios de aceptación»; para S, en la
+   descripción del commit. Se presenta y se espera aprobación antes de
+   implementar.
+2. **Contrato.** Primero lo que otros consumen y de forma ejecutable: endpoint en
+   `docs/api/endpoints.md`; datos con la propuesta de la sección 6 de
+   `docs/database-design.md`; tipos y validación en `shared/` con su test. En la
+   plataforma, esquemas Zod en `packages/contratos`. No se añade una librería de
+   esquemas al sitio.
+3. **Tests.** Cada criterio tiene al menos un test cuyo nombre cita el criterio
+   (`CA-2: …`) o declara su comprobación manual. **Test primero** (que falle
+   antes del código) es obligatorio en lógica de negocio, permisos, dinero,
+   aislamiento entre asociaciones y toda corrección de bug; en lo demás, es lo
+   recomendable.
+4. **Código limpio.** El cambio mínimo que cumple los criterios; nombres que
+   revelan intención; funciones pequeñas de una sola responsabilidad; sin
+   duplicación, código muerto ni abstracciones anticipadas (YAGNI, KISS);
+   comentarios que explican el porqué; errores explícitos, nunca degradados en
+   silencio; la lógica no depende de Express, la red ni un proveedor (eso va en
+   los bordes); denegar por defecto y validar toda entrada en el servidor.
+5. **Terminado.** Ver «Documentación y terminado».
+
+Proporcionalidad: un cambio trivial (texto, typo, formato) no necesita
+especificación formal. Todo lo que añada comportamiento, contrato, datos,
+permisos o dinero sigue el flujo completo.
+
 ## Convenciones de código
 
 - TypeScript estricto: `strict: true`, `moduleResolution: bundler`, `noEmit`.
@@ -217,6 +251,13 @@ npm run test:watch
 - Una tarea está terminada cuando el comportamiento solicitado está implementado,
   los riesgos relevantes tienen cobertura, las validaciones proporcionales pasan
   y se reportan con claridad las comprobaciones no ejecutadas o bloqueadas.
+- Una **funcionalidad o módulo nuevo** (ADR-0006) está terminado cuando, además:
+  la especificación está actualizada y viaja en el mismo commit o rama que el
+  código; cada criterio de aceptación tiene su test (o comprobación manual
+  registrada) y pasa; `check`, `lint`, `format:check`, `test` y, si toca cliente
+  o servidor, `build` pasan con salida real; se revisó el diff completo; y las
+  decisiones costosas tienen ADR y la deuda dejada está en
+  `docs/sprints/deuda-tecnica.md`.
 - Si se solicita un commit, usar Conventional Commits con scope descriptivo
   (`CLAUDE.md` §5). No crear el commit hasta que el usuario lo pida expresamente.
 
