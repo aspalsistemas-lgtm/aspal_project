@@ -50,7 +50,7 @@ export function ScrollToTop() {
       <Button
         onClick={scrollToTop}
         size="icon"
-        className="h-12 w-12 rounded-full shadow-lg bg-[#243240] hover:bg-[#243240]/90 text-white transition-all duration-300"
+        className="h-12 w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90 text-white transition-all duration-300"
         aria-label="Volver arriba"
         data-testid="button-scroll-to-top"
       >
