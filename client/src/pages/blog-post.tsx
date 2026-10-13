@@ -312,7 +312,7 @@ export default function BlogPost() {
                  iframe del contenido de WordPress provocan scroll horizontal
                  de la página entera en móvil. */
                 <div
-                  className="prose prose-lg dark:prose-invert max-w-none
+                  className="prose prose-lg max-w-none
                   prose-headings:text-foreground prose-p:text-foreground
                   prose-strong:text-foreground prose-a:text-primary
                   hover:prose-a:text-primary/80

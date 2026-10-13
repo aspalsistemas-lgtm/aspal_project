@@ -163,8 +163,9 @@ JSX
 ### 3.1 Tokens: siempre los semánticos, nunca hex directos
 
 Tokens HSL en `client/src/index.css` (`:root`), expuestos por
-`tailwind.config.ts`. **Solo modo claro**: el bloque `.dark` de `index.css`
-viene de shadcn y nada lo activa.
+`tailwind.config.ts`. **Solo modo claro**: el sitio no tiene modo oscuro ni
+selector de tema (decisión de octubre de 2026). No usar la variante `dark:`;
+un test lo impide (`sin-tema-oscuro.test.ts`).
 
 | Token                                     | Clase                               | Uso                                                                        |
 | ----------------------------------------- | ----------------------------------- | -------------------------------------------------------------------------- |
