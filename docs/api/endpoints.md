@@ -24,6 +24,12 @@ función serverless (`vercel.json`).
   `{ success: false, error: { codigo, mensaje, campo? } }`; listas con
   `pagina` · `limite` · `ordenPor` · `direccion` · `buscar`.
 - Los fallos de WordPress salen como 5xx, nunca como lista vacía.
+- **Los textos de error de `/api/posts*` están en inglés y son parte del
+  contrato congelado** (`Failed to fetch posts`, `Post not found`,
+  `Failed to fetch post`, `Failed to fetch podcasts`). Ninguna pantalla los
+  muestra: el cliente se guía solo por el status. Quien consuma la API debe
+  basarse en el status y no en el texto, que no se traducirá. Los fija
+  `shared/wordpress/routes.test.ts` (decisión del punto 2.2 de la deuda técnica).
 - Ninguna respuesta ni log contiene datos personales.
 
 ## Formato de cada entrada
