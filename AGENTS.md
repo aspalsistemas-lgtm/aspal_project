@@ -215,6 +215,7 @@ npm run check          # tsc + check-assets
 npm run lint
 npm run format:check
 npm test               # Vitest, una sola ejecución
+npm run test:coverage  # con cobertura; falla si baja del umbral
 npm run build
 
 # Navegador real (servidor levantado): captura en capturas/ y errores de consola

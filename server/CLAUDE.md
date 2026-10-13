@@ -283,7 +283,11 @@ Reglas:
   socket crudo para reproducir rutas con `\`.
 - Los tests que vigilan contratos entre archivos (`rutas.test.ts` «montaje»,
   `vercel.test.ts`) leen el disco: si mueves un archivo, actualízalos.
-- Sin umbral de cobertura configurado. Decidirlo está en la deuda (P4).
+- Cobertura: `npm run test:coverage` mide `shared/`, `client/src/lib/` y
+  `server/` con umbral en `vitest.config.ts` (medido el 2026-10-13: 87.65 %
+  de líneas). Sin cubrir: `server/index.ts` y `server/vite.ts` (wiring) y
+  `client/src/lib/queryClient.ts` y `utils.ts` (sin test propio). El umbral
+  sube, nunca baja.
 - `tsconfig.json` excluye `**/*.test.ts`: los tests no se typechequean (deuda
   P3).
 

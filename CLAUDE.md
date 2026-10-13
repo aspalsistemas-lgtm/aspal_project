@@ -65,8 +65,8 @@ Frontend:   React 18 + Vite 5 + wouter 3 · Tailwind 3 + shadcn/ui (New York) ·
             con FormData + validación compartida · toasts de shadcn (use-toast)
 Auth:       ninguna
 Externos:   WordPress REST API (contenido) · Mailchimp API v3 (boletín) · GTM dataLayer
-Testing:    Vitest 3 (entorno node) · sin umbral de cobertura; un .test.ts por módulo de
-            lógica en shared/ y client/src/lib/
+Testing:    Vitest 3 (entorno node) · cobertura v8 con umbral (npm run test:coverage);
+            un .test.ts por módulo de lógica en shared/ y client/src/lib/
 Calidad:    ESLint 10 + typescript-eslint · Prettier 3 · scripts/check-assets.mjs · CI en
             GitHub Actions
 ```
@@ -341,6 +341,7 @@ npm run check          # tsc (client + server + shared + api) + check:assets
 npm run lint           # ESLint; lint:fix para corregir
 npm run format:check   # Prettier; format para escribir
 npm test               # Vitest, una pasada; test:watch en modo vigilancia
+npm run test:coverage  # tests + cobertura de la lógica; falla si baja del umbral
 npm run check:browser  # Chrome sin ventana: captura en capturas/ y lista errores de consola
 ```
 
