@@ -86,14 +86,6 @@
   --card: 0 0% 98%;
   --card-foreground: 0 0% 9%;
   --card-border: 206 10% 94%;
-  --sidebar: 206 15% 96%;
-  --sidebar-foreground: 206 31% 12%;
-  --sidebar-border: 206 15% 92%;
-  --sidebar-primary: 206 31% 20%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 206 20% 92%;
-  --sidebar-accent-foreground: 206 31% 18%;
-  --sidebar-ring: 206 31% 20%;
   --popover: 206 10% 94%;
   --popover-foreground: 206 31% 12%;
   --popover-border: 206 10% 90%;
@@ -109,11 +101,6 @@
   --destructive-foreground: 0 72% 98%;
   --input: 206 20% 75%;
   --ring: 206 31% 20%;
-  --chart-1: 206 31% 20%;
-  --chart-2: 42 93% 68%;
-  --chart-3: 206 40% 35%;
-  --chart-4: 42 80% 55%;
-  --chart-5: 206 25% 45%;
   /* Etapa 1. Noche es el azul del logotipo, medido sobre el PNG (#112738).
      Miel-texto existe porque el miel de marca sobre blanco da 1.5:1: nunca
      sirve para texto. Solo en :root: el sitio no tiene modo oscuro. */
@@ -140,20 +127,6 @@
   --shadow-2xl: 0px 2px 0px 0px hsl(206 31% 20% / 0);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
-
-  /* Fallback for older browsers */
-  --sidebar-primary-border: hsl(var(--sidebar-primary));
-  --sidebar-primary-border: hsl(
-    from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) /
-      alpha
-  );
-
-  /* Fallback for older browsers */
-  --sidebar-accent-border: hsl(var(--sidebar-accent));
-  --sidebar-accent-border: hsl(
-    from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) /
-      alpha
-  );
 
   /* Fallback for older browsers */
   --primary-border: hsl(var(--primary));

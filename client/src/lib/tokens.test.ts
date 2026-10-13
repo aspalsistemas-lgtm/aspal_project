@@ -32,3 +32,23 @@ describe("contraste de la paleta", () => {
     expect(contraste("secondary", "background")).toBeLessThan(3);
   });
 });
+
+/**
+ * Tokens heredados de la plantilla de shadcn para gráficas y barra lateral: el
+ * sitio no tiene ninguna de las dos y nada los usaba (deuda técnica 4.5). Si un
+ * componente nuevo los necesita de verdad, se reintroducen junto con su uso.
+ */
+describe("tokens sin uso", () => {
+  const tailwind = readFileSync(
+    resolve(import.meta.dirname, "..", "..", "..", "tailwind.config.ts"),
+    "utf8",
+  );
+
+  it("CA-1: index.css no define tokens --chart-* ni --sidebar-*", () => {
+    expect(css).not.toMatch(/--(chart|sidebar)[\w-]*\s*:/);
+  });
+
+  it("CA-2: tailwind.config.ts no expone colores chart ni sidebar", () => {
+    expect(tailwind).not.toMatch(/["']?\b(chart|sidebar)[\w-]*["']?\s*:/);
+  });
+});
