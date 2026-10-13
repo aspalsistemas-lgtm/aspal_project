@@ -13,7 +13,7 @@ import {
   it,
   vi,
 } from "vitest";
-import { manejadorDeErrores } from "./errores";
+import { ErrorDeAplicacion, manejadorDeErrores } from "./errores";
 
 let servidor: Server;
 let base: string;
@@ -32,6 +32,15 @@ beforeAll(async () => {
   app.get("/sin-mensaje", () => {
     // Un valor que no es Error: no debe reventar el manejador.
     throw "cadena suelta";
+  });
+  app.get("/app-con-campo", () => {
+    throw new ErrorDeAplicacion("VALIDACION", 400, "Correo no válido", "correo");
+  });
+  app.get("/app-sin-campo", () => {
+    throw new ErrorDeAplicacion("NO_ENCONTRADO", 404, "No existe");
+  });
+  app.get("/app-status-invalido", () => {
+    throw new ErrorDeAplicacion("RARO", 200, "Status fuera de rango");
   });
   app.use(manejadorDeErrores);
   await new Promise<void>((listo) => {
@@ -91,6 +100,47 @@ describe("manejadorDeErrores", () => {
     expect(registro).toContain("GET /generico");
     expect(registro).toContain("Algo se rompió");
     expect(JSON.stringify(cuerpo)).not.toContain("at ");
+  });
+});
+
+describe("ErrorDeAplicacion", () => {
+  it("responde el sobre único con `campo` cuando existe", async () => {
+    expect(await pedir("/app-con-campo")).toEqual({
+      estado: 400,
+      cuerpo: {
+        success: false,
+        error: {
+          codigo: "VALIDACION",
+          mensaje: "Correo no válido",
+          campo: "correo",
+        },
+      },
+    });
+  });
+
+  it("omite `campo` cuando no se indica", async () => {
+    const { estado, cuerpo } = await pedir("/app-sin-campo");
+    expect(estado).toBe(404);
+    expect(cuerpo).toEqual({
+      success: false,
+      error: { codigo: "NO_ENCONTRADO", mensaje: "No existe" },
+    });
+    expect(cuerpo.error).not.toHaveProperty("campo");
+  });
+
+  it("un status fuera de 400–599 se normaliza a 500", async () => {
+    expect((await pedir("/app-status-invalido")).estado).toBe(500);
+  });
+
+  it("también se registra en consola", async () => {
+    await pedir("/app-con-campo");
+    expect(console.error).toHaveBeenCalledTimes(1);
+  });
+
+  it("no altera el contrato `{ message }` de los errores comunes", async () => {
+    expect((await pedir("/generico")).cuerpo).toEqual({
+      message: "Algo se rompió",
+    });
   });
 });
 

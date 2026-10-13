@@ -6,13 +6,36 @@
  * dejar rastro útil) y la de Vercel no registraba nada. Aquí se registra en
  * consola y se responde una sola vez.
  *
- * La respuesta conserva el contrato existente, `{ message }` con el status del
- * error o 500 (ver docs/api/endpoints.md). En la práctica solo se alcanza si
- * una excepción escapa de un handler: todos capturan las suyas.
+ * Dos contratos de respuesta, según el error:
+ * - `ErrorDeAplicacion` (endpoints nuevos): el sobre único
+ *   `{ success: false, error: { codigo, mensaje, campo? } }`.
+ * - Cualquier otro error (endpoints existentes): el contrato congelado,
+ *   `{ message }` con el status del error o 500 (ver docs/api/endpoints.md).
+ * En la práctica solo se alcanza si una excepción escapa de un handler: los
+ * existentes capturan las suyas.
  */
 import type { NextFunction, Request, Response } from "express";
 
 const MENSAJE_POR_DEFECTO = "Internal Server Error";
+
+/**
+ * Error esperado de un endpoint nuevo. Se lanza (o se pasa a `next`) y el
+ * manejador lo traduce al sobre único. `mensaje` llega tal cual al cliente:
+ * en español y sin detalles internos.
+ */
+export class ErrorDeAplicacion extends Error {
+  readonly codigo: string;
+  readonly status: number;
+  readonly campo?: string;
+
+  constructor(codigo: string, status: number, mensaje: string, campo?: string) {
+    super(mensaje);
+    this.name = "ErrorDeAplicacion";
+    this.codigo = codigo;
+    this.status = status;
+    this.campo = campo;
+  }
+}
 
 interface ErrorHttp {
   status?: unknown;
@@ -50,5 +73,16 @@ export function manejadorDeErrores(
   const status = statusDe(error);
   // El error completo (con pila) va al log; a la respuesta solo el mensaje.
   console.error(`${req.method} ${req.originalUrl} → ${status}:`, error);
+  if (error instanceof ErrorDeAplicacion) {
+    res.status(status).json({
+      success: false,
+      error: {
+        codigo: error.codigo,
+        mensaje: error.message,
+        ...(error.campo !== undefined && { campo: error.campo }),
+      },
+    });
+    return;
+  }
   res.status(status).json({ message: mensajeDe(error) });
 }
