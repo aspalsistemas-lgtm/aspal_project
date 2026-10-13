@@ -269,25 +269,28 @@ desde la cuenta de GitHub **Antonio1491** (ver Anexo A, «Cuenta de GitHub»).
 
 ```
 Fecha del bloque: 2026-10-13
-Rama:             staging, sincronizada con origin/staging (último push e5b9343);
-                  177 commits por delante de origin/main. Solo existen main y
+Rama:             staging, sincronizada con origin/staging (último push 09f8083);
+                  184 commits por delante de origin/main. Solo existen main y
                   staging: las ramas de trabajo se fusionan en staging y se borran.
                   Los push salen con la cuenta Antonio1491 (Anexo A).
 
 Deuda técnica:    Registro vivo en docs/sprints/deuda-tecnica.md. Consultarlo
                   antes de tocar shared/wordpress, el formato de /api/* o
                   client/src/components; al cerrar un punto, a "Resueltos" con su
-                  commit. Cerrados 1.2, 1.3, 2.1, 2.2, 3.2, 3.4 y 4.1. Quedan: 1.1
-                  (rate limit en Vercel, manual), 4.3/4.4/4.7 (piden autorización),
-                  4.5 (CSS muerto) y 3.1 (Atomic Design, con 3.3 y 4.2).
-Método:           SDD (ADR-0006): especificación con criterios de aceptación →
-                  contrato → tests → código → verificación.
+                  commit. Cerrados 1.2, 1.3, 2.x, 3.2, 3.4, 4.1 y 4.5 (sin tema
+                  oscuro ni tokens sin uso). Quedan: 1.1 (rate limit en Vercel,
+                  manual), 4.3/4.4/4.7 (piden autorización) y 3.1 (Atomic Design,
+                  con 3.3, 3.5-3.7 y 4.2).
+Método:           SDD (ADR-0006). Verificación visual: npm run check:browser con
+                  el servidor local levantado (Anexo A).
 
 Cerrado y en prod: main = 2e9bd45. Producción NO tiene todavía el rediseño
                   institucional, la suscripción, el prerender ni el catálogo:
-                  todo está en origin/staging (preview de Vercel), junto con el
-                  manejador de errores único (ErrorDeAplicacion), el typecheck
-                  de tests, el plan v2 de la plataforma, la guía de BD y el ADR-0006.
+                  todo está en origin/staging (preview de Vercel, protegido con
+                  Vercel Authentication), junto con el manejador de errores
+                  único, el typecheck de tests, el plan v2, la guía de BD y el
+                  ADR-0006. Revisión local del 2026-10-13: 11 rutas a 1280 y
+                  375 px, 0 errores de consola.
 
 Runtime:          Node 22.22.0 local · npm 11.20.0 · engines 22.x
 
