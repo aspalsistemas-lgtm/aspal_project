@@ -338,7 +338,16 @@ npm run check          # tsc (client + server + shared + api) + check:assets
 npm run lint           # ESLint; lint:fix para corregir
 npm run format:check   # Prettier; format para escribir
 npm test               # Vitest, una pasada; test:watch en modo vigilancia
+npm run check:browser  # Chrome sin ventana: captura en capturas/ y lista errores de consola
 ```
+
+`check:browser` (`scripts/check-browser.mjs`) necesita el servidor levantado
+(`PORT=5001 npm run dev`). Recibe una URL y opciones: `npm run check:browser --
+http://localhost:5001/blog --ancho=375 --completa`. Usa el Chrome o el Edge
+instalados mediante `playwright-core` (devDependency): nunca descarga
+navegadores; `CHROME_PATH` fuerza otro ejecutable. Sale con 0 sin errores de
+consola, 1 con errores y 2 si no pudo ejecutarse. `capturas/` está ignorada por
+git.
 
 `npm run check` es la puerta de calidad antes de cualquier commit. Cubre
 `api/`: no siempre fue así, y por eso el código de producción pasó tiempo sin

@@ -217,6 +217,9 @@ npm run format:check
 npm test               # Vitest, una sola ejecución
 npm run build
 
+# Navegador real (servidor levantado): captura en capturas/ y errores de consola
+npm run check:browser -- http://localhost:5001/ --ancho=375
+
 # Archivo de prueba enfocado
 npm test -- shared/suscripcion/validacion.test.ts
 
