@@ -4,6 +4,8 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+# capturas de npm run check:browser
+capturas/
 # entorno local
 .env
 .env.local
