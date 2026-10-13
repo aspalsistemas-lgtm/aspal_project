@@ -268,15 +268,19 @@ sesión. **Commitear sí, push no**, salvo petición explícita.
 
 ```
 Fecha del bloque: 2026-10-13
-Rama:             staging (local). 163 commits por delante de origin/main y
-                  9 por delante de origin/staging (24b197f), sin push. La rama
-                  diseño-plataforma se fusionó en staging y se borró.
+Rama:             staging (local). 168 commits por delante de origin/main y
+                  14 por delante de origin/staging (24b197f), sin push. Solo
+                  existen main y staging: las ramas de trabajo se fusionan en
+                  staging y se borran.
 
 Deuda técnica:    Registro vivo en docs/sprints/deuda-tecnica.md. Consultarlo
                   antes de tocar shared/wordpress (contrato en inglés congelado),
                   el formato de respuesta de /api/* o la estructura de
                   client/src/components; al cerrar un punto, moverlo a
-                  "Resueltos" con su commit. Cerrados 1.2 y 1.3; siguiente: 2.1.
+                  "Resueltos" con su commit. Cerrados 1.2, 1.3 y 2.1; el 1.1 (rate
+                  limit en Vercel) espera acción manual; siguiente: 2.2.
+Método:           Toda funcionalidad nueva sigue SDD (ADR-0006): especificación
+                  con criterios de aceptación → contrato → tests → código.
 
 Cerrado y en prod: main = 2e9bd45 "Remove unused database layer". Producción
                   NO tiene todavía el rediseño institucional, la suscripción,
@@ -286,8 +290,9 @@ Cerrado y en prod: main = 2e9bd45 "Remove unused database layer". Producción
                     POST /api/suscripcion; prerender + 404 real; /componentes;
                     Node 22.x y .js en imports de api/.
                   - solo en staging local (sin subir): manejador de errores
-                    único (shared/errores.ts), test de extensiones .js, plan v2
-                    de la plataforma, guía de BD, documentación de contexto.
+                    único con ErrorDeAplicacion (shared/errores.ts), test de
+                    extensiones .js, plan v2 de la plataforma, guía de BD,
+                    ADR-0006 (SDD), documentación de contexto.
 
 Runtime:          Node 22.22.0 local · npm 11.20.0 · engines 22.x
 
