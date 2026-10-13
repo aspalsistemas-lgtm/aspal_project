@@ -266,26 +266,27 @@ sesión. **Commitear sí, push no**, salvo petición explícita.
 > Límite: ~40 líneas. Lo cerrado se mueve a `docs/sprints/`.
 
 ```
-Fecha del bloque: 2026-10-01
-Rama:             diseño-plataforma, sin upstream. 156 commits por delante de
-                  origin/main y 2 por delante de origin/staging.
+Fecha del bloque: 2026-10-13
+Rama:             staging (local). 163 commits por delante de origin/main y
+                  9 por delante de origin/staging (24b197f), sin push. La rama
+                  diseño-plataforma se fusionó en staging y se borró.
 
 Deuda técnica:    Registro vivo en docs/sprints/deuda-tecnica.md. Consultarlo
                   antes de tocar shared/wordpress (contrato en inglés congelado),
                   el formato de respuesta de /api/* o la estructura de
                   client/src/components; al cerrar un punto, moverlo a
-                  "Resueltos" con su commit.
+                  "Resueltos" con su commit. Cerrados 1.2 y 1.3; siguiente: 2.1.
 
 Cerrado y en prod: main = 2e9bd45 "Remove unused database layer". Producción
                   NO tiene todavía el rediseño institucional, la suscripción,
-                  el prerender ni el catálogo: todo eso está en staging
-                  (preview de Vercel) y en esta rama.
-                  - staging: rediseño de home, Nosotros, Qué hacemos, Equipo,
-                    Mapa de Ruta, Blog y Podcast; POST /api/suscripcion;
-                    prerender + 404 real; /componentes.
-                  - esta rama: Node fijado a 22.x y .js en imports de api/;
-                    plan de la Etapa 0 de la plataforma; guía de BD;
-                    documentación de contexto (esta reestructuración).
+                  el prerender ni el catálogo: todo eso está en staging.
+                  - origin/staging (preview de Vercel): rediseño de home,
+                    Nosotros, Qué hacemos, Equipo, Mapa de Ruta, Blog y Podcast;
+                    POST /api/suscripcion; prerender + 404 real; /componentes;
+                    Node 22.x y .js en imports de api/.
+                  - solo en staging local (sin subir): manejador de errores
+                    único (shared/errores.ts), test de extensiones .js, plan v2
+                    de la plataforma, guía de BD, documentación de contexto.
 
 Runtime:          Node 22.22.0 local · npm 11.20.0 · engines 22.x
 
@@ -293,9 +294,9 @@ Migraciones:      No aplica. El sitio no tiene BD. La plataforma aún no tiene
                   esquema ni código.
 
 En diseño:        Plataforma SaaS, Etapa 0 (plan v2: el gestor de contenido
-                  primero; D1, D3, D5 y D6 cerradas el 2026-10-13: monorepo,
-                  Fastify + Zod, Google sin Facebook, un login global). Pendiente:
-                  renderizado y publicación (D13) e inventario editorial.
+                  primero; D1, D3, D5 y D6 cerradas: monorepo, Fastify + Zod,
+                  Google sin Facebook, un login global). Pendiente: D13
+                  (renderizado y publicación) e inventario editorial.
 
 Archivos OK:      docs/, *.md de contexto (fase 2 de la alineación).
 Archivos NO:      Código, dependencias, .env*, vercel.json y estructura de
