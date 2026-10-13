@@ -229,7 +229,8 @@ Tipos válidos: `feat` `fix` `refactor` `test` `docs` `chore` `perf`
 
 Prohibido: tildes en la descripción · sin tipo ni scope · mensajes genéricos
 como «fix bug». Terminar siempre con la línea de coautoría que indique la
-sesión. **Commitear sí, push no**, salvo petición explícita.
+sesión. **Commitear sí, push no**, salvo petición explícita. Todo push sale
+desde la cuenta de GitHub **Antonio1491** (ver Anexo A, «Cuenta de GitHub»).
 
 ---
 
@@ -358,6 +359,20 @@ typecheckear. CI ejecuta además lint, formato, tests y build.
   `ERR_MODULE_NOT_FOUND`. tsc, Vite, tsx y esbuild resuelven `.js` → `.ts`.
 - **El puerto 5000 suele estar ocupado por otro proyecto de esta máquina.**
   Si ves `EADDRINUSE`, no mates el proceso: `PORT=5001 npm run dev`.
+- **Cuenta de GitHub.** Los push salen desde la cuenta **Antonio1491**. En esta
+  máquina `gh` tiene dos cuentas y la activa suele ser otra (`support-parksys`,
+  sin permiso de escritura: el push falla con 403). No se cambia la cuenta
+  activa de `gh`, porque afecta a los demás repos del equipo; se fija solo en
+  este clon, sin guardar ningún token:
+  ```bash
+  git config --local --add credential.https://github.com.helper ""
+  git config --local --add credential.https://github.com.helper \
+    '!f() { test "$1" = get && echo username=Antonio1491 && echo "password=$(gh auth token --user Antonio1491)"; }; f'
+  ```
+  Esa configuración vive en `.git/config` (no se versiona): hay que repetirla
+  en cada clon. Verificar con `GIT_TERMINAL_PROMPT=0 git push --dry-run origin staging`.
+  Si GitHub avisa de que el repositorio se movió, actualizar el remoto solo por
+  indicación explícita.
 
 ## Anexo B. Convenciones de trabajo del sitio
 
