@@ -1,7 +1,7 @@
 ---
 title: Migración de client/src/components a Atomic Design
 type: refactor
-status: approved
+status: done
 date: 2026-10-13
 origin: docs/sprints/deuda-tecnica.md (3.1, con 3.3 y 4.2) · design.md §1.2 · ADR-0006 (SDD)
 ---
@@ -178,4 +178,4 @@ movimiento masivo genera conflictos con cualquier otra rama que los toque.
 
 ## 8. Siguiente paso
 
-F0 hecha (2026-10-14): campo `nivel` en el catálogo, etiqueta en `/componentes` y listas de pendientes con test. F1 hecha (2026-10-14): 8 átomos en `components/atoms/`, HTML prerenderizado idéntico salvo las rutas de esos 8 en `/componentes`. F2 hecha (2026-10-14): 17 moléculas en `components/molecules/`; `BlogCard` → `TarjetaArticulo` y `ScrollToTop` → `BotonVolverArriba` (con `export function`). F3 hecha (2026-10-14): 12 organismos en `components/organisms/`; `Header` → `CabeceraSitio` y `Footer` → `PieSitio` (con `export function`); `content/`, `forms/` e `institucional/` retiradas. F4 hecha (2026-10-14): `templates/` (Banda, HeroInstitucional) e `infraestructura/` (CabeceraRuta, LimiteDeErrores, SaltarAlContenido, RestaurarDesplazamiento); `layout/` retirada; ningún nombre heredado en inglés fuera de `sections/`. Siguiente: F5 (cierre).
+F0 hecha (2026-10-14): campo `nivel` en el catálogo, etiqueta en `/componentes` y listas de pendientes con test. F1 hecha (2026-10-14): 8 átomos en `components/atoms/`, HTML prerenderizado idéntico salvo las rutas de esos 8 en `/componentes`. F2 hecha (2026-10-14): 17 moléculas en `components/molecules/`; `BlogCard` → `TarjetaArticulo` y `ScrollToTop` → `BotonVolverArriba` (con `export function`). F3 hecha (2026-10-14): 12 organismos en `components/organisms/`; `Header` → `CabeceraSitio` y `Footer` → `PieSitio` (con `export function`); `content/`, `forms/` e `institucional/` retiradas. F4 hecha (2026-10-14): `templates/` (Banda, HeroInstitucional) e `infraestructura/` (CabeceraRuta, LimiteDeErrores, SaltarAlContenido, RestaurarDesplazamiento); `layout/` retirada; ningún nombre heredado en inglés fuera de `sections/`. F5 hecha (2026-10-14): las 13 páginas con `export function` y `App.tsx` importando por nombre; `convenciones.test.ts` impide `export default` y la vuelta de los nombres retirados; guías finales. **Migración completada.** Comparado con el build de antes de la F0, el HTML prerenderizado de 12 de las 13 páginas es idéntico; `/componentes` solo gana las etiquetas de nivel y las rutas y nombres nuevos. Pendiente fuera de alcance: deuda 3.8 (`BlogPost`, `NotFound`).
