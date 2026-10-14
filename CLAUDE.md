@@ -271,46 +271,47 @@ desde la cuenta de GitHub **Antonio1491** (ver Anexo A, «Cuenta de GitHub»).
 
 ```
 Fecha del bloque: 2026-10-14
-Rama:             staging, sincronizada con origin/staging (push del 2026-10-14);
-                  ~206 commits por delante de origin/main. Solo existen main y
-                  staging: las ramas de trabajo se fusionan en staging y se borran.
-                  Los push salen con la cuenta Antonio1491 (Anexo A).
+Rama:             staging, por delante de origin/staging (sin push). Solo existen
+                  main y staging: las ramas de trabajo se fusionan en staging y se
+                  borran. Push solo a staging por ahora (nada a main hasta que el
+                  responsable lo diga); salen con la cuenta Antonio1491 (Anexo A).
 
-Deuda técnica:    Registro vivo en docs/sprints/deuda-tecnica.md; al cerrar un
-                  punto, a "Resueltos" con su commit. P2 y P4 casi completos;
-                  cerrados también 3.1/3.3 (Atomic Design) y 3.2/3.4. Quedan:
-                  1.4 (npm audit, en curso), 1.1 (rate limit en Vercel, manual),
-                  3.5-3.8 y 4.6.
+Cerrado y en prod: main = 2e9bd45 (versión antigua). Todo lo nuevo está en
+                  staging (preview de Vercel con Vercel Authentication): rediseño,
+                  suscripción, prerender, catálogo, Atomic Design, vite 7 y
+                  vitest 5, y las páginas /aviso-de-privacidad y /terminos (texto
+                  literal de WordPress, con pendientes legales del responsable).
+Antes de main:    el responsable confirma en Vercel MAILCHIMP_API_KEY y
+                  MAILCHIMP_AUDIENCE_ID en Production, Node 22.x, qué proyecto
+                  sirve el dominio, el rate limit (1.1) y el texto legal.
+
+Deuda técnica:    docs/sprints/deuda-tecnica.md. Abiertos: 1.1 (rate limit en
+                  Vercel, manual), 1.4 (tailwindcss 3 → 4, 8 avisos sin críticos;
+                  aplazada por el responsable), 3.6 y 3.7 (solo al tocar cada
+                  archivo).
 Método:           SDD (ADR-0006). Componentes por Atomic Design (design.md §1).
-                  Verificación: npm run test:coverage (también en CI) y
-                  npm run check:browser con el servidor local (Anexo A).
-
-Cerrado y en prod: main = 2e9bd45. Producción NO tiene todavía el rediseño
-                  institucional, la suscripción, el prerender ni el catálogo:
-                  todo está en origin/staging (preview de Vercel, protegido con
-                  Vercel Authentication), junto con Atomic Design, el manejador
-                  de errores único, la cobertura en CI, el plan v2 y el
-                  ADR-0006. Migración a Atomic Design: HTML prerenderizado de
-                  12 de 13 páginas idéntico al de antes; 0 errores de consola.
+                  Verificación: npm run test:coverage (umbral 85/89/85/84, también
+                  en CI) y npm run check:browser con el servidor local (Anexo A).
 
 Runtime:          Node 22.22.0 local · npm 11.20.0 · engines 22.x
 
 Migraciones:      No aplica. El sitio no tiene BD. La plataforma aún no tiene
                   esquema ni código.
 
-En diseño:        Plataforma SaaS, Etapa 0 (plan v2: el gestor de contenido
-                  primero; D1, D3, D5 y D6 cerradas: monorepo, Fastify + Zod,
-                  Google sin Facebook, un login global). Pendiente: D13
-                  (renderizado y publicación) e inventario editorial.
+En diseño:        Plataforma SaaS, Etapa 0 (plan 2026-10-01-001). Cerradas D1,
+                  D3, D5 y D6; D13 se decide más adelante. Inventario editorial
+                  hecho con la API y el WXR (§6: 15 entradas en Elementor, audio
+                  en Captivate). Siguiente: el monorepo (D1, §7), con propuesta
+                  antes de mover nada. Faltan del responsable: AWS, Stripe, DNS,
+                  miembros y pagos.
 
-Archivos OK:      Fase 3 de la alineación: código y docs, punto a punto, con
-                  propuesta aprobada antes de cada cambio.
 Archivos NO:      vercel.json, variables de Vercel y .env*; dependencias solo con
-                  autorización explícita del punto (la 1.4 la tiene).
+                  autorización explícita. El WXR de WordPress no se versiona.
 
-Nota DB local:    No aplica. En local todo funciona sin .env; sin claves de
-                  Mailchimp, /api/suscripcion responde 503 (esperado).
-                  El puerto 5000 suele estar ocupado: PORT=5001 npm run dev.
+Nota local:       Sin .env todo funciona; sin claves de Mailchimp,
+                  /api/suscripcion responde 503 (esperado). Los puertos 5000 y
+                  5001 los usa otro proyecto (parksys): usar PORT=5002 o
+                  siguientes y comprobar antes que el puerto está libre.
 ```
 
 ---

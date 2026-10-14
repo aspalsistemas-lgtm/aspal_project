@@ -414,11 +414,23 @@ Primera pasada, 2026-10-14, solo con la API pública
 | Medios                    | 245, **1,39 GB** declarados: 180 PNG, 27 MP4, 26 JPEG, 6 GIF, 4 PDF, 1 SVG, 1 WebP                                                                                                              |
 | Fuera de la Etapa 2       | MemberPress Courses (1 curso, 36 lecciones), eventos (`event_listing`, 0), myCred, Advanced Ads, MailPoet: siguen en WordPress (decisión del 13 de octubre)                                     |
 
-Queda para hacer **con acceso de administrador**: exportación completa (WXR)
-con el cuerpo de las 15 entradas, borradores y revisiones; dónde está el audio
-y si hay feed RSS del podcast en uso (Spotify, Apple…); cuáles de los 245
-medios usan esas 15 entradas (el resto se queda en WordPress); y las URL
-antiguas que necesitan redirección.
+Segunda pasada, 2026-10-14, con la exportación WXR de «Entradas» que entregó el
+responsable (WordPress 7.1.3, 864 KB). El archivo **no se versiona**: trae
+datos de autores. Se guarda fuera del repo y se vuelve a pedir si hace falta.
+
+| Qué               | Medido                                                                                                                                                                                                 |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Entradas          | Las mismas **15**, todas publicadas: **sin borradores** (el WXR no incluye revisiones). 13 de un autor y 1 de cada uno de otros dos                                                                    |
+| Cuerpo            | Completo, pero **maquetado con Elementor** en las 15 (`_elementor_data`): texto, títulos, imágenes, espaciadores, botones y bloques de entradas relacionadas. Hay que extraer el texto, no copiar HTML |
+| Audio del podcast | **En Captivate.fm**, no en WordPress: los 8 episodios incrustan `player.captivate.fm/episode/<id>`. No hay audio que migrar; queda confirmar que el feed de Spotify y Apple sale de Captivate          |
+| Imágenes          | 37 distintas, todas en `comunidad.…/wp-content/uploads/2024/`. **13 son de la plantilla** (banners, redes, botones de Apple y Spotify, firma) y se repiten en todas; **24 son propias** y se migran    |
+| Adjuntos          | 39 en el export: 26 PNG, 9 JPEG, 3 GIF, 1 PDF. Ningún audio ni vídeo: los 27 MP4 de la biblioteca no los usan las entradas                                                                             |
+| SEO y extras      | Imagen destacada en las 15; Yoast con metadescripción en 14; extracto en las 15. 0 comentarios (un pingback sin aprobar); sin etiquetas. Metadatos de PeepSo, myCred y Advanced Ads: no se migran      |
+| URL antiguas      | `comunidad.asociacionesprofesionales.org/<slug>/`: las 15 necesitan redirección cuando el contenido cambie de casa                                                                                     |
+
+Queda: confirmar el feed del podcast en Captivate y decidir si las 13 imágenes de
+plantilla (banners del boletín, del Mapa de Ruta y del estudio comparativo) se
+rehacen como bloques del gestor o se descartan.
 
 **Inventario de miembros (insumo pendiente, bloquea la Etapa 3):** dónde están
 hoy los miembros de ASPAL (y, cuando ANPR se incorpore, los de ANPR) en
@@ -493,25 +505,29 @@ Respondidas el 14 de octubre de 2026:
 - **Exportación de WordPress:** el responsable exporta desde wp-admin (WXR) y
   entrega el archivo e indica dónde está el audio del podcast. No se comparten
   credenciales.
-- **Aviso de privacidad:** se reutiliza la página `politica-privacidad` de
-  WordPress (existe, 2 045 palabras, actualizada 2024-11-19; cubre responsable,
-  finalidades y derechos ARCO). **No menciona el boletín ni Mailchimp, Google ni
-  Stripe**: antes de activar el acceso con Google o los cobros, y conviene que
-  ya para el boletín, hay que completarla (revisión legal a cargo del
-  responsable).
+- **Aviso de privacidad y términos:** el texto de la página `politica-privacidad`
+  de WordPress (actualizada 2024-11-19) se copió literal a páginas propias del
+  sitio: `/aviso-de-privacidad` (responsable, finalidades, derechos ARCO) y
+  `/terminos` (reglamento de la comunidad). **No menciona el boletín ni
+  Mailchimp, Google ni Stripe**, y trae un correo ARCO inválido, teléfonos
+  distintos de los del sitio y otro nombre de responsable (lista en
+  `client/src/content/institucional/documentos-legales.ts`). Antes de activar el
+  acceso con Google o los cobros, y conviene que ya para el boletín, hay que
+  completarlo (revisión legal a cargo del responsable).
 - **D13 (renderizado y publicación):** se decide más adelante; no bloquea la
   Etapa 1.
 
 Quedan:
 
-1. **Contenido editorial (sección 6):** pendiente de la exportación: dónde
-   está el audio, qué contenido se migra y qué dominios editoriales siguen en
-   uso.
+1. **Contenido editorial (sección 6):** exportación recibida y analizada (el
+   audio está en Captivate). Falta confirmar el feed del podcast y qué se hace
+   con las imágenes de plantilla.
 2. **Datos actuales (sección 6):** ¿dónde están hoy los miembros y pagos de
    ASPAL, y hay que conservar el historial de pagos? (Etapa 3.)
 3. **Renderizado y publicación (D13):** abierto (ver arriba).
-4. **Términos de uso:** ¿se redactan o también se reutilizan? Bloquean OAuth y
-   Stripe junto con el aviso.
+4. **Términos de uso:** se reutilizó el reglamento de la comunidad
+   (`/terminos`); no cubre la plataforma (cuentas, pagos, organizaciones). Hay
+   que ampliarlo antes de OAuth y Stripe, junto con el aviso.
 5. ~~Equipo~~ y ~~aviso de privacidad~~: respondidas arriba.
 6. **Cuentas:** AWS (¿existe?, ¿qué región?) y Stripe (¿cuenta mexicana con
    Connect?).
