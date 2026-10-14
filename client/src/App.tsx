@@ -19,9 +19,9 @@ import { NuestroEquipo } from "@/pages/nuestro-equipo";
 import { Unete } from "@/pages/unete";
 import { Eventos } from "@/pages/eventos";
 import { Blog } from "@/pages/blog";
-import { BlogPost } from "@/pages/blog-post";
+import { ArticuloBlog } from "@/pages/blog-post";
 import { Podcast } from "@/pages/podcast";
-import { NotFound } from "@/pages/not-found";
+import { PaginaNoEncontrada } from "@/pages/not-found";
 import { Componentes } from "@/pages/componentes";
 import {
   RUTAS_DINAMICAS,
@@ -49,7 +49,7 @@ const PAGINAS: Record<RutaEstatica, FunctionComponent> = {
 };
 
 const PAGINAS_DINAMICAS: Record<RutaDinamica, FunctionComponent> = {
-  "/blog/:slug": BlogPost,
+  "/blog/:slug": ArticuloBlog,
 };
 
 function Router() {
@@ -61,7 +61,7 @@ function Router() {
       {RUTAS_DINAMICAS.map((ruta) => (
         <Route key={ruta} path={ruta} component={PAGINAS_DINAMICAS[ruta]} />
       ))}
-      <Route component={NotFound} />
+      <Route component={PaginaNoEncontrada} />
     </Switch>
   );
 }

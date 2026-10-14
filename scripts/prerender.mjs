@@ -75,7 +75,7 @@ for (const ruta of RUTAS_ESTATICAS) {
   await escribir(archivo, componer(ruta, renderizar(ruta)));
 }
 
-// Cualquier ruta que no esté en rutas.ts renderiza NotFound.
+// Cualquier ruta que no esté en rutas.ts renderiza PaginaNoEncontrada.
 const cuerpo404 = renderizar("/404");
 const marcasPorRuta = [
   'data-testid="text-404-ruta"',
