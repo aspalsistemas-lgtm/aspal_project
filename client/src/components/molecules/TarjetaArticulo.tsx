@@ -3,7 +3,7 @@ import { MetaArticulo } from "@/components/molecules/MetaArticulo";
 import type { TransformedPost } from "@shared/wordpress/types";
 import { ArrowUpRight } from "lucide-react";
 
-interface BlogCardProps {
+interface PropsTarjetaArticulo {
   post: TransformedPost;
   /** Etiqueta de tipo sobre el título («Blog», «Podcast»), para mezclar
    *  artículos y episodios con la misma tarjeta. */
@@ -16,7 +16,7 @@ interface BlogCardProps {
  * extracto, autor y fecha. Al pasar el ratón, la imagen se acerca y el borde
  * se marca; sin elevar la tarjeta.
  */
-export default function BlogCard({ post, etiqueta }: BlogCardProps) {
+export function TarjetaArticulo({ post, etiqueta }: PropsTarjetaArticulo) {
   // NOTA: el plan pedía que la tarjeta navegara a `/blog/${post.slug}`. Está
   // aplazado a propósito: WordPress no sirve el cuerpo de ningún artículo a
   // una petición anónima (muro de MemberPress), así que la lectura interna

@@ -54,7 +54,7 @@ function irAlAncla(hash: string): () => void {
 /**
  * Restauración de scroll entre rutas.
  *
- * `ScrollToTop.tsx` es el botón flotante — el nombre estaba ocupado.
+ * `BotonVolverArriba.tsx` es el botón flotante.
  *
  * ## Por qué se indexa el historial y no se escucha `popstate`
  *

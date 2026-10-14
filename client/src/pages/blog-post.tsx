@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation, Link } from "wouter";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import BlogCard from "@/components/molecules/BlogCard";
+import { TarjetaArticulo } from "@/components/molecules/TarjetaArticulo";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Clock, Lock } from "lucide-react";
 import { formatPublishedDate } from "@/lib/date";
@@ -331,7 +331,7 @@ export default function BlogPost() {
                 <h2 className="text-2xl md:text-3xl font-bold mb-8">Sigue leyendo</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   {relatedPosts.map((related) => (
-                    <BlogCard key={related.id} post={related} />
+                    <TarjetaArticulo key={related.id} post={related} />
                   ))}
                 </div>
               </section>

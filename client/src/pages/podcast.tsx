@@ -1,4 +1,4 @@
-import BlogCard from "@/components/molecules/BlogCard";
+import { TarjetaArticulo } from "@/components/molecules/TarjetaArticulo";
 import { EpisodioFila } from "@/components/molecules/EpisodioFila";
 import { FranjaPodcast } from "@/components/content/FranjaPodcast";
 import { PortadaPodcast } from "@/components/molecules/PortadaPodcast";
@@ -221,7 +221,7 @@ export default function PodcastPage() {
             <ul className="mt-8 grid gap-6 md:grid-cols-3">
               {posts.map((post) => (
                 <li key={post.id}>
-                  <BlogCard post={post} />
+                  <TarjetaArticulo post={post} />
                 </li>
               ))}
             </ul>

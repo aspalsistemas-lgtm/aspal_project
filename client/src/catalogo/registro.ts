@@ -208,10 +208,11 @@ export const REGISTRO = [
     vista: "en-esta-pagina",
   },
   {
-    id: "scroll-to-top",
-    nombre: "ScrollToTop",
-    archivo: "client/src/components/molecules/ScrollToTop.tsx",
-    importar: 'import { ScrollToTop } from "@/components/molecules/ScrollToTop";',
+    id: "boton-volver-arriba",
+    nombre: "BotonVolverArriba",
+    archivo: "client/src/components/molecules/BotonVolverArriba.tsx",
+    importar:
+      'import { BotonVolverArriba } from "@/components/molecules/BotonVolverArriba";',
     categoria: "layout",
     nivel: "molecula",
     descripcion: "Botón flotante «volver arriba» que aparece tras 300 px de scroll.",
@@ -606,7 +607,7 @@ export const REGISTRO = [
     nivel: "molecula",
     descripcion:
       "El artículo destacado en grande y horizontal: imagen a la izquierda (arriba en móvil), «Artículo destacado», aviso de miembros, titular (h2), extracto, autor y fecha. Enlaza fuera.",
-    usarCuando: "El primer artículo de /blog, encima de la rejilla de BlogCard.",
+    usarCuando: "El primer artículo de /blog, encima de la rejilla de TarjetaArticulo.",
     evitarPara: "La home: su portada de revista es vertical y vive en ContenidoReciente.",
     props: "post: TransformedPost",
     estado: "en-uso",
@@ -621,7 +622,7 @@ export const REGISTRO = [
     nivel: "molecula",
     descripcion:
       "Autor y fecha de un artículo en una línea; si falta uno, sale el otro solo, y una fecha malformada no se pinta.",
-    usarCuando: "Pie de BlogCard y PortadaArticulo; cualquier lista de artículos.",
+    usarCuando: "Pie de TarjetaArticulo y PortadaArticulo; cualquier lista de artículos.",
     props: "post: TransformedPost; className?: string",
     estado: "en-uso",
     vista: "demo",
@@ -642,10 +643,10 @@ export const REGISTRO = [
     vista: "demo",
   },
   {
-    id: "blog-card",
-    nombre: "BlogCard",
-    archivo: "client/src/components/molecules/BlogCard.tsx",
-    importar: 'import BlogCard from "@/components/molecules/BlogCard";',
+    id: "tarjeta-articulo",
+    nombre: "TarjetaArticulo",
+    archivo: "client/src/components/molecules/TarjetaArticulo.tsx",
+    importar: 'import { TarjetaArticulo } from "@/components/molecules/TarjetaArticulo";',
     categoria: "contenido",
     nivel: "molecula",
     descripcion:

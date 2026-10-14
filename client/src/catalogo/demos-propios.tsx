@@ -1,5 +1,5 @@
 import { AvisoMiembros } from "@/components/atoms/AvisoMiembros";
-import BlogCard from "@/components/molecules/BlogCard";
+import { TarjetaArticulo } from "@/components/molecules/TarjetaArticulo";
 import { EpisodioFila } from "@/components/molecules/EpisodioFila";
 import { ContenidoReciente } from "@/components/content/ContenidoReciente";
 import { FranjaPodcast } from "@/components/content/FranjaPodcast";
@@ -480,7 +480,7 @@ export const DEMOS_PROPIOS: Record<IdDemoPropio, Demo> = {
     codigo: (v) =>
       `<IlustracionPilar pilar={PILARES.find((p) => p.id === ${JSON.stringify(texto(v.pilar))})!} />`,
   },
-  "blog-card": {
+  "tarjeta-articulo": {
     controles: [
       {
         tipo: "interruptor",
@@ -500,7 +500,7 @@ export const DEMOS_PROPIOS: Record<IdDemoPropio, Demo> = {
     nota: "Datos de ejemplo. En la app, el post llega de /api/posts.",
     render: (v) => (
       <div className="max-w-sm">
-        <BlogCard
+        <TarjetaArticulo
           post={{
             ...POST_EJEMPLO,
             featuredImage: v.imagen ? POST_EJEMPLO.featuredImage : "",
@@ -510,7 +510,7 @@ export const DEMOS_PROPIOS: Record<IdDemoPropio, Demo> = {
       </div>
     ),
     codigo: (v) =>
-      `<BlogCard post={post}${v.tipo === "—" ? "" : ` ${atributo("etiqueta", v.tipo)}`} />`,
+      `<TarjetaArticulo post={post}${v.tipo === "—" ? "" : ` ${atributo("etiqueta", v.tipo)}`} />`,
   },
   "episodio-fila": {
     controles: [

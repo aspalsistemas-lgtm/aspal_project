@@ -7,7 +7,7 @@ import { ArrowUpRight } from "lucide-react";
 /**
  * El artículo destacado de /blog, en grande: imagen a la izquierda (arriba en
  * móvil) y titular, extracto, autor y fecha a la derecha. Enlaza fuera, como
- * BlogCard (muro de MemberPress). Nombre accesible corto, sin el extracto.
+ * TarjetaArticulo (muro de MemberPress). Nombre accesible corto, sin el extracto.
  */
 export function PortadaArticulo({ post }: { post: TransformedPost }) {
   return (

@@ -23,8 +23,8 @@ carpeta → categoría (`CATEGORIAS_POR_CARPETA`) y exige una entrada en
 components/
 ├── atoms/          ← átomos ya migrados (§1.2): PatronPanal, FotoHero, Hashtag, RetratoHex,
 │                      IlustracionPilar, Proximamente, AvisoMiembros, AvisoPestanaNueva
-├── molecules/      ← moléculas ya migradas (§1.2): PilarCard, PerfilCard, BlogCard,
-│                      EpisodioFila, MetaArticulo, CifraAnimada, VerMas, ScrollToTop…
+├── molecules/      ← moléculas ya migradas (§1.2): PilarCard, PerfilCard, TarjetaArticulo,
+│                      EpisodioFila, MetaArticulo, CifraAnimada, VerMas, BotonVolverArriba…
 ├── layout/         ← estructura de página e infraestructura: Banda, HeroInstitucional,
 │                      Header, Footer, ErrorBoundary…
 ├── institucional/  ← piezas de Nosotros, Qué hacemos, Equipo y Mapa de Ruta:
@@ -55,7 +55,7 @@ Reglas vigentes:
 Decisión de octubre de 2026: migrar a la metodología Atomic Design de Brad
 Frost. Es un punto de la deuda técnica (P3), **en curso** según
 `docs/plans/2026-10-13-001-refactor-atomic-design-plan.md`: F0 (campo `nivel`
-en el catálogo) y F1 (átomos) hechas. Cada entrada del catálogo declara su
+en el catálogo), F1 (átomos) y F2 (moléculas) hechas. Cada entrada del catálogo declara su
 nivel y el test exige que coincida con su carpeta. **Lo nuevo va ya a la
 carpeta de su nivel**; `ui/` (shadcn) y `sections/` (legado) no se mueven.
 
@@ -68,8 +68,10 @@ tipadas, siempre `className` opcional. Migrados: `PatronPanal`, `FotoHero`,
 `AvisoPestanaNueva`; las primitivas de `ui/` cuentan como átomos.
 
 **Moléculas (`molecules/`):** dos o más átomos con un propósito único. Estado
-local simple (abierto/cerrado, hover). Sin API. Candidatos: `PilarCard`,
-`PerfilCard`, `BlogCard`, `EpisodioFila`, `MetaArticulo`, `CifraAnimada`.
+local simple (abierto/cerrado, hover). Sin API. Migradas las 17 del catálogo,
+entre ellas `PilarCard`, `PerfilCard`, `TarjetaArticulo` (antes `BlogCard`),
+`EpisodioFila`, `MetaArticulo`, `CifraAnimada`, `VerMas` y `BotonVolverArriba`
+(antes `ScrollToTop`).
 
 **Organismos (`organisms/`):** sección completa y autónoma. Puede tener su
 propia query y estado complejo. Candidatos: `Header`, `Footer`,
@@ -193,8 +195,8 @@ Reglas:
   `client/src/lib/contraste.ts`; `tokens.test.ts` exige AA (4.5:1) contra los
   valores reales de `index.css`.
 - Sobre fondos sólidos (noche, pizarra) el texto es blanco fijo (`text-white`).
-- Hex directos: prohibidos en componentes. Hoy queda uno
-  (`ScrollToTop.tsx`, `bg-[#243240]`), registrado en la deuda.
+- Hex directos: prohibidos en componentes; `sin-hex-directo.test.ts` lo
+  impide (el último, en el botón de volver arriba, se retiró en la deuda 4.1).
 - Las clases de color crudas de Tailwind (`bg-gray-900`, `text-blue-500`) no
   se usan. `--chart-*` y `--sidebar-*` existen por shadcn y no tienen uso.
 

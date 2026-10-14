@@ -1,4 +1,4 @@
-import BlogCard from "@/components/molecules/BlogCard";
+import { TarjetaArticulo } from "@/components/molecules/TarjetaArticulo";
 import { FranjaPodcast } from "@/components/content/FranjaPodcast";
 import { VerMas } from "@/components/molecules/VerMas";
 import { PortadaArticulo } from "@/components/molecules/PortadaArticulo";
@@ -73,7 +73,7 @@ function Esqueleto() {
  * Blog (pilar Conocimiento), con el lenguaje de la home: el artículo más
  * reciente como portada, el resto en rejilla, el último episodio del podcast y
  * el cierre con el compromiso del pilar. Los artículos se abren en la
- * comunidad (el cuerpo está tras el muro de MemberPress; ver BlogCard).
+ * comunidad (el cuerpo está tras el muro de MemberPress; ver TarjetaArticulo).
  *
  * En el HTML prerenderizado salen el hero y el cierre: las consultas no corren
  * en el servidor, y un esqueleto ahí sería un «Cargando…» que nunca termina.
@@ -162,7 +162,7 @@ export default function Blog() {
                   <ul className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {resto.map((post) => (
                       <li key={post.id}>
-                        <BlogCard post={post} />
+                        <TarjetaArticulo post={post} />
                       </li>
                     ))}
                   </ul>

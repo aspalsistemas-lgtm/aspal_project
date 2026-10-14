@@ -44,7 +44,7 @@ function FlechaExterna() {
 
 /**
  * El artículo más reciente como portada: imagen 16:9, titular grande y
- * extracto. Nombre accesible corto (sin el extracto), como en BlogCard.
+ * extracto. Nombre accesible corto (sin el extracto), como en TarjetaArticulo.
  */
 function ArticuloPortada({ post }: { post: TransformedPost }) {
   return (

@@ -22,7 +22,7 @@ client/
     ├── pages/             ← una página por ruta; kebab-case español
     ├── components/
     │   ├── atoms/         ← átomos de Atomic Design (migración en curso, design.md §1.2)
-    │   ├── molecules/     ← moléculas: tarjetas, índices, cifras, VerMas, ScrollToTop…
+    │   ├── molecules/     ← moléculas: tarjetas, índices, cifras, VerMas, BotonVolverArriba…
     │   ├── layout/        ← Banda, HeroInstitucional, Header, Footer,
     │   │                     ErrorBoundary, ScrollRestoration, CabeceraRuta…
     │   ├── institucional/ ← secciones de pilares y mapa de ruta, aliados, voces
@@ -44,9 +44,10 @@ entorno `node`: no hay tests de componentes.
 
 ## 2. Componentes
 
-Organización por rol (ver `design.md` §1.1) con catálogo obligatorio en
-`catalogo/registro.ts`. La migración a Atomic Design es un objetivo registrado
-en la deuda (P3), no la práctica actual.
+Catálogo obligatorio en `catalogo/registro.ts`. La migración a Atomic Design
+está en curso (`design.md` §1.2): átomos y moléculas ya viven en `atoms/` y
+`molecules/`; el resto sigue en sus carpetas por rol hasta su fase. Lo nuevo va
+ya a la carpeta de su nivel y declara su `nivel` en el catálogo.
 
 Nomenclatura: PascalCase español descriptivo.
 
@@ -55,8 +56,8 @@ Nomenclatura: PascalCase español descriptivo.
 ❌  Card (genérico) · PilarCard2 (sufijo numérico) · pilarCard (camelCase)
 ```
 
-Los trece nombres en inglés que quedan (`Header`, `Footer`, `BlogCard`,
-`ErrorBoundary`, `ScrollToTop`, `ScrollRestoration` y `sections/*`) son
+Los once nombres en inglés que quedan (`Header`, `Footer`, `ErrorBoundary`,
+`ScrollRestoration` y `sections/*`) son
 heredados; no crear más.
 
 Antes de crear uno:

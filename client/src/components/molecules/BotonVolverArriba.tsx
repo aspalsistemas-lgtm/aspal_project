@@ -9,7 +9,7 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 }
 
-export function ScrollToTop() {
+export function BotonVolverArriba() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
