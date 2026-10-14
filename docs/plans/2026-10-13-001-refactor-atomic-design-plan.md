@@ -178,4 +178,4 @@ movimiento masivo genera conflictos con cualquier otra rama que los toque.
 
 ## 8. Siguiente paso
 
-F0 hecha (2026-10-14): campo `nivel` en el catálogo, etiqueta en `/componentes` y listas de pendientes con test. Siguiente: F1 (átomos).
+F0 hecha (2026-10-14): campo `nivel` en el catálogo, etiqueta en `/componentes` y listas de pendientes con test. F1 hecha (2026-10-14): 8 átomos en `components/atoms/`, HTML prerenderizado idéntico salvo las rutas de esos 8 en `/componentes`. Siguiente: F2 (moléculas).
