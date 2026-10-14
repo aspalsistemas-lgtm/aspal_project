@@ -7,6 +7,7 @@ import {
   NOMBRE_MARCA,
   REDES,
   TITULO_SITIO,
+  URL_AVISO_PRIVACIDAD,
   URL_SITIO,
 } from "./marca";
 
@@ -20,6 +21,14 @@ describe("marca", () => {
     // El apex responde 307 hacia www: canonical y sitemap deben apuntar al
     // destino final, no a una redirección.
     expect(URL_SITIO).toBe("https://www.asociacionesprofesionales.org");
+  });
+
+  it("el aviso de privacidad es la página de WordPress, por https", () => {
+    // Decisión del 2026-10-14: se reutiliza la política existente de la
+    // comunidad en vez de redactar otra (plan de la Etapa 0, §9).
+    expect(URL_AVISO_PRIVACIDAD).toBe(
+      "https://comunidad.asociacionesprofesionales.org/politica-privacidad/",
+    );
   });
 
   it("el título de index.html es igual a TITULO_SITIO", () => {

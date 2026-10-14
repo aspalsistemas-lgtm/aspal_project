@@ -20,6 +20,14 @@ export const TITULO_SITIO = `${NOMBRE_CORTO} · ${NOMBRE_COMPLETO}`;
  */
 export const URL_SITIO = "https://www.asociacionesprofesionales.org";
 
+/**
+ * Aviso de privacidad: se reutiliza la política de la comunidad en WordPress
+ * (decisión del 2026-10-14, plan de la Etapa 0 §9). PENDIENTE del responsable:
+ * no menciona el boletín ni Mailchimp, Google ni Stripe; hay que completarla.
+ */
+export const URL_AVISO_PRIVACIDAD =
+  "https://comunidad.asociacionesprofesionales.org/politica-privacidad/";
+
 export const CONTACTO = {
   correo: "vinculacion@asociacionesprofesionales.org",
   telefono: "+52 999 163 4080",

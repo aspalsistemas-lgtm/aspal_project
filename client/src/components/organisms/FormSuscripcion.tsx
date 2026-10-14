@@ -1,7 +1,8 @@
+import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { registrarEvento } from "@/lib/analitica";
-import { CONTACTO } from "@/lib/marca";
+import { CONTACTO, URL_AVISO_PRIVACIDAD } from "@/lib/marca";
 import { enviarSuscripcion } from "@/lib/suscripcion";
 import { cn } from "@/lib/utils";
 import {
@@ -290,13 +291,33 @@ export function FormSuscripcion({ origen, variante, tono = "claro" }: Props) {
             }
             data-testid={`checkbox-suscripcion-consentimiento-${origen}`}
           />
-          {/* PENDIENTE (Etapa 0): enlazar el aviso de privacidad cuando exista
-              /aviso-privacidad. Texto a revisar por la Coordinación. */}
+          {/* Texto a revisar por la Coordinación. */}
           <span>
             Acepto que ASPAL use mis datos para enviarme su boletín. Puedo darme de baja
             en cualquier momento desde el propio correo.
           </span>
         </label>
+        {/* Fuera del <label>: pulsar el enlace no debe marcar la casilla. pl-8
+            alinea con el texto de la casilla (20 px + 12 px de separación). */}
+        <p
+          className={cn("pl-8 text-sm", oscuro ? "text-white" : "text-muted-foreground")}
+        >
+          <a
+            href={URL_AVISO_PRIVACIDAD}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(
+              "rounded-sm underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+              oscuro
+                ? "focus-visible:ring-secondary focus-visible:ring-offset-noche"
+                : "focus-visible:ring-ring",
+            )}
+            data-testid={`link-suscripcion-privacidad-${origen}`}
+          >
+            Consulta el aviso de privacidad
+            <AvisoPestanaNueva />
+          </a>
+        </p>
         {error("consentimiento")}
       </div>
 
