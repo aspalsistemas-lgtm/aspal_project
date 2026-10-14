@@ -423,10 +423,13 @@ componente o una vista:
    helper.
 2. Estilos que se repiten: `client/src/lib/clases.ts`. No copies cadenas de
    clases (un test lo impide para las que ya están ahí).
-3. Si hace falta uno nuevo: créalo en la carpeta de su categoría, regístralo
-   (`registro.test.ts` falla si no) y, si su `vista` es `"demo"`, añade su demo
-   en `client/src/catalogo/demos-*.tsx`. Una carpeta nueva en `components/`
-   exige añadirla a `CATEGORIAS_POR_CARPETA` del test. Solo `.tsx`.
+3. Si hace falta uno nuevo: créalo en la carpeta de su nivel de Atomic Design
+   (`atoms/`, `molecules/`, `organisms/`, `templates/`, `infraestructura/`;
+   reglas en `design.md` §1.2), regístralo con su `nivel` (`registro.test.ts`
+   falla si no coincide con la carpeta) y, si su `vista` es `"demo"`, añade su
+   demo en `client/src/catalogo/demos-*.tsx`. `export function` nombrada, nunca
+   `export default`. Una carpeta nueva exige añadirla a `NIVEL_POR_CARPETA` y
+   `CATEGORIAS_POR_CARPETA` del test. Solo `.tsx`.
 4. Un componente que deja de usarse se borra: el mismo test lo detecta.
 
 ### Cómo se construye una funcionalidad (SDD)

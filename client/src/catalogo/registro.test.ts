@@ -56,27 +56,21 @@ function importadores(archivo: string): string[] {
 /** Dominios que pueden vivir en cualquier carpeta de nivel atómico. */
 const DOMINIOS: Categoria[] = ["layout", "institucional", "contenido", "formularios"];
 
+/**
+ * Atomic Design (design.md §1.2): la carpeta da el nivel y la categoría sigue
+ * siendo el dominio con el que se navega /componentes (DA-3).
+ */
 const CATEGORIAS_POR_CARPETA: Record<string, Categoria[]> = {
-  layout: ["layout", "infraestructura"],
-  institucional: ["institucional"],
-  content: ["contenido"],
-  forms: ["formularios"],
-  ui: ["ui"],
-  sections: ["legado"],
-  // Atomic Design (docs/plans/2026-10-13-001-refactor-atomic-design-plan.md):
-  // la carpeta da el nivel y la categoría sigue siendo el dominio (DA-3).
   atoms: DOMINIOS,
   molecules: DOMINIOS,
   organisms: DOMINIOS,
   templates: DOMINIOS,
   infraestructura: ["infraestructura"],
+  ui: ["ui"],
+  sections: ["legado"],
 };
 
-/**
- * Carpetas que fijan el nivel. Las de dominio (layout, institucional, content,
- * forms) no aparecen: mientras dura la migración, sus componentes declaran el
- * nivel al que irán.
- */
+/** Nivel que fija cada carpeta. `ui/` (shadcn) cuenta como átomos (DA-1). */
 const NIVEL_POR_CARPETA: Record<string, Nivel[]> = {
   atoms: ["atomo"],
   molecules: ["molecula"],
@@ -152,15 +146,14 @@ describe("registro del catálogo", () => {
     }
   });
 
-  it("CA-2: en las carpetas que fijan el nivel, el nivel coincide con la carpeta", () => {
+  it("CA-2: el nivel de cada componente coincide con su carpeta", () => {
     for (const e of REGISTRO) {
       const carpeta = basename(dirname(e.archivo));
-      if (carpeta in NIVEL_POR_CARPETA) {
-        expect(NIVEL_POR_CARPETA[carpeta], e.archivo).toContain(e.nivel);
-      } else {
-        // «legado» solo existe en sections/ (DA-2).
-        expect(e.nivel, e.archivo).not.toBe("legado");
-      }
+      expect(
+        NIVEL_POR_CARPETA,
+        "carpeta nueva: añádela a NIVEL_POR_CARPETA y a CATEGORIAS_POR_CARPETA",
+      ).toHaveProperty(carpeta);
+      expect(NIVEL_POR_CARPETA[carpeta], e.archivo).toContain(e.nivel);
     }
   });
 

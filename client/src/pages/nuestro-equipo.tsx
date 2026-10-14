@@ -49,7 +49,7 @@ function Flecha({ className }: { className?: string }) {
  * hexágono del isotipo, la Dirección General destacada y, después, quién más
  * respalda la operación (Consejo Directivo y aliados, con el copy de Nosotros).
  */
-export default function NuestroEquipo() {
+export function NuestroEquipo() {
   const [director, ...resto] = PERFILES;
 
   return (

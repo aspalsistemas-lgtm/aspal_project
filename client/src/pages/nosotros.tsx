@@ -108,7 +108,7 @@ function Insignia({ icono: Icono, miel = false }: { icono: LucideIcon; miel?: bo
  * Nosotros (§6.2): los 10 bloques del Concepto NOSOTROS, en su orden, con el
  * lenguaje visual de la home (panal, números en contorno, entradas al ver).
  */
-export default function Nosotros() {
+export function Nosotros() {
   const clasesEnlace =
     "group inline-flex min-h-11 items-center gap-1.5 font-medium text-primary underline underline-offset-4";
 

@@ -11,7 +11,7 @@ import { H2_BANDA } from "@/lib/clases";
  * quien programa o diseña: ver lo que existe, probar variantes y copiar el
  * código. La fuente es client/src/catalogo/registro.ts.
  */
-export default function Componentes() {
+export function Componentes() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <CabeceraSitio />

@@ -10,19 +10,19 @@ import { SaltarAlContenido } from "@/components/infraestructura/SaltarAlContenid
 import { CabeceraRuta } from "@/components/infraestructura/CabeceraRuta";
 import { RestaurarDesplazamiento } from "@/components/infraestructura/RestaurarDesplazamiento";
 import { LimiteDeErrores } from "@/components/infraestructura/LimiteDeErrores";
-import Inicio from "@/pages/inicio";
-import Plataforma from "@/pages/plataforma";
-import Nosotros from "@/pages/nosotros";
-import MapaDeRuta from "@/pages/mapa-de-ruta";
-import QueHacemos from "@/pages/que-hacemos";
-import NuestroEquipo from "@/pages/nuestro-equipo";
-import Unete from "@/pages/unete";
-import Eventos from "@/pages/eventos";
-import Blog from "@/pages/blog";
-import BlogPost from "@/pages/blog-post";
-import Podcast from "@/pages/podcast";
-import NotFound from "@/pages/not-found";
-import Componentes from "@/pages/componentes";
+import { Inicio } from "@/pages/inicio";
+import { Plataforma } from "@/pages/plataforma";
+import { Nosotros } from "@/pages/nosotros";
+import { MapaDeRuta } from "@/pages/mapa-de-ruta";
+import { QueHacemos } from "@/pages/que-hacemos";
+import { NuestroEquipo } from "@/pages/nuestro-equipo";
+import { Unete } from "@/pages/unete";
+import { Eventos } from "@/pages/eventos";
+import { Blog } from "@/pages/blog";
+import { BlogPost } from "@/pages/blog-post";
+import { Podcast } from "@/pages/podcast";
+import { NotFound } from "@/pages/not-found";
+import { Componentes } from "@/pages/componentes";
 import {
   RUTAS_DINAMICAS,
   RUTAS_ESTATICAS,

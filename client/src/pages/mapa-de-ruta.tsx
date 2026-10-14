@@ -32,7 +32,7 @@ function Flecha() {
  * fija sigue el avance por las etapas, y cada una traza su camino de pasos.
  * Los foros por etapa llegan en la Etapa 2 del plan.
  */
-export default function MapaDeRuta() {
+export function MapaDeRuta() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <CabeceraSitio />

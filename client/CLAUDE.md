@@ -21,7 +21,7 @@ client/
     ├── index.css          ← tokens HSL, @font-face, reduced-motion, utilidades elevate
     ├── pages/             ← una página por ruta; kebab-case español
     ├── components/
-    │   ├── atoms/         ← átomos de Atomic Design (migración en curso, design.md §1.2)
+    │   ├── atoms/         ← átomos de Atomic Design (design.md §1)
     │   ├── molecules/     ← moléculas: tarjetas, índices, cifras, VerMas, BotonVolverArriba…
     │   ├── organisms/     ← organismos: CabeceraSitio, PieSitio, FormSuscripcion, secciones…
     │   ├── templates/     ← plantillas: Banda, HeroInstitucional
@@ -42,9 +42,9 @@ entorno `node`: no hay tests de componentes.
 
 ## 2. Componentes
 
-Catálogo obligatorio en `catalogo/registro.ts`. La migración a Atomic Design
-está en curso (`design.md` §1.2): todos los componentes viven ya en la carpeta de
-su nivel (`atoms/`, `molecules/`, `organisms/`, `templates/`,
+Catálogo obligatorio en `catalogo/registro.ts`. Organización por Atomic Design
+(`design.md` §1, migración completada el 2026-10-14): cada componente vive en la
+carpeta de su nivel (`atoms/`, `molecules/`, `organisms/`, `templates/`,
 `infraestructura/`). Lo nuevo va a la carpeta de su nivel y declara su `nivel`
 en el catálogo.
 

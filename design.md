@@ -12,36 +12,44 @@ actual, se dice explícitamente y el trabajo está en
 
 ## 1. Organización de Componentes
 
-### 1.1 Hoy: carpetas por rol, con catálogo
+### 1.1 Atomic Design, con catálogo
 
-`client/src/components/` se organiza por el papel del componente en el sitio.
-El test `client/src/catalogo/registro.test.ts` fija la correspondencia
-carpeta → categoría (`CATEGORIAS_POR_CARPETA`) y exige una entrada en
-`registro.ts` por cada archivo:
+`client/src/components/` sigue la metodología Atomic Design de Brad Frost
+(decisión de octubre de 2026; migración completada el 2026-10-14, ver
+`docs/plans/2026-10-13-001-refactor-atomic-design-plan.md`). La carpeta es el
+nivel; la categoría del catálogo es el dominio con el que se navega
+`/componentes`. El test `client/src/catalogo/registro.test.ts` exige una
+entrada en `registro.ts` por cada archivo y que su `nivel` coincida con su
+carpeta (`NIVEL_POR_CARPETA`):
 
 ```
 components/
-├── atoms/          ← átomos ya migrados (§1.2): PatronPanal, FotoHero, Hashtag, RetratoHex,
-│                      IlustracionPilar, Proximamente, AvisoMiembros, AvisoPestanaNueva
-├── molecules/      ← moléculas ya migradas (§1.2): PilarCard, PerfilCard, TarjetaArticulo,
-│                      EpisodioFila, MetaArticulo, CifraAnimada, VerMas, BotonVolverArriba…
-├── organisms/      ← organismos ya migrados (§1.2): CabeceraSitio, PieSitio, FormSuscripcion,
-│                      ContenidoReciente, FranjaPodcast, SeccionPilar, RutaTimeline…
-├── templates/      ← plantillas: Banda, HeroInstitucional
-├── infraestructura/ ← sin aspecto propio: CabeceraRuta, LimiteDeErrores, SaltarAlContenido,
-│                      RestaurarDesplazamiento
-├── ui/             ← primitivas shadcn/ui en uso (button, card, collapsible, input,
-│                      navigation-menu, toast, toaster, tooltip)
-└── sections/       ← legado de /plataforma: HeroSection, FeaturesGrid… No reutilizar.
+├── atoms/           ← PatronPanal, FotoHero, Hashtag, RetratoHex, IlustracionPilar,
+│                       Proximamente, AvisoMiembros, AvisoPestanaNueva
+├── molecules/       ← PilarCard, PerfilCard, TarjetaArticulo, EpisodioFila, MetaArticulo,
+│                       CifraAnimada, VerMas, BotonVolverArriba… (17)
+├── organisms/       ← CabeceraSitio, PieSitio, FormSuscripcion, ContenidoReciente,
+│                       FranjaPodcast, SeccionPilar, RutaTimeline… (12)
+├── templates/       ← Banda, HeroInstitucional
+├── infraestructura/ ← sin aspecto propio: CabeceraRuta, LimiteDeErrores,
+│                       SaltarAlContenido, RestaurarDesplazamiento
+├── ui/              ← primitivas shadcn/ui en uso (button, card, collapsible, input,
+│                       navigation-menu, toast, toaster, tooltip). Cuentan como átomos;
+│                       no se mueven porque el CLI de shadcn escribe ahí.
+└── sections/        ← legado de /plataforma: HeroSection, FeaturesGrid… No reutilizar.
+                        Se borran o reescriben cuando se rehaga /plataforma.
 ```
 
 Reglas vigentes:
 
 - Antes de crear un componente, buscar en `registro.ts` (`usarCuando`,
   `evitarPara`) uno que ya lo resuelva. Si le falta una variante, añadirla.
-- Un componente nuevo se registra y, si su `vista` es `"demo"`, lleva demo en
+- Un componente nuevo va a la carpeta de su nivel (§1.2), se registra con su
+  `nivel` y su `categoria` y, si su `vista` es `"demo"`, lleva demo en
   `catalogo/demos-*.tsx`. Una carpeta nueva exige añadirla a
-  `CATEGORIAS_POR_CARPETA` y al tipo `Categoria`.
+  `NIVEL_POR_CARPETA` y `CATEGORIAS_POR_CARPETA` del test.
+- Nombres en español y `export function` nombrada: `convenciones.test.ts`
+  impide `export default` y la vuelta de los nombres heredados en inglés.
 - Un componente que nadie importa se borra; el test lo detecta.
 - Las páginas (`client/src/pages/`) son la única capa que lee la URL, lanza
   consultas y compone `CabeceraSitio`, `main#contenido` y `PieSitio`.
@@ -49,43 +57,34 @@ Reglas vigentes:
   No hay barrels (`index.ts`) y el detector de uso del catálogo depende de esa
   forma de importar.
 
-### 1.2 Objetivo: Atomic Design
-
-Decisión de octubre de 2026: migrar a la metodología Atomic Design de Brad
-Frost. Es un punto de la deuda técnica (P3), **en curso** según
-`docs/plans/2026-10-13-001-refactor-atomic-design-plan.md`: F0 (campo `nivel`
-en el catálogo), F1 (átomos), F2 (moléculas), F3 (organismos) y F4 (plantillas e infraestructura) hechas. Cada entrada del catálogo declara su
-nivel y el test exige que coincida con su carpeta. **Lo nuevo va ya a la
-carpeta de su nivel**; `ui/` (shadcn) y `sections/` (legado) no se mueven.
-
-Reglas de cada nivel:
+### 1.2 Reglas de cada nivel
 
 **Átomos (`atoms/`):** la unidad más pequeña. Sin sub-componentes propios, sin
 llamadas a API ni queries, sin estado local complejo. Props estrictamente
-tipadas, siempre `className` opcional. Migrados: `PatronPanal`, `FotoHero`,
-`Hashtag`, `RetratoHex`, `IlustracionPilar`, `Proximamente`, `AvisoMiembros` y
-`AvisoPestanaNueva`; las primitivas de `ui/` cuentan como átomos.
+tipadas, siempre `className` opcional. Las primitivas de `ui/` cuentan como
+átomos.
 
-**Moléculas (`molecules/`):** dos o más átomos con un propósito único. Estado
-local simple (abierto/cerrado, hover). Sin API. Migradas las 17 del catálogo,
-entre ellas `PilarCard`, `PerfilCard`, `TarjetaArticulo` (antes `BlogCard`),
-`EpisodioFila`, `MetaArticulo`, `CifraAnimada`, `VerMas` y `BotonVolverArriba`
-(antes `ScrollToTop`).
+**Moléculas (`molecules/`):** combinan otros componentes con un propósito
+único. Estado local simple (abierto/cerrado, hover). Sin API ni datos propios:
+lo reciben por props (`RacimoEquipo` recibe los perfiles).
 
 **Organismos (`organisms/`):** sección completa y autónoma. Puede tener su
-propia query y estado complejo. Migrados los 12 del catálogo, entre ellos
-`CabeceraSitio` (antes `Header`), `PieSitio` (antes `Footer`),
-`ContenidoReciente`, `FormSuscripcion`, `MuroAliados`, `RutaTimeline`,
-`SeccionPilar` y `SeccionEtapa`.
+propia query, leer sus propios datos (`PanalPilares` lee `PILARES`) y tener
+estado complejo (`CabeceraSitio` y su menú móvil).
 
 **Plantillas (`templates/`):** layout sin datos reales; recibe children o
-slots. Candidatos: `Banda`, `HeroInstitucional`, `CabeceraRuta`.
+slots (`Banda`, `HeroInstitucional`).
 
-**Páginas (`pages/`):** ya existen con ese papel.
+**Infraestructura (`infraestructura/`):** no pinta nada propio o casi nada:
+título de la pestaña, límite de errores, enlace de salto, restauración del
+scroll.
 
-Checklist para decidir nivel: ¿pieza mínima sin sub-componentes? → atom ·
-¿combina atoms con un fin? → molecule · ¿sección autónoma con estado o datos?
-→ organism · ¿layout sin datos? → template · ¿datos de URL o queries? → page.
+**Páginas (`pages/`):** leen la URL, lanzan consultas y componen el resto.
+
+Checklist para decidir nivel: ¿pieza mínima sin sub-componentes? → átomo ·
+¿combina componentes con un fin, sin datos propios? → molécula · ¿sección
+autónoma con estado o datos? → organismo · ¿layout sin datos? → plantilla ·
+¿no pinta nada propio? → infraestructura · ¿datos de URL o queries? → página.
 Si dudas entre dos niveles, elige el más simple.
 
 ---
@@ -95,14 +94,15 @@ Si dudas entre dos niveles, elige el más simple.
 ### 2.1 Declaración
 
 ```
-✅ export function NombreComponente(props: PropsNombreComponente)   ← 42 archivos hoy
-🟡 export default function Pagina()                                  ← las 13 páginas y 9
-                                                                        componentes heredados
+✅ export function NombreComponente(props: PropsNombreComponente)   ← componentes y páginas
+❌ export default function Pagina()                                  ← lo impide un test
 ❌ const NombreComponente = (props) =>
 ```
 
-Lo nuevo va con `export function` nombrada. Las páginas conservan `export
-default` porque `App.tsx` las importa así; unificarlo está en la deuda (P4).
+Todo componente y toda página usan `export function` nombrada, y `App.tsx`
+importa las páginas por su nombre (`import { Inicio } from "@/pages/inicio"`).
+`convenciones.test.ts` falla si aparece un `export default` (deuda 4.2,
+resuelta). Quedan fuera `ui/` (generado por shadcn) y `sections/` (legado).
 
 ### 2.2 Anatomía
 

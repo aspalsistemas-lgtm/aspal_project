@@ -80,7 +80,7 @@ function DestinoSugerido({ destino }: { destino: DestinoNav }) {
  * depende de ella (sugerencia, correo) se pintan solo en el navegador: en el
  * servidor mostrarían una dirección que nadie pidió.
  */
-export default function NotFound() {
+export function NotFound() {
   const [ruta] = useLocation();
   const tituloRef = useRef<HTMLHeadingElement>(null);
   const [referente, setReferente] = useState<string | null>(null);

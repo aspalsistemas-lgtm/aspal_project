@@ -10,7 +10,7 @@ import { HeroInstitucional } from "@/components/templates/HeroInstitucional";
  * pre-anuncio del Encuentro CDMX 2027 espera la decisión 10 del DG.
  * PENDIENTE (Etapa 3): calendario de eventos y webinars.
  */
-export default function Eventos() {
+export function Eventos() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <CabeceraSitio />

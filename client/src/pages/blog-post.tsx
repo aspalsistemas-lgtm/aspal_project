@@ -35,7 +35,7 @@ class HttpError extends Error {
 
 const RELATED_LIMIT = 3;
 
-export default function BlogPost() {
+export function BlogPost() {
   const params = useParams();
   const slug = params.slug as string;
   const [, navigate] = useLocation();

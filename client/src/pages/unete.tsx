@@ -16,7 +16,7 @@ import { ArrowUpRight, BadgeCheck, Mail } from "lucide-react";
  * El copy de la cabecera y de «Qué recibes» sale literal del Concepto NOSOTROS
  * (Bloques 10 y 4).
  */
-export default function Unete() {
+export function Unete() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <CabeceraSitio />

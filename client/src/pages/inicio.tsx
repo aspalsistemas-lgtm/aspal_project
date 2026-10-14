@@ -55,7 +55,7 @@ function VisualHero() {
  * en /plataforma desde el PR A. Las ranuras de la fase 2 (foto del hero, voces
  * de la red) se llenan en content/institucional/inicio.ts.
  */
-export default function Inicio() {
+export function Inicio() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <CabeceraSitio />

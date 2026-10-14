@@ -80,7 +80,7 @@ function Esqueleto() {
  * En el HTML prerenderizado salen el hero y el cierre: las consultas no corren
  * en el servidor, y un esqueleto ahí sería un «Cargando…» que nunca termina.
  */
-export default function PodcastPage() {
+export function Podcast() {
   const montado = useEnCliente();
 
   const episodios = useListaPaginada("/api/podcasts", EPISODIOS_POR_PAGINA);

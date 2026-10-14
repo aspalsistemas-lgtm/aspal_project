@@ -35,7 +35,7 @@ function Flecha() {
  * PENDIENTE: banda de descarga del Dossier ASPAL 2026 (oculta hasta que exista
  * el PDF; RF-06, evento download_dossier).
  */
-export default function QueHacemos() {
+export function QueHacemos() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <CabeceraSitio />

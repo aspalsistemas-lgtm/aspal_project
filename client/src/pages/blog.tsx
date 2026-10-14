@@ -79,7 +79,7 @@ function Esqueleto() {
  * en el servidor, y un esqueleto ahí sería un «Cargando…» que nunca termina.
  * El esqueleto aparece al montar, con las consultas ya en marcha.
  */
-export default function Blog() {
+export function Blog() {
   const montado = useEnCliente();
 
   const articulos = useListaPaginada("/api/posts", POSTS_PER_PAGE);
