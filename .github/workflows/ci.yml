@@ -34,10 +34,12 @@ jobs:
       - name: Formato
         run: npm run format:check
 
-      # Lógica pura de shared/wordpress: transformación y cliente. Lo que
-      # queda fuera es verificación manual — ver la lista de revisión.
-      - name: Tests
-        run: npm test
+      # Los tests de toda la suite y la cobertura de la lógica (shared/,
+      # client/src/lib/, server/) en una sola pasada. Falla si la cobertura
+      # baja del umbral de vitest.config.ts (deuda 4.3). Lo que queda fuera es
+      # verificación manual: npm run check:browser con el servidor levantado.
+      - name: Tests y cobertura
+        run: npm run test:coverage
 
       - name: Build
         run: npm run build

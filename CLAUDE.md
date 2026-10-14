@@ -355,7 +355,8 @@ git.
 
 `npm run check` es la puerta de calidad antes de cualquier commit. Cubre
 `api/`: no siempre fue así, y por eso el código de producción pasó tiempo sin
-typecheckear. CI ejecuta además lint, formato, tests y build.
+typecheckear. CI ejecuta además lint, formato, tests con cobertura
+(`test:coverage`, falla si baja del umbral) y build.
 
 - **Windows.** El shell por defecto es PowerShell; hay Git Bash disponible.
 - **Node 22** (`.nvmrc` y `engines`, fijado a `22.x`). Vercel desactivó Node
