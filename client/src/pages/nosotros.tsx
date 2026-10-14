@@ -1,11 +1,11 @@
 import ilustracionVoz from "@assets/recurso-27-marketing.webp";
-import { CifraAnimada } from "@/components/institucional/CifraAnimada";
+import { CifraAnimada } from "@/components/molecules/CifraAnimada";
 import { Hashtag } from "@/components/atoms/Hashtag";
-import { ManifiestoNumerado } from "@/components/institucional/ManifiestoNumerado";
+import { ManifiestoNumerado } from "@/components/molecules/ManifiestoNumerado";
 import { MuroAliados } from "@/components/institucional/MuroAliados";
-import { PilarCard } from "@/components/institucional/PilarCard";
+import { PilarCard } from "@/components/molecules/PilarCard";
 import { RutaTimeline } from "@/components/institucional/RutaTimeline";
-import { SubnavSeccion } from "@/components/institucional/SubnavSeccion";
+import { SubnavSeccion } from "@/components/molecules/SubnavSeccion";
 import { Banda } from "@/components/layout/Banda";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";

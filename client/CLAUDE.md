@@ -22,10 +22,11 @@ client/
     ├── pages/             ← una página por ruta; kebab-case español
     ├── components/
     │   ├── atoms/         ← átomos de Atomic Design (migración en curso, design.md §1.2)
+    │   ├── molecules/     ← moléculas: tarjetas, índices, cifras, VerMas, ScrollToTop…
     │   ├── layout/        ← Banda, HeroInstitucional, Header, Footer,
-    │   │                     ErrorBoundary, ScrollToTop, ScrollRestoration, CabeceraRuta…
-    │   ├── institucional/ ← pilares, mapa de ruta, perfiles, aliados, cifras
-    │   ├── content/       ← tarjetas de blog y podcast, contenido reciente, VerMas
+    │   │                     ErrorBoundary, ScrollRestoration, CabeceraRuta…
+    │   ├── institucional/ ← secciones de pilares y mapa de ruta, aliados, voces
+    │   ├── content/       ← franja de podcast, contenido reciente
     │   ├── forms/         ← FormSuscripcion
     │   ├── ui/            ← primitivas shadcn/ui en uso (8). Fuera de lint y Prettier
     │   └── sections/      ← legado de /plataforma; no reutilizar

@@ -31,7 +31,7 @@ const revisados = [...recorrer(join(SRC, "components")), ...recorrer(join(SRC, "
 
 /** 4.2: `export default` pendientes de pasar a `export function` nombrada. */
 const EXPORT_DEFAULT_PENDIENTES = [
-  "client/src/components/content/BlogCard.tsx",
+  "client/src/components/molecules/BlogCard.tsx",
   "client/src/components/layout/Footer.tsx",
   "client/src/components/layout/Header.tsx",
   "client/src/pages/blog-post.tsx",
@@ -56,9 +56,9 @@ const EXPORT_DEFAULT_PENDIENTES = [
 const NOMBRES_EN_INGLES_PENDIENTES: Record<string, string> = {
   "client/src/components/layout/Header.tsx": "CabeceraSitio",
   "client/src/components/layout/Footer.tsx": "PieSitio",
-  "client/src/components/content/BlogCard.tsx": "TarjetaArticulo",
+  "client/src/components/molecules/BlogCard.tsx": "TarjetaArticulo",
   "client/src/components/layout/ErrorBoundary.tsx": "LimiteDeErrores",
-  "client/src/components/layout/ScrollToTop.tsx": "BotonVolverArriba",
+  "client/src/components/molecules/ScrollToTop.tsx": "BotonVolverArriba",
   "client/src/components/layout/ScrollRestoration.tsx": "RestaurarDesplazamiento",
 };
 

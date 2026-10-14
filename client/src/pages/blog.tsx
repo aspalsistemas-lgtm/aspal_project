@@ -1,7 +1,7 @@
-import BlogCard from "@/components/content/BlogCard";
+import BlogCard from "@/components/molecules/BlogCard";
 import { FranjaPodcast } from "@/components/content/FranjaPodcast";
-import { VerMas } from "@/components/content/VerMas";
-import { PortadaArticulo } from "@/components/content/PortadaArticulo";
+import { VerMas } from "@/components/molecules/VerMas";
+import { PortadaArticulo } from "@/components/molecules/PortadaArticulo";
 import { IlustracionPilar } from "@/components/atoms/IlustracionPilar";
 import { Banda } from "@/components/layout/Banda";
 import Footer from "@/components/layout/Footer";

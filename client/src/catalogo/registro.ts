@@ -210,8 +210,8 @@ export const REGISTRO = [
   {
     id: "scroll-to-top",
     nombre: "ScrollToTop",
-    archivo: "client/src/components/layout/ScrollToTop.tsx",
-    importar: 'import { ScrollToTop } from "@/components/layout/ScrollToTop";',
+    archivo: "client/src/components/molecules/ScrollToTop.tsx",
+    importar: 'import { ScrollToTop } from "@/components/molecules/ScrollToTop";',
     categoria: "layout",
     nivel: "molecula",
     descripcion: "Botón flotante «volver arriba» que aparece tras 300 px de scroll.",
@@ -269,8 +269,8 @@ export const REGISTRO = [
   {
     id: "pilar-card",
     nombre: "PilarCard",
-    archivo: "client/src/components/institucional/PilarCard.tsx",
-    importar: 'import { PilarCard } from "@/components/institucional/PilarCard";',
+    archivo: "client/src/components/molecules/PilarCard.tsx",
+    importar: 'import { PilarCard } from "@/components/molecules/PilarCard";',
     categoria: "institucional",
     nivel: "molecula",
     descripcion:
@@ -317,8 +317,8 @@ export const REGISTRO = [
   {
     id: "indice-pilares",
     nombre: "IndicePilares",
-    archivo: "client/src/components/institucional/IndicePilares.tsx",
-    importar: 'import { IndicePilares } from "@/components/institucional/IndicePilares";',
+    archivo: "client/src/components/molecules/IndicePilares.tsx",
+    importar: 'import { IndicePilares } from "@/components/molecules/IndicePilares";',
     categoria: "institucional",
     nivel: "molecula",
     descripcion:
@@ -365,8 +365,8 @@ export const REGISTRO = [
   {
     id: "perfil-card",
     nombre: "PerfilCard",
-    archivo: "client/src/components/institucional/PerfilCard.tsx",
-    importar: 'import { PerfilCard } from "@/components/institucional/PerfilCard";',
+    archivo: "client/src/components/molecules/PerfilCard.tsx",
+    importar: 'import { PerfilCard } from "@/components/molecules/PerfilCard";',
     categoria: "institucional",
     nivel: "molecula",
     descripcion:
@@ -396,8 +396,8 @@ export const REGISTRO = [
   {
     id: "racimo-equipo",
     nombre: "RacimoEquipo",
-    archivo: "client/src/components/institucional/RacimoEquipo.tsx",
-    importar: 'import { RacimoEquipo } from "@/components/institucional/RacimoEquipo";',
+    archivo: "client/src/components/molecules/RacimoEquipo.tsx",
+    importar: 'import { RacimoEquipo } from "@/components/molecules/RacimoEquipo";',
     categoria: "institucional",
     nivel: "molecula",
     descripcion:
@@ -426,8 +426,8 @@ export const REGISTRO = [
   {
     id: "subnav-seccion",
     nombre: "SubnavSeccion",
-    archivo: "client/src/components/institucional/SubnavSeccion.tsx",
-    importar: 'import { SubnavSeccion } from "@/components/institucional/SubnavSeccion";',
+    archivo: "client/src/components/molecules/SubnavSeccion.tsx",
+    importar: 'import { SubnavSeccion } from "@/components/molecules/SubnavSeccion";',
     categoria: "institucional",
     nivel: "molecula",
     descripcion:
@@ -440,8 +440,8 @@ export const REGISTRO = [
   {
     id: "indice-etapas",
     nombre: "IndiceEtapas",
-    archivo: "client/src/components/institucional/IndiceEtapas.tsx",
-    importar: 'import { IndiceEtapas } from "@/components/institucional/IndiceEtapas";',
+    archivo: "client/src/components/molecules/IndiceEtapas.tsx",
+    importar: 'import { IndiceEtapas } from "@/components/molecules/IndiceEtapas";',
     categoria: "institucional",
     nivel: "molecula",
     descripcion:
@@ -455,8 +455,8 @@ export const REGISTRO = [
   {
     id: "indice-mapa",
     nombre: "IndiceMapa",
-    archivo: "client/src/components/institucional/IndiceMapa.tsx",
-    importar: 'import { IndiceMapa } from "@/components/institucional/IndiceMapa";',
+    archivo: "client/src/components/molecules/IndiceMapa.tsx",
+    importar: 'import { IndiceMapa } from "@/components/molecules/IndiceMapa";',
     categoria: "institucional",
     nivel: "molecula",
     descripcion:
@@ -485,8 +485,8 @@ export const REGISTRO = [
   {
     id: "nav-etapas",
     nombre: "NavEtapas",
-    archivo: "client/src/components/institucional/NavEtapas.tsx",
-    importar: 'import { NavEtapas } from "@/components/institucional/NavEtapas";',
+    archivo: "client/src/components/molecules/NavEtapas.tsx",
+    importar: 'import { NavEtapas } from "@/components/molecules/NavEtapas";',
     categoria: "institucional",
     nivel: "molecula",
     descripcion:
@@ -517,8 +517,8 @@ export const REGISTRO = [
   {
     id: "cifra-animada",
     nombre: "CifraAnimada",
-    archivo: "client/src/components/institucional/CifraAnimada.tsx",
-    importar: 'import { CifraAnimada } from "@/components/institucional/CifraAnimada";',
+    archivo: "client/src/components/molecules/CifraAnimada.tsx",
+    importar: 'import { CifraAnimada } from "@/components/molecules/CifraAnimada";',
     categoria: "institucional",
     nivel: "molecula",
     descripcion:
@@ -534,9 +534,9 @@ export const REGISTRO = [
   {
     id: "manifiesto-numerado",
     nombre: "ManifiestoNumerado",
-    archivo: "client/src/components/institucional/ManifiestoNumerado.tsx",
+    archivo: "client/src/components/molecules/ManifiestoNumerado.tsx",
     importar:
-      'import { ManifiestoNumerado } from "@/components/institucional/ManifiestoNumerado";',
+      'import { ManifiestoNumerado } from "@/components/molecules/ManifiestoNumerado";',
     categoria: "institucional",
     nivel: "molecula",
     descripcion:
@@ -600,8 +600,8 @@ export const REGISTRO = [
   {
     id: "portada-articulo",
     nombre: "PortadaArticulo",
-    archivo: "client/src/components/content/PortadaArticulo.tsx",
-    importar: 'import { PortadaArticulo } from "@/components/content/PortadaArticulo";',
+    archivo: "client/src/components/molecules/PortadaArticulo.tsx",
+    importar: 'import { PortadaArticulo } from "@/components/molecules/PortadaArticulo";',
     categoria: "contenido",
     nivel: "molecula",
     descripcion:
@@ -615,8 +615,8 @@ export const REGISTRO = [
   {
     id: "meta-articulo",
     nombre: "MetaArticulo",
-    archivo: "client/src/components/content/MetaArticulo.tsx",
-    importar: 'import { MetaArticulo } from "@/components/content/MetaArticulo";',
+    archivo: "client/src/components/molecules/MetaArticulo.tsx",
+    importar: 'import { MetaArticulo } from "@/components/molecules/MetaArticulo";',
     categoria: "contenido",
     nivel: "molecula",
     descripcion:
@@ -644,8 +644,8 @@ export const REGISTRO = [
   {
     id: "blog-card",
     nombre: "BlogCard",
-    archivo: "client/src/components/content/BlogCard.tsx",
-    importar: 'import BlogCard from "@/components/content/BlogCard";',
+    archivo: "client/src/components/molecules/BlogCard.tsx",
+    importar: 'import BlogCard from "@/components/molecules/BlogCard";',
     categoria: "contenido",
     nivel: "molecula",
     descripcion:
@@ -661,8 +661,8 @@ export const REGISTRO = [
   {
     id: "episodio-fila",
     nombre: "EpisodioFila",
-    archivo: "client/src/components/content/EpisodioFila.tsx",
-    importar: 'import { EpisodioFila } from "@/components/content/EpisodioFila";',
+    archivo: "client/src/components/molecules/EpisodioFila.tsx",
+    importar: 'import { EpisodioFila } from "@/components/molecules/EpisodioFila";',
     categoria: "contenido",
     nivel: "molecula",
     descripcion:
@@ -677,8 +677,8 @@ export const REGISTRO = [
   {
     id: "portada-podcast",
     nombre: "PortadaPodcast",
-    archivo: "client/src/components/content/PortadaPodcast.tsx",
-    importar: 'import { PortadaPodcast } from "@/components/content/PortadaPodcast";',
+    archivo: "client/src/components/molecules/PortadaPodcast.tsx",
+    importar: 'import { PortadaPodcast } from "@/components/molecules/PortadaPodcast";',
     categoria: "contenido",
     nivel: "molecula",
     descripcion:
@@ -691,8 +691,8 @@ export const REGISTRO = [
   {
     id: "ver-mas",
     nombre: "VerMas",
-    archivo: "client/src/components/content/VerMas.tsx",
-    importar: 'import { VerMas } from "@/components/content/VerMas";',
+    archivo: "client/src/components/molecules/VerMas.tsx",
+    importar: 'import { VerMas } from "@/components/molecules/VerMas";',
     categoria: "contenido",
     nivel: "molecula",
     descripcion:

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation, Link } from "wouter";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import BlogCard from "@/components/content/BlogCard";
+import BlogCard from "@/components/molecules/BlogCard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Clock, Lock } from "lucide-react";
 import { formatPublishedDate } from "@/lib/date";

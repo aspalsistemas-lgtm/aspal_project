@@ -1,8 +1,8 @@
-import BlogCard from "@/components/content/BlogCard";
-import { EpisodioFila } from "@/components/content/EpisodioFila";
+import BlogCard from "@/components/molecules/BlogCard";
+import { EpisodioFila } from "@/components/molecules/EpisodioFila";
 import { FranjaPodcast } from "@/components/content/FranjaPodcast";
-import { PortadaPodcast } from "@/components/content/PortadaPodcast";
-import { VerMas } from "@/components/content/VerMas";
+import { PortadaPodcast } from "@/components/molecules/PortadaPodcast";
+import { VerMas } from "@/components/molecules/VerMas";
 import { Hashtag } from "@/components/atoms/Hashtag";
 import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
 import { Banda } from "@/components/layout/Banda";

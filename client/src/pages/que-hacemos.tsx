@@ -1,8 +1,8 @@
 import { Hashtag } from "@/components/atoms/Hashtag";
-import { IndicePilares } from "@/components/institucional/IndicePilares";
+import { IndicePilares } from "@/components/molecules/IndicePilares";
 import { PanalPilares } from "@/components/institucional/PanalPilares";
 import { SeccionPilar } from "@/components/institucional/SeccionPilar";
-import { SubnavSeccion } from "@/components/institucional/SubnavSeccion";
+import { SubnavSeccion } from "@/components/molecules/SubnavSeccion";
 import { Banda } from "@/components/layout/Banda";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";

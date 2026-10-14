@@ -1,10 +1,10 @@
 import ilustracionEventos from "@assets/ilustraciones/eventos-webinar.webp";
 import { ContenidoReciente } from "@/components/content/ContenidoReciente";
 import { FormSuscripcion } from "@/components/forms/FormSuscripcion";
-import { CifraAnimada } from "@/components/institucional/CifraAnimada";
-import { IndiceEtapas } from "@/components/institucional/IndiceEtapas";
+import { CifraAnimada } from "@/components/molecules/CifraAnimada";
+import { IndiceEtapas } from "@/components/molecules/IndiceEtapas";
 import { MuroAliados } from "@/components/institucional/MuroAliados";
-import { PilarCard } from "@/components/institucional/PilarCard";
+import { PilarCard } from "@/components/molecules/PilarCard";
 import { VocesRed } from "@/components/institucional/VocesRed";
 import { Banda } from "@/components/layout/Banda";
 import Footer from "@/components/layout/Footer";

@@ -1,5 +1,5 @@
-import { IndiceMapa } from "@/components/institucional/IndiceMapa";
-import { NavEtapas } from "@/components/institucional/NavEtapas";
+import { IndiceMapa } from "@/components/molecules/IndiceMapa";
+import { NavEtapas } from "@/components/molecules/NavEtapas";
 import { PanalEtapas } from "@/components/institucional/PanalEtapas";
 import { SeccionEtapa } from "@/components/institucional/SeccionEtapa";
 import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
