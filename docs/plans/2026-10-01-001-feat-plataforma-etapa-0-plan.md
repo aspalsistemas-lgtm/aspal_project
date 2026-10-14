@@ -459,16 +459,26 @@ implementa.
 
 ## 7. Trabajo de código de la Etapa 0
 
-Un solo cambio, sin efecto funcional en el sitio:
+Un solo cambio, sin efecto funcional en el sitio. **Hecho el 2026-10-14** con el
+alcance que aprobó el responsable ese día:
 
-1. Convertir el repositorio en monorepo (D1): el sitio pasa a `apps/sitio`;
-   `packages/ui` recibe tokens, componentes, `clases.ts`, el catálogo y la guía
-   visual; `packages/contratos` nace vacío con los esquemas Zod de la
-   suscripción como primer habitante.
-2. CI, Vercel (_root directory_) y scripts (`check-assets`, prerender)
-   apuntando a las rutas nuevas. `npm run check`, tests y build en verde; el
-   sitio desplegado en `staging` idéntico al actual.
-3. `docs/architecture.md` y `docs/plataforma.md` al día con la estructura.
+1. Monorepo con npm workspaces (D1): el sitio pasa a `apps/sitio`
+   (`@aspal/sitio`) con `git mv`, en un commit solo de renombrados. Mismas 517
+   versiones en el lockfile; ninguna dependencia nueva.
+2. **`packages/ui` y `packages/contratos` se aplazan** hasta su primer
+   consumidor (`apps/plataforma`, Etapa 1): extraer la UI sin un segundo
+   usuario no da nada y la frontera se ve mejor con el primer panel; los
+   esquemas Zod de la suscripción exigían añadir `zod` y reescribir una
+   validación que funciona.
+3. **Vercel sin tocar:** el Root Directory sigue siendo la raíz del repo,
+   porque ese ajuste vale para todas las ramas y rompería los despliegues de
+   `main`. `vercel.json` sigue en la raíz (`outputDirectory` →
+   `apps/sitio/dist/public`) y `api/index.ts` de la raíz reexporta la función
+   del sitio. Cuando `main` tenga el monorepo, el Root Directory pasa a
+   `apps/sitio` y la puerta se borra.
+4. Verificado: HTML, SSR y servidor compilado idénticos byte a byte al build
+   anterior; tests, cobertura, lint, formato y `check:browser` en verde.
+   Queda el despliegue de `staging` en Vercel, que exige push.
 
 ## 8. Backlog de la Etapa 1 (esqueleto andante)
 

@@ -1,0 +1,42 @@
+{
+  "name": "aspal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo de ASPAL: el sitio público (apps/sitio) y, desde la Etapa 1, la plataforma",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Antonio1491/aspal_project.git"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @aspal/sitio",
+    "build": "npm run build -w @aspal/sitio",
+    "start": "npm run start -w @aspal/sitio",
+    "check": "npm run check -w @aspal/sitio",
+    "check:assets": "npm run check:assets -w @aspal/sitio",
+    "check:browser": "npm run check:browser -w @aspal/sitio --",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test -w @aspal/sitio --",
+    "test:coverage": "npm run test:coverage -w @aspal/sitio",
+    "test:watch": "npm run test:watch -w @aspal/sitio"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.9.0",
+    "prettier": "^3.9.6",
+    "typescript-eslint": "^8.66.0"
+  }
+}

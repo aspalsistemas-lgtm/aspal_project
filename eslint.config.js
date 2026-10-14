@@ -8,16 +8,16 @@ import globals from "globals";
  * El objetivo aquí son los errores reales, no el estilo: del formato se ocupa
  * Prettier, y `eslint-config-prettier` desactiva todo lo que se solape.
  *
- * `client/src/components/ui/` queda fuera: son archivos generados por el CLI de
+ * `apps/sitio/client/src/components/ui/` queda fuera: son archivos generados por el CLI de
  * shadcn y se regeneran, así que corregirlos a mano es trabajo que se pierde.
  */
 export default tseslint.config(
   {
     ignores: [
-      "dist/**",
-      "node_modules/**",
-      "client/src/components/ui/**",
-      "client/src/assets/**",
+      "**/dist/**",
+      "**/node_modules/**",
+      "apps/sitio/client/src/components/ui/**",
+      "apps/sitio/client/src/assets/**",
     ],
   },
 
@@ -40,7 +40,7 @@ export default tseslint.config(
   },
 
   {
-    files: ["client/src/**/*.{ts,tsx}"],
+    files: ["apps/sitio/client/src/**/*.{ts,tsx}"],
     ...reactHooks.configs.flat.recommended,
     languageOptions: {
       globals: globals.browser,
@@ -56,7 +56,13 @@ export default tseslint.config(
   },
 
   {
-    files: ["server/**/*.ts", "api/**/*.ts", "shared/**/*.ts", "scripts/**/*.mjs"],
+    files: [
+      "api/**/*.ts",
+      "apps/sitio/server/**/*.ts",
+      "apps/sitio/api/**/*.ts",
+      "apps/sitio/shared/**/*.ts",
+      "apps/sitio/scripts/**/*.mjs",
+    ],
     languageOptions: {
       globals: globals.node,
     },
@@ -64,7 +70,7 @@ export default tseslint.config(
 
   {
     // Los plugins de Tailwind se cargan con require(): su config es CJS.
-    files: ["tailwind.config.ts", "postcss.config.js"],
+    files: ["apps/sitio/tailwind.config.ts", "apps/sitio/postcss.config.js"],
     rules: {
       "@typescript-eslint/no-require-imports": "off",
     },

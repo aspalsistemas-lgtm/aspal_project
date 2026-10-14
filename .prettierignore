@@ -1,5 +1,5 @@
 dist
 node_modules
 package-lock.json
-client/src/assets
-client/src/components/ui
+apps/sitio/client/src/assets
+apps/sitio/client/src/components/ui

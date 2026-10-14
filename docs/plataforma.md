@@ -104,7 +104,7 @@ inexistente.
 ```
                  ┌──────────────────────────┐
   Navegador ───▶ │ Vercel CDN               │  HTML prerenderizado por ruta
-                 │  dist/public/*.html      │  + JS/CSS con caché inmutable
+                 │  apps/sitio/dist/public/ │  + JS/CSS con caché inmutable
                  └────────────┬─────────────┘
                               │ /api/*
                  ┌────────────▼─────────────┐
@@ -157,26 +157,31 @@ de SEO.
 ## 5. Estructura del repositorio
 
 ```
-client/src/
-  pages/            una página por ruta
-  components/
-    layout/         cabecera, pie, heroes, bandas, utilidades de navegación
-    sections/       bloques de producto (/plataforma)
-    institucional/  pilares, mapa de ruta, perfiles, aliados, cifras
-    content/        tarjetas de blog y podcast, contenido reciente
-    forms/          formulario de suscripción
-    ui/             primitivas shadcn/ui, solo las que se usan
-  content/          textos institucionales como datos (inicio, nosotros, equipo…)
-  catalogo/         registro y demos de /componentes
-  hooks/  lib/      hooks y utilidades (rutas, SEO, marca, analítica, tokens…)
-shared/
-  wordpress/        tipos, transformación, cliente y rutas /api/*
-  suscripcion/      tipos, validación y cliente de Mailchimp
-server/             Express: desarrollo, estáticos y self-hosted
-api/index.ts        función serverless de Vercel
-scripts/            prerender, verificación de assets, conversión de imágenes
-docs/               arquitectura, diseño, marca, planes y brainstorms
+Monorepo con npm workspaces (decisión D1). Hoy tiene un solo workspace; la
+plataforma llegará como `apps/plataforma`, y `packages/ui` y
+`packages/contratos` nacerán con su primer consumidor.
+
 ```
+
+api/index.ts puerta de Vercel: reexporta apps/sitio/api
+vercel.json despliegue del sitio
+apps/sitio/ el sitio público (@aspal/sitio)
+client/src/
+pages/ una página por ruta
+components/ atoms/ molecules/ organisms/ templates/ infraestructura/
+ui/ (shadcn/ui en uso) · sections/ (legado de /plataforma)
+content/ textos institucionales y legales como datos
+catalogo/ registro y demos de /componentes
+hooks/ lib/ hooks y utilidades (rutas, SEO, marca, analítica, tokens…)
+shared/
+wordpress/ tipos, transformación, cliente y rutas /api/*
+suscripcion/ tipos, validación y cliente de Mailchimp
+server/ Express: desarrollo, estáticos y self-hosted
+api/index.ts función serverless de Vercel
+scripts/ prerender, verificación de assets, imágenes, check-browser
+docs/ arquitectura, diseño, marca, planes y brainstorms
+
+````
 
 ## 6. Diseño
 
@@ -221,7 +226,7 @@ npm run build    # assets → cliente → SSR → prerender → servidor
 npm start        # sirve el build
 npm run check    # typecheck + assets
 npm test         # Vitest
-```
+````
 
 ## 8. Historia
 

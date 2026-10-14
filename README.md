@@ -51,37 +51,38 @@ Abre <http://localhost:5000>.
 
 ## Scripts
 
-| Comando                | Qué hace                                                       |
-| ---------------------- | -------------------------------------------------------------- |
-| `npm run dev`          | Express + Vite con HMR                                         |
-| `npm run build`        | Assets → cliente → SSR → prerender → servidor (`dist/`)        |
-| `npm run start`        | Sirve el build de producción                                   |
-| `npm run check`        | Typecheck de `client/`, `server/`, `shared/` y `api/` + assets |
-| `npm run lint`         | ESLint (`lint:fix` corrige)                                    |
-| `npm run format:check` | Prettier (`format` escribe)                                    |
-| `npm test`             | Vitest, una pasada (`test:watch` en vigilancia)                |
+| Comando                | Qué hace                                                           |
+| ---------------------- | ------------------------------------------------------------------ |
+| `npm run dev`          | Express + Vite con HMR                                             |
+| `npm run build`        | Assets → cliente → SSR → prerender → servidor (`apps/sitio/dist/`) |
+| `npm run start`        | Sirve el build de producción                                       |
+| `npm run check`        | Typecheck de `client/`, `server/`, `shared/` y `api/` + assets     |
+| `npm run lint`         | ESLint (`lint:fix` corrige)                                        |
+| `npm run format:check` | Prettier (`format` escribe)                                        |
+| `npm test`             | Vitest, una pasada (`test:watch` en vigilancia)                    |
 
 ## Estructura
 
+Monorepo con npm workspaces. Los comandos se lanzan desde la raíz, que los
+reenvía al workspace del sitio.
+
 ```
-shared/
-  wordpress/          ⚠️ fuente única: tipos, transformación y endpoints /api/*
-  suscripcion/        validación compartida, rutas y cliente de Mailchimp
-server/               Express para desarrollo y self-hosted (solo wiring)
-api/index.ts          función serverless de Vercel (solo wiring)
-client/src/
-  pages/              una página por ruta (inicio, nosotros, blog, podcast, unete…)
-  components/
-    layout/           bandas, hero, cabecera, pie, utilidades de navegación
-    institucional/    pilares, mapa de ruta, perfiles, aliados, cifras
-    content/          tarjetas de blog y podcast, contenido reciente
-    forms/            formulario de suscripción
-    ui/               primitivas shadcn/ui en uso
-    sections/         legado de /plataforma
-  content/            textos institucionales como datos
-  catalogo/           registro y demos de /componentes
-  hooks/  lib/        hooks y utilidades
-scripts/              prerender, verificación de assets, conversión de imágenes
+api/index.ts          puerta de Vercel: reexporta apps/sitio/api (una línea)
+vercel.json           despliegue del sitio (Root Directory = raíz del repo)
+apps/sitio/           el sitio público, workspace @aspal/sitio
+  shared/
+    wordpress/        ⚠️ fuente única: tipos, transformación y endpoints /api/*
+    suscripcion/      validación compartida, rutas y cliente de Mailchimp
+  server/             Express para desarrollo y self-hosted (solo wiring)
+  api/index.ts        función serverless de Vercel (solo wiring)
+  client/src/
+    pages/            una página por ruta (inicio, nosotros, blog, podcast, unete…)
+    components/       por Atomic Design: atoms/ molecules/ organisms/ templates/
+                      infraestructura/ · ui/ (shadcn/ui en uso) · sections/ (legado)
+    content/          textos institucionales y legales como datos
+    catalogo/         registro y demos de /componentes
+    hooks/  lib/      hooks y utilidades
+  scripts/            prerender, verificación de assets, imágenes, check-browser
 docs/                 arquitectura, API, ADRs, deuda técnica, planes
 ```
 
@@ -129,9 +130,10 @@ de Mailchimp, `POST /api/suscripcion` responde 503.
 
 Vercel, configurado en `vercel.json`:
 
-- El build genera un HTML prerenderizado por ruta estática en `dist/public/`,
+- El build genera un HTML prerenderizado por ruta estática en `apps/sitio/dist/public/`,
   más `404.html`, `spa.html`, `sitemap.xml` y `robots.txt`.
-- `api/index.ts` se despliega como función serverless para `/api/*`.
+- `api/index.ts` de la raíz se despliega como función serverless para `/api/*`;
+  solo reexporta la del sitio, `apps/sitio/api/index.ts`.
 - `/blog/:slug` se sirve desde `spa.html`; cualquier otra ruta desconocida
   responde `404.html` con código 404. No hay fallback de SPA.
 

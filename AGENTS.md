@@ -37,8 +37,8 @@ Una modificación al sitio debe proteger primero:
   `eslint.config.js`, `vercel.json` y el código vigente como fuentes de verdad
   ejecutables.
 - Leer `CLAUDE.md` para las reglas generales y, según el alcance:
-  - `server/CLAUDE.md` para `server/`, `api/`, `shared/` y cualquier endpoint.
-  - `client/CLAUDE.md` y `design.md` para frontend o UX/UI.
+  - `apps/sitio/server/CLAUDE.md` para `server/`, `api/`, `shared/` y cualquier endpoint.
+  - `apps/sitio/client/CLAUDE.md` y `design.md` para frontend o UX/UI.
   - `docs/api/endpoints.md` al crear o cambiar contratos HTTP.
   - `docs/database-design.md` antes de cualquier dato persistente (plataforma).
   - `docs/plan-plataforma-por-etapas.md` para reglas de negocio de la plataforma.
@@ -52,11 +52,16 @@ Una modificación al sitio debe proteger primero:
 
 ## Arquitectura del repositorio
 
-- Un solo paquete npm, sin workspaces ni Turborepo. Usar npm (hay
-  `package-lock.json`); no introducir otro gestor.
+- Monorepo con npm workspaces (D1), sin Turborepo. Usar npm (un solo
+  `package-lock.json` en la raíz); no introducir otro gestor. Workspaces:
+  `apps/sitio` (`@aspal/sitio`); la plataforma llegará como `apps/plataforma`.
+  Los comandos se lanzan desde la raíz, que los reenvía al workspace.
+- `vercel.json` y `api/index.ts` de la raíz existen porque el proyecto de Vercel
+  sigue con la raíz del repo como Root Directory: la puerta solo reexporta
+  `apps/sitio/api/index.ts` y `vercel.test.ts` lo vigila.
 - Runtime requerido por el manifiesto raíz: Node.js `22.x` (`.nvmrc` = 22). No
   hay campo `packageManager`; el npm local es el que acompaña a Node 22.
-- Carpetas y responsabilidad:
+- Carpetas y responsabilidad (dentro de `apps/sitio/`):
   - `shared/wordpress`: tipos, normalización, cliente HTTP y rutas `/api/*` de
     WordPress. `client.ts` es solo-servidor.
   - `shared/suscripcion`: tipos, validación compartida con el navegador, rutas y

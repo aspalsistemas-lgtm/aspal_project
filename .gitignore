@@ -1,7 +1,7 @@
 node_modules
 dist
 .DS_Store
-server/public
+apps/sitio/server/public
 vite.config.ts.*
 *.tar.gz
 # capturas de npm run check:browser

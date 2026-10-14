@@ -15,6 +15,15 @@ la REST API de un WordPress headless y normalizar la respuesta.
 Sin base de datos. Sin sesiones. Sin autenticación. El sitio es público,
 de solo lectura y sin estado.
 
+## Repositorio
+
+Monorepo con npm workspaces (D1). El sitio es el workspace `apps/sitio`
+(`@aspal/sitio`); las rutas de este documento son relativas a esa carpeta. En
+la raíz quedan la documentación, ESLint, Prettier, la CI, `vercel.json` y
+`api/index.ts`, una puerta de una línea que reexporta la función del sitio:
+Vercel solo busca funciones en `api/` de su Root Directory, que sigue siendo la
+raíz del repo para no romper los despliegues de `main`.
+
 ## Frontend
 
 **Rutas** (`wouter`): se definen en `client/src/lib/rutas.ts` y se cablean en
@@ -97,7 +106,7 @@ El cliente solo importa tipos desde `shared/`.
 
 **Modo desarrollo vs producción** (`server/index.ts`): con
 `NODE_ENV=development` se monta el middleware de Vite; si no, se sirven los
-estáticos de `dist/public/`. En ambos casos el mismo proceso sirve API y
+estáticos de `apps/sitio/dist/public/`. En ambos casos el mismo proceso sirve API y
 cliente en un único puerto.
 
 ## Datos
@@ -185,7 +194,7 @@ Vercel, según `vercel.json`:
   con el HTML.
 - `sharp` es dependencia solo de desarrollo: la usa `scripts/imagenes.mjs`
   (conversión única a WebP), no el build.
-- `outputDirectory`: `dist/public`
+- `outputDirectory`: `apps/sitio/dist/public`
 - `cleanUrls`: `/blog` sirve `blog.html`
 - `trailingSlash: false`: `/blog/` redirige a `/blog` (308)
 - `/api/(.*)` → la función serverless

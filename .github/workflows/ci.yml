@@ -19,10 +19,11 @@ jobs:
 
       - run: npm ci
 
-      # Cubre client, server, shared y api. api/ es lo que corre en Vercel:
-      # durante un tiempo quedó fuera del typecheck y nadie se enteró.
+      # Cubre client, server, shared y api del sitio, y la puerta api/ de la
+      # raíz. api/ es lo que corre en Vercel: durante un tiempo quedó fuera del
+      # typecheck y nadie se enteró.
       - name: Typecheck
-        run: npx tsc --noEmit
+        run: npx tsc --noEmit -p apps/sitio
 
       # Un @assets/ inexistente no lo detectan ni tsc ni vite build.
       - name: Assets

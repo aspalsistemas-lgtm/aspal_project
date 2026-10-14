@@ -14,9 +14,13 @@ interface Cabeceras {
   headers: { key: string; value: string }[];
 }
 
-const config = JSON.parse(
-  readFileSync(resolve(import.meta.dirname, "..", "vercel.json"), "utf8"),
-) as {
+// vercel.json vive en la raíz del monorepo: el proyecto de Vercel sigue con la
+// raíz del repositorio como Root Directory (api/index.ts de la raíz explica por qué).
+const RAIZ_REPO = resolve(import.meta.dirname, "..", "..", "..");
+
+const config = JSON.parse(readFileSync(resolve(RAIZ_REPO, "vercel.json"), "utf8")) as {
+  buildCommand?: string;
+  outputDirectory?: string;
   cleanUrls?: boolean;
   trailingSlash?: boolean;
   rewrites: Reescritura[];
@@ -24,6 +28,24 @@ const config = JSON.parse(
 };
 
 describe("vercel.json", () => {
+  it("construye el sitio y publica su dist/public desde la raíz del monorepo", () => {
+    expect(config.buildCommand).toBe("npm run build");
+    expect(config.outputDirectory).toBe("apps/sitio/dist/public");
+  });
+
+  it("la función de la raíz reexporta la del sitio, sin lógica propia", async () => {
+    // Vercel solo busca funciones en api/ de la raíz: si la puerta montara algo
+    // por su cuenta, producción y el servidor de desarrollo divergirían.
+    const puerta = readFileSync(resolve(RAIZ_REPO, "api", "index.ts"), "utf8");
+    const codigo = puerta.replace(/\/\*\*[\s\S]*?\*\//, "").trim();
+    expect(codigo).toBe('export { default } from "../apps/sitio/api/index.js";');
+    const [{ default: deLaRaiz }, { default: delSitio }] = await Promise.all([
+      import("../../../api/index"),
+      import("../api/index"),
+    ]);
+    expect(deLaRaiz).toBe(delSitio);
+  });
+
   it("no tiene un rewrite comodín que convierta todo en 200", () => {
     // Era `{ "source": "/(.*)", "destination": "/" }`: cualquier dirección
     // inexistente respondía 200 con la home (RF-11).

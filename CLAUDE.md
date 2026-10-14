@@ -11,8 +11,8 @@
 | --------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | `CLAUDE.md` (este)                                        | Inicio de cada sesión. Reglas globales                                           |
 | `AGENTS.md`                                               | Reglas estables para cualquier agente; sin estado de sesión                      |
-| `server/CLAUDE.md`                                        | Al trabajar en `server/`, `api/` o `shared/` (backend y lógica compartida)       |
-| `client/CLAUDE.md`                                        | Al trabajar en cualquier archivo de `client/`                                    |
+| `apps/sitio/server/CLAUDE.md`                             | Al trabajar en `server/`, `api/` o `shared/` (backend y lógica compartida)       |
+| `apps/sitio/client/CLAUDE.md`                             | Al trabajar en cualquier archivo de `client/`                                    |
 | `docs/api/endpoints.md`                                   | Al crear o modificar endpoints                                                   |
 | `design.md`                                               | Al crear o modificar componentes o estilos                                       |
 | `docs/database-design.md`                                 | Antes de crear, modificar o eliminar datos persistentes (plataforma, PostgreSQL) |
@@ -58,7 +58,8 @@ una aplicación aparte, con PostgreSQL en AWS. Sus datos se rigen por
 ## 2. Stack
 
 ```
-Repo:       un solo paquete npm (sin workspaces; pasará a monorepo, D1) · Node 22.x · TypeScript 5.6 strict
+Repo:       monorepo con npm workspaces (D1): apps/sitio; la plataforma llegará como
+            apps/plataforma · Node 22.x · TypeScript 5.6 strict
 Backend:    Express 4 · sin ORM ni BD · validación manual en shared/ · console como logger
 Frontend:   React 18 + Vite 7 + wouter 3 · Tailwind 3 + shadcn/ui (New York) · estado
             local con hooks de React · estado remoto con TanStack Query 5 · formularios
@@ -83,15 +84,20 @@ aspal/
 ├── CLAUDE.md                ← reglas globales (este archivo)
 ├── AGENTS.md                ← reglas estables para agentes
 ├── design.md                ← sistema de diseño
-├── client/                  ← SPA (React + Vite)
-│   ├── CLAUDE.md
-│   ├── index.html · public/
-│   └── src/  pages/ components/ content/ catalogo/ hooks/ lib/ assets/
-├── server/                  ← Express de desarrollo y self-hosted (solo wiring)
-│   └── CLAUDE.md            ← cubre también api/ y shared/
-├── api/index.ts             ← función serverless de Vercel (solo wiring)
-├── shared/                  ← la lógica: wordpress/ y suscripcion/
-├── scripts/                 ← check-assets, prerender, imagenes
+├── package.json             ← raíz del monorepo: workspaces, lint, formato y atajos
+├── vercel.json              ← despliegue del sitio (Root Directory = raíz del repo)
+├── api/index.ts             ← puerta de Vercel: reexporta apps/sitio/api (una línea)
+├── apps/sitio/              ← el sitio público (@aspal/sitio)
+│   ├── package.json · vite, vitest, tailwind, tsconfig…
+│   ├── client/              ← SPA (React + Vite)
+│   │   ├── CLAUDE.md
+│   │   ├── index.html · public/
+│   │   └── src/  pages/ components/ content/ catalogo/ hooks/ lib/ assets/
+│   ├── server/              ← Express de desarrollo y self-hosted (solo wiring)
+│   │   └── CLAUDE.md        ← cubre también api/ y shared/
+│   ├── api/index.ts         ← función serverless de Vercel (solo wiring)
+│   ├── shared/              ← la lógica: wordpress/ y suscripcion/
+│   └── scripts/             ← check-assets, prerender, imagenes, check-browser
 └── docs/
     ├── api/endpoints.md     ← catálogo de endpoints
     ├── adr/                 ← Architecture Decision Records
@@ -100,6 +106,12 @@ aspal/
     ├── architecture.md · plataforma.md · database-design.md
     └── plan-plataforma-por-etapas.md
 ```
+
+**Rutas en este documento:** salvo que se diga otra cosa, `client/`, `server/`,
+`api/`, `shared/` y `scripts/` son las de `apps/sitio/`. Los comandos de npm se
+lanzan desde la raíz, que los reenvía al workspace (`npm run dev` →
+`npm run dev -w @aspal/sitio`). Una dependencia del sitio se instala con
+`-w @aspal/sitio`; en la raíz solo viven ESLint y Prettier.
 
 ### La regla que más importa
 
@@ -301,8 +313,8 @@ Migraciones:      No aplica. El sitio no tiene BD. La plataforma aún no tiene
 En diseño:        Plataforma SaaS, Etapa 0 (plan 2026-10-01-001). Cerradas D1,
                   D3, D5 y D6; D13 se decide más adelante. Inventario editorial
                   hecho con la API y el WXR (§6: 15 entradas en Elementor, audio
-                  en Captivate). Siguiente: el monorepo (D1, §7), con propuesta
-                  antes de mover nada. Faltan del responsable: AWS, Stripe, DNS,
+                  en Captivate). Monorepo (D1, §7) hecho: apps/sitio;
+                  packages/ui y contratos con su primer consumidor. Faltan del responsable: AWS, Stripe, DNS,
                   miembros y pagos.
 
 Archivos NO:      vercel.json, variables de Vercel y .env*; dependencias solo con
@@ -338,7 +350,7 @@ Cuando confirmes, muéstrame el plan de implementación en pasos antes de ejecut
 
 ```bash
 npm run dev            # Express + Vite HMR en :5000 (PORT=5001 si está ocupado)
-npm run build          # assets → cliente → SSR → prerender → servidor (dist/)
+npm run build          # assets → cliente → SSR → prerender → servidor (apps/sitio/dist/)
 npm start              # sirve el build de producción
 npm run check          # tsc (client + server + shared + api) + check:assets
 npm run lint           # ESLint; lint:fix para corregir
