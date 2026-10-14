@@ -1,8 +1,8 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { describe, expect, it } from "vitest";
-import { REGISTRO } from "./registro";
-import type { Categoria } from "./tipos";
+import { ETIQUETA_NIVEL, REGISTRO } from "./registro";
+import type { Categoria, Nivel } from "./tipos";
 
 const RAIZ = resolve(import.meta.dirname, "..", "..", "..");
 const SRC = join(RAIZ, "client", "src");
@@ -53,12 +53,37 @@ function importadores(archivo: string): string[] {
     .map((f) => f.ruta);
 }
 
+/** Dominios que pueden vivir en cualquier carpeta de nivel atómico. */
+const DOMINIOS: Categoria[] = ["layout", "institucional", "contenido", "formularios"];
+
 const CATEGORIAS_POR_CARPETA: Record<string, Categoria[]> = {
   layout: ["layout", "infraestructura"],
   institucional: ["institucional"],
   content: ["contenido"],
   forms: ["formularios"],
   ui: ["ui"],
+  sections: ["legado"],
+  // Atomic Design (docs/plans/2026-10-13-001-refactor-atomic-design-plan.md):
+  // la carpeta da el nivel y la categoría sigue siendo el dominio (DA-3).
+  atoms: DOMINIOS,
+  molecules: DOMINIOS,
+  organisms: DOMINIOS,
+  templates: DOMINIOS,
+  infraestructura: ["infraestructura"],
+};
+
+/**
+ * Carpetas que fijan el nivel. Las de dominio (layout, institucional, content,
+ * forms) no aparecen: mientras dura la migración, sus componentes declaran el
+ * nivel al que irán.
+ */
+const NIVEL_POR_CARPETA: Record<string, Nivel[]> = {
+  atoms: ["atomo"],
+  molecules: ["molecula"],
+  organisms: ["organismo"],
+  templates: ["plantilla"],
+  infraestructura: ["infraestructura"],
+  ui: ["atomo"],
   sections: ["legado"],
 };
 
@@ -118,6 +143,24 @@ describe("registro del catálogo", () => {
         "carpeta nueva: añádela a CATEGORIAS_POR_CARPETA y al tipo Categoria",
       ).toHaveProperty(carpeta);
       expect(CATEGORIAS_POR_CARPETA[carpeta], e.archivo).toContain(e.categoria);
+    }
+  });
+
+  it("CA-1: declara un nivel atómico válido en cada entrada", () => {
+    for (const e of REGISTRO) {
+      expect(Object.keys(ETIQUETA_NIVEL), e.archivo).toContain(e.nivel);
+    }
+  });
+
+  it("CA-2: en las carpetas que fijan el nivel, el nivel coincide con la carpeta", () => {
+    for (const e of REGISTRO) {
+      const carpeta = basename(dirname(e.archivo));
+      if (carpeta in NIVEL_POR_CARPETA) {
+        expect(NIVEL_POR_CARPETA[carpeta], e.archivo).toContain(e.nivel);
+      } else {
+        // «legado» solo existe en sections/ (DA-2).
+        expect(e.nivel, e.archivo).not.toBe("legado");
+      }
     }
   });
 

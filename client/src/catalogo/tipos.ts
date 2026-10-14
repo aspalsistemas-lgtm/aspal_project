@@ -10,6 +10,14 @@ export type Categoria =
   | "legado"
   | "infraestructura";
 
+/**
+ * Nivel de Atomic Design (design.md §1.2). Independiente de la categoría, que
+ * es el dominio. Las carpetas atómicas lo fijan (ver el test); `ui/` cuenta
+ * como átomo y `sections/` es legado que no se migra.
+ */
+export type Nivel =
+  "atomo" | "molecula" | "organismo" | "plantilla" | "infraestructura" | "legado";
+
 /** `sin-uso`: nadie lo importa. El test obliga a marcarlo; lo normal es borrarlo. */
 export type Estado = "en-uso" | "sin-uso";
 
@@ -29,6 +37,7 @@ export interface EntradaCatalogo {
   /** La línea de import tal cual se escribe. */
   importar: string;
   categoria: Categoria;
+  nivel: Nivel;
   descripcion: string;
   usarCuando: string;
   evitarPara?: string;

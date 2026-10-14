@@ -1,5 +1,6 @@
 import { CopiarCodigo } from "./CopiarCodigo";
 import { demoDe } from "./demos";
+import { ETIQUETA_NIVEL } from "./registro";
 import type { EntradaCatalogo } from "./tipos";
 import { VistaDemo } from "./VistaDemo";
 
@@ -28,6 +29,13 @@ export function FichaComponente({ entrada }: { entrada: EntradaCatalogo }) {
         >
           {entrada.nombre}
         </h3>
+        {/* Nivel de Atomic Design (DA-3): independiente de la categoría. */}
+        <span
+          className="rounded-full border border-border bg-fondo-suave px-2.5 py-0.5 text-xs font-semibold text-primary"
+          data-testid={`nivel-${entrada.id}`}
+        >
+          {ETIQUETA_NIVEL[entrada.nivel]}
+        </span>
         {entrada.estado === "sin-uso" && (
           <span className="rounded-full bg-destructive px-2.5 py-0.5 text-xs font-semibold text-destructive-foreground">
             Sin uso
