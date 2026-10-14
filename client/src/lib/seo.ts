@@ -77,6 +77,18 @@ export const SEO: Record<RutaEstatica, MetaRuta> = {
       "Guía práctica sobre las etapas de gestión de una asociación o sociedad profesional: 7 etapas y 23 pasos, de la gobernanza a la mejora continua.",
     indexable: true,
   },
+  "/aviso-de-privacidad": {
+    titulo: "Aviso de privacidad · ASPAL",
+    descripcion:
+      "Cómo trata ASPAL tus datos personales: finalidades, datos que recaba, transferencias y cómo ejercer tus derechos ARCO.",
+    indexable: true,
+  },
+  "/terminos": {
+    titulo: "Términos de uso · ASPAL",
+    descripcion:
+      "Reglamento de la comunidad ASPAL: reglas de participación, código de etiqueta en los grupos de discusión y asuntos legales.",
+    indexable: true,
+  },
   "/componentes": {
     titulo: "Componentes y estilos · ASPAL",
     descripcion:

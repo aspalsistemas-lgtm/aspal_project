@@ -9,7 +9,9 @@ import {
   TITULO_SITIO,
   URL_AVISO_PRIVACIDAD,
   URL_SITIO,
+  URL_TERMINOS,
 } from "./marca";
+import { esRutaConocida } from "./rutas";
 
 const indexHtml = readFileSync(
   resolve(import.meta.dirname, "..", "..", "index.html"),
@@ -23,12 +25,12 @@ describe("marca", () => {
     expect(URL_SITIO).toBe("https://www.asociacionesprofesionales.org");
   });
 
-  it("el aviso de privacidad es la página de WordPress, por https", () => {
-    // Decisión del 2026-10-14: se reutiliza la política existente de la
-    // comunidad en vez de redactar otra (plan de la Etapa 0, §9).
-    expect(URL_AVISO_PRIVACIDAD).toBe(
-      "https://comunidad.asociacionesprofesionales.org/politica-privacidad/",
-    );
+  it("el aviso de privacidad y los términos son páginas del sitio (CA-4)", () => {
+    // Decisión del 2026-10-14: el texto de WordPress se copia a páginas propias.
+    expect(URL_AVISO_PRIVACIDAD).toBe("/aviso-de-privacidad");
+    expect(URL_TERMINOS).toBe("/terminos");
+    expect(esRutaConocida(URL_AVISO_PRIVACIDAD)).toBe(true);
+    expect(esRutaConocida(URL_TERMINOS)).toBe(true);
   });
 
   it("el título de index.html es igual a TITULO_SITIO", () => {

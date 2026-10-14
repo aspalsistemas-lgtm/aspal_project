@@ -22,6 +22,8 @@ export const RUTAS_ESTATICAS = [
   "/nuestro-equipo",
   "/nosotros",
   "/mapa-de-ruta",
+  "/aviso-de-privacidad",
+  "/terminos",
   "/componentes",
 ] as const;
 export type RutaEstatica = (typeof RUTAS_ESTATICAS)[number];

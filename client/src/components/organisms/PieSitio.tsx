@@ -4,7 +4,13 @@ import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
 import { Proximamente } from "@/components/atoms/Proximamente";
 import { Button } from "@/components/ui/button";
 import { registrarEvento } from "@/lib/analitica";
-import { CONTACTO, NOMBRE_MARCA, REDES, URL_AVISO_PRIVACIDAD } from "@/lib/marca";
+import {
+  CONTACTO,
+  NOMBRE_MARCA,
+  REDES,
+  URL_AVISO_PRIVACIDAD,
+  URL_TERMINOS,
+} from "@/lib/marca";
 import {
   ENTRADAS_PIE,
   NAVEGACION,
@@ -22,6 +28,16 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Link } from "wouter";
+
+/** La barra legal de la franja noche. */
+const LEGALES = [
+  {
+    etiqueta: "Aviso de privacidad",
+    href: URL_AVISO_PRIVACIDAD,
+    testid: "aviso-privacidad",
+  },
+  { etiqueta: "Términos", href: URL_TERMINOS, testid: "terminos" },
+] as const;
 
 /** Un dato de contacto que se puede accionar: escribir, llamar o ubicar. */
 function Contacto({
@@ -262,24 +278,18 @@ export function PieSitio({ conBoletin = true }: { conBoletin?: boolean }) {
           <p data-testid="text-copyright">
             © {new Date().getFullYear()} {NOMBRE_MARCA}
           </p>
-          {/* PENDIENTE (Etapa 0): /terminos. */}
           <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <li className="flex items-center gap-2" data-testid="footer-aviso-privacidad">
-              <a
-                href={URL_AVISO_PRIVACIDAD}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center gap-1 rounded-sm underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-noche"
-                data-testid="link-footer-aviso-privacidad"
-              >
-                Aviso de privacidad
-                <ArrowUpRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <AvisoPestanaNueva />
-              </a>
-            </li>
-            <li className="flex items-center gap-2" data-testid="footer-terminos">
-              Términos <Proximamente />
-            </li>
+            {LEGALES.map((legal) => (
+              <li key={legal.testid} data-testid={`footer-${legal.testid}`}>
+                <Link
+                  href={legal.href}
+                  className="inline-flex min-h-11 items-center rounded-sm underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-noche"
+                  data-testid={`link-footer-${legal.testid}`}
+                >
+                  {legal.etiqueta}
+                </Link>
+              </li>
+            ))}
           </ul>
           <p data-testid="text-footer-respaldo">
             Con el respaldo de World Urban Parks y ANPR México

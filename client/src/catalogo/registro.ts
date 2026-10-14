@@ -365,6 +365,23 @@ export const REGISTRO = [
     vista: "demo",
   },
   {
+    id: "documento-legal",
+    nombre: "DocumentoLegal",
+    archivo: "client/src/components/organisms/DocumentoLegal.tsx",
+    importar: 'import { DocumentoLegal } from "@/components/organisms/DocumentoLegal";',
+    categoria: "institucional",
+    nivel: "organismo",
+    descripcion:
+      "Cuerpo de un texto legal a ancho de lectura: intro, un h2 por apartado, párrafos y listas, con los correos enlazados (mailto) salvo los que no son válidos.",
+    usarCuando:
+      "Aviso de privacidad, términos y cualquier documento legal de content/institucional/documentos-legales.ts.",
+    evitarPara:
+      "Artículos del blog (HTML de WordPress en blog-post) o textos institucionales con diseño propio.",
+    props: "documento: DocumentoLegal",
+    estado: "en-uso",
+    vista: "sin-vista",
+  },
+  {
     id: "perfil-card",
     nombre: "PerfilCard",
     archivo: "client/src/components/molecules/PerfilCard.tsx",

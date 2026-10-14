@@ -23,6 +23,8 @@ import { ArticuloBlog } from "@/pages/blog-post";
 import { Podcast } from "@/pages/podcast";
 import { PaginaNoEncontrada } from "@/pages/not-found";
 import { Componentes } from "@/pages/componentes";
+import { AvisoDePrivacidad } from "@/pages/aviso-de-privacidad";
+import { Terminos } from "@/pages/terminos";
 import {
   RUTAS_DINAMICAS,
   RUTAS_ESTATICAS,
@@ -46,6 +48,8 @@ const PAGINAS: Record<RutaEstatica, FunctionComponent> = {
   "/nuestro-equipo": NuestroEquipo,
   "/eventos": Eventos,
   "/componentes": Componentes,
+  "/aviso-de-privacidad": AvisoDePrivacidad,
+  "/terminos": Terminos,
 };
 
 const PAGINAS_DINAMICAS: Record<RutaDinamica, FunctionComponent> = {
