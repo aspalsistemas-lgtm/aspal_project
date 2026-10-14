@@ -269,29 +269,28 @@ desde la cuenta de GitHub **Antonio1491** (ver Anexo A, «Cuenta de GitHub»).
 > Límite: ~40 líneas. Lo cerrado se mueve a `docs/sprints/`.
 
 ```
-Fecha del bloque: 2026-10-13
-Rama:             staging, sincronizada con origin/staging (último push 09f8083);
-                  184 commits por delante de origin/main. Solo existen main y
+Fecha del bloque: 2026-10-14
+Rama:             staging, sincronizada con origin/staging (push del 2026-10-14);
+                  ~206 commits por delante de origin/main. Solo existen main y
                   staging: las ramas de trabajo se fusionan en staging y se borran.
                   Los push salen con la cuenta Antonio1491 (Anexo A).
 
-Deuda técnica:    Registro vivo en docs/sprints/deuda-tecnica.md. Consultarlo
-                  antes de tocar shared/wordpress, el formato de /api/* o
-                  client/src/components; al cerrar un punto, a "Resueltos" con su
-                  commit. Cerrados 1.2, 1.3, 2.x, 3.2, 3.4, 4.1 y 4.5 (sin tema
-                  oscuro ni tokens sin uso). Quedan: 1.1 (rate limit en Vercel,
-                  manual), 4.3/4.4/4.7 (piden autorización) y 3.1 (Atomic Design,
-                  con 3.3, 3.5-3.7 y 4.2).
-Método:           SDD (ADR-0006). Verificación visual: npm run check:browser con
-                  el servidor local levantado (Anexo A).
+Deuda técnica:    Registro vivo en docs/sprints/deuda-tecnica.md; al cerrar un
+                  punto, a "Resueltos" con su commit. P2 y P4 casi completos;
+                  cerrados también 3.1/3.3 (Atomic Design) y 3.2/3.4. Quedan:
+                  1.4 (npm audit, en curso), 1.1 (rate limit en Vercel, manual),
+                  3.5-3.8 y 4.6.
+Método:           SDD (ADR-0006). Componentes por Atomic Design (design.md §1).
+                  Verificación: npm run test:coverage (también en CI) y
+                  npm run check:browser con el servidor local (Anexo A).
 
 Cerrado y en prod: main = 2e9bd45. Producción NO tiene todavía el rediseño
                   institucional, la suscripción, el prerender ni el catálogo:
                   todo está en origin/staging (preview de Vercel, protegido con
-                  Vercel Authentication), junto con el manejador de errores
-                  único, el typecheck de tests, el plan v2, la guía de BD y el
-                  ADR-0006. Revisión local del 2026-10-13: 11 rutas a 1280 y
-                  375 px, 0 errores de consola.
+                  Vercel Authentication), junto con Atomic Design, el manejador
+                  de errores único, la cobertura en CI, el plan v2 y el
+                  ADR-0006. Migración a Atomic Design: HTML prerenderizado de
+                  12 de 13 páginas idéntico al de antes; 0 errores de consola.
 
 Runtime:          Node 22.22.0 local · npm 11.20.0 · engines 22.x
 
@@ -303,9 +302,10 @@ En diseño:        Plataforma SaaS, Etapa 0 (plan v2: el gestor de contenido
                   Google sin Facebook, un login global). Pendiente: D13
                   (renderizado y publicación) e inventario editorial.
 
-Archivos OK:      docs/, *.md de contexto (fase 2 de la alineación).
-Archivos NO:      Código, dependencias, .env*, vercel.json y estructura de
-                  carpetas hasta que empiece la fase 3, punto a punto.
+Archivos OK:      Fase 3 de la alineación: código y docs, punto a punto, con
+                  propuesta aprobada antes de cada cambio.
+Archivos NO:      vercel.json, variables de Vercel y .env*; dependencias solo con
+                  autorización explícita del punto (la 1.4 la tiene).
 
 Nota DB local:    No aplica. En local todo funciona sin .env; sin claves de
                   Mailchimp, /api/suscripcion responde 503 (esperado).
