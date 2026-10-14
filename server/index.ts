@@ -59,25 +59,22 @@ app.use((req, res, next) => {
 
   app.use(manejadorDeErrores);
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Vite solo en desarrollo, y después de registrar las demás rutas: su ruta
+  // comodín no debe tapar a las otras.
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
+  // API y cliente se sirven en el mismo puerto: el de PORT, o 5000 si no se
+  // define. (Lo de «los demás puertos tienen cortafuegos» era de Replit.)
   const port = parseInt(process.env.PORT || "5000", 10);
   server.listen(
     {
       port,
       host: "0.0.0.0",
-      // SO_REUSEPORT is not supported on Windows and makes listen() throw ENOTSUP
+      // SO_REUSEPORT no existe en Windows y listen() lanza ENOTSUP: no «arreglarlo».
       reusePort: process.platform !== "win32",
     },
     () => {
