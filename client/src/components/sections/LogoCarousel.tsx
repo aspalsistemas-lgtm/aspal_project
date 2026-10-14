@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useEnCliente } from "@/hooks/use-en-cliente";
 import logo1 from "@assets/Recurso 50comunidad ASPAL_1763678044080.png";
 import logo2 from "@assets/Recurso 52comunidad ASPAL_1763678051896.png";
 import logo3 from "@assets/Recurso 53comunidad ASPAL_1763678055285.png";
@@ -11,11 +11,8 @@ const LOGOS = [
 ];
 
 export default function LogoCarousel() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // Solo en el navegador, como antes, pero sin setState en un efecto.
+  const mounted = useEnCliente();
 
   if (!mounted) return null;
 

@@ -30,7 +30,7 @@ client/
     │   └── sections/      ← legado de /plataforma; no reutilizar
     ├── content/institucional/ ← textos de Nosotros, Qué hacemos, Equipo, Mapa, inicio (datos)
     ├── catalogo/          ← registro.ts, tipos, demos y vistas de /componentes
-    ├── hooks/             ← use-lista-paginada, use-en-cliente, use-animar-al-ver, use-mobile, use-toast
+    ├── hooks/             ← use-lista-paginada, use-en-cliente, use-animar-al-ver, use-toast
     ├── lib/               ← rutas, seo, navegacion, marca, analitica, clases, date, utils (cn)…
     └── assets/            ← solo lo que se usa; ≤ 250 KB por imagen (check-assets)
 ```
@@ -121,8 +121,9 @@ useGetPosts(); // verbo después de use
 usarLista(); // sin prefijo use
 ```
 
-`useIsMobile` (`use-mobile.tsx`) y `useToast` (`use-toast.ts`) vienen de
-shadcn y se conservan con su nombre.
+`useToast` (`use-toast.ts`) viene de shadcn y se conserva con su nombre.
+Lo que solo existe en el navegador se lee con `useEnCliente()`, nunca con
+`setState` dentro de un efecto: ESLint lo trata como error.
 
 Archivo: `hooks/use-<nombre-en-kebab>.ts`.
 

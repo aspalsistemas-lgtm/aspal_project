@@ -207,7 +207,8 @@ más.
 ❌  useGetPosts (verbo tras use) · usarLista (sin prefijo use)
 ```
 
-`useIsMobile` y `useToast` vienen de shadcn y se conservan.
+`useToast` viene de shadcn y se conserva (`useIsMobile` no lo usaba nadie y se
+retiró).
 
 ---
 

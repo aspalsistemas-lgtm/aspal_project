@@ -27,6 +27,7 @@ import {
 } from "@/lib/navegacion";
 import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
 import { Proximamente } from "@/components/atoms/Proximamente";
+import { useEnCliente } from "@/hooks/use-en-cliente";
 import { registrarEvento } from "@/lib/analitica";
 import { indiceSiguiente } from "@/lib/teclado";
 import { cn } from "@/lib/utils";
@@ -342,12 +343,12 @@ function PanelMovil({
   onCerrar: () => void;
   ruta: string;
 }) {
-  const [montado, setMontado] = useState(false);
+  // createPortal necesita document.body: solo en el navegador, y sin setState
+  // en un efecto (el primer render coincide con el HTML prerenderizado).
+  const montado = useEnCliente();
   const panelRef = useRef<HTMLDivElement>(null);
   const cerrarRef = useRef<HTMLButtonElement>(null);
   const idTitulo = useId();
-
-  useEffect(() => setMontado(true), []);
 
   // Bloquea el scroll del cuerpo mientras el panel cubre la pantalla.
   useEffect(() => {
@@ -547,8 +548,13 @@ export function CabeceraSitio() {
   const [compacto, setCompacto] = useState(false);
 
   // El panel debe cerrarse al navegar. Antes se quedaba abierto encima de la
-  // página nueva.
-  useEffect(() => setMenuAbierto(false), [ruta]);
+  // página nueva. Se ajusta durante el render al cambiar la ruta (el patrón
+  // de React para derivar estado de un cambio), sin efecto ni render de más.
+  const [rutaDelMenu, setRutaDelMenu] = useState(ruta);
+  if (ruta !== rutaDelMenu) {
+    setRutaDelMenu(ruta);
+    setMenuAbierto(false);
+  }
 
   useEffect(() => {
     const alScroll = () => setCompacto(window.scrollY > 32);

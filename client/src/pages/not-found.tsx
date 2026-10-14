@@ -90,6 +90,10 @@ export function PaginaNoEncontrada() {
     // inicial: si venimos de otra página del sitio, esa es el origen real.
     const interna = rutaAnterior(ruta);
     const origen = interna ? `${URL_SITIO}${interna}` : document.referrer;
+    // Tiene que ser en el efecto: rutaAnterior() solo responde cuando el efecto
+    // de CabeceraRuta ya registró la ruta actual, y ese efecto corre antes que
+    // este. Calculado en el render, el 404 reportaría mal de dónde se viene.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- ver arriba
     setReferente(origen);
     document.title = SEO_404.titulo;
     document

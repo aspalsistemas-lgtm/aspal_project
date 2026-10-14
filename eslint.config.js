@@ -47,11 +47,11 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.flat.recommended.rules,
-      // Aviso, no error. Dispara en cuatro sitios con patrones que funcionan
-      // (guard de montaje para createPortal, listener de matchMedia, contador
-      // animado). La forma canónica de varios sería useSyncExternalStore;
-      // merece un refactor propio, no bloquear el CI de un cambio ajeno.
-      "react-hooks/set-state-in-effect": "warn",
+      // Error desde la deuda 3.5: lo que solo existe en el navegador se lee con
+      // useEnCliente (useSyncExternalStore) y lo que deriva de un cambio se
+      // ajusta durante el render. La única excepción, justificada en su línea,
+      // es el referente de la página 404.
+      "react-hooks/set-state-in-effect": "error",
     },
   },
 
