@@ -60,12 +60,12 @@ una aplicación aparte, con PostgreSQL en AWS. Sus datos se rigen por
 ```
 Repo:       un solo paquete npm (sin workspaces; pasará a monorepo, D1) · Node 22.x · TypeScript 5.6 strict
 Backend:    Express 4 · sin ORM ni BD · validación manual en shared/ · console como logger
-Frontend:   React 18 + Vite 5 + wouter 3 · Tailwind 3 + shadcn/ui (New York) · estado
+Frontend:   React 18 + Vite 7 + wouter 3 · Tailwind 3 + shadcn/ui (New York) · estado
             local con hooks de React · estado remoto con TanStack Query 5 · formularios
             con FormData + validación compartida · toasts de shadcn (use-toast)
 Auth:       ninguna
 Externos:   WordPress REST API (contenido) · Mailchimp API v3 (boletín) · GTM dataLayer
-Testing:    Vitest 3 (entorno node) · cobertura v8 con umbral (npm run test:coverage);
+Testing:    Vitest 5 (entorno node) · cobertura v8 con umbral (npm run test:coverage);
             un .test.ts por módulo de lógica en shared/ y client/src/lib/
 Calidad:    ESLint 10 + typescript-eslint · Prettier 3 · scripts/check-assets.mjs · CI en
             GitHub Actions

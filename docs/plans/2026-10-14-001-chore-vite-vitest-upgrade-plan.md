@@ -1,7 +1,7 @@
 ---
 title: Subir vite y vitest para cerrar los avisos críticos de npm audit
 type: chore
-status: approved
+status: done
 date: 2026-10-14
 origin: docs/sprints/deuda-tecnica.md (1.4) · ADR-0006 (SDD)
 ---
@@ -106,4 +106,8 @@ Cada fase en su rama, en verde y fusionada antes de la siguiente.
 
 ## 7. Siguiente paso
 
-Decisiones cerradas. Siguiente: la V1.
+**Plan completado el 2026-10-14.**
+
+- **V1** (`59cfa61`): `vite` 7.3 y `@vitejs/plugin-react` 5.2; `build.target` fijado a la lista de Vite 5, comprobado: con Vite 5 el build sale idéntico byte a byte. Con Vite 7: HTML idéntico en las 13 páginas, CSS equivalente (solo espacios en `@media`), JavaScript sin sintaxis posterior a ES2020 y 14 KB menor. `check:browser` sin errores en 48 revisiones (desarrollo y producción).
+- **V2** (`b2c1501`): `vitest` y `@vitest/coverage-v8` 5.0. Los 278 tests pasan; hizo falta el alias `@assets` en `vitest.config.ts`. El nuevo cálculo de V8 cuenta solo líneas ejecutables (475 frente a 1515): mismos 30 archivos y mismas líneas sin cubrir, y el umbral se recalibra de 87 a 84 % de líneas por la medida, no por regresión.
+- **V3**: `npm audit` sin críticos (14 → 8; quedan los de `tailwindcss` 3, deuda 1.4) y guías al día.
