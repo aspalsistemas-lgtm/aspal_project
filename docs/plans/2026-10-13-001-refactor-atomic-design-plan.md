@@ -1,7 +1,7 @@
 ---
 title: Migración de client/src/components a Atomic Design
 type: refactor
-status: draft
+status: approved
 date: 2026-10-13
 origin: docs/sprints/deuda-tecnica.md (3.1, con 3.3 y 4.2) · design.md §1.2 · ADR-0006 (SDD)
 ---
@@ -57,7 +57,12 @@ Lo que depende de las rutas actuales y hay que actualizar en el mismo cambio:
 Red de seguridad disponible: typecheck de los tests (3.2), el test del
 catálogo, cobertura con umbral (4.3) y `npm run check:browser`.
 
-## 3. Decisiones que necesitan respuesta
+## 3. Decisiones
+
+**Cerradas el 2026-10-14 por el responsable, todas según la recomendación:**
+`ui/` no se mueve (DA-1) · `sections/` no se migra (DA-2) · el catálogo gana
+el campo `nivel` y conserva `categoria` (DA-3) · carpeta
+`components/infraestructura/` (DA-4) · los nombres de DA-5 tal cual.
 
 ### DA-1 · `ui/` de shadcn — se recomienda **no moverla**
 
@@ -93,7 +98,7 @@ Alternativa: tratarlas como organismos.
 
 ### DA-5 · Nombres en español de los heredados (3.3)
 
-Propuesta, a confirmar: `Header` → `CabeceraSitio` · `Footer` → `PieSitio` ·
+Aprobados: `Header` → `CabeceraSitio` · `Footer` → `PieSitio` ·
 `BlogCard` → `TarjetaArticulo` · `ErrorBoundary` → `LimiteDeErrores` ·
 `ScrollToTop` → `BotonVolverArriba` · `ScrollRestoration` →
 `RestaurarDesplazamiento`. Los siete de `sections/` dependen de DA-2.
@@ -163,4 +168,4 @@ movimiento masivo genera conflictos con cualquier otra rama que los toque.
 
 ## 8. Siguiente paso
 
-Responder DA-1 a DA-5. Con eso se abre la F0, que no mueve ningún archivo.
+Decisiones cerradas. Siguiente: la F0, que no mueve ningún archivo.
