@@ -396,11 +396,29 @@ debe definir.
 
 ## 6. Inventario de datos actuales y recorridos
 
-**Inventario de contenido editorial (insumo pendiente, bloquea la Etapa 2):**
+**Inventario de contenido editorial (bloquea la Etapa 2).** Lo que se pide:
 entradas, episodios de podcast, borradores accesibles, autores, taxonomías,
 imágenes, adjuntos, incrustaciones, feeds, dónde se aloja el audio y qué
 redirecciones hacen falta (plan, sección 9). La API pública de WordPress puede
 no incluir borradores, versiones ni medios privados.
+
+Primera pasada, 2026-10-14, solo con la API pública
+(`comunidad.asociacionesprofesionales.org/wp-json/wp/v2`):
+
+| Qué                       | Medido                                                                                                                                                                                          |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Entradas                  | **15**: 7 `blog` y 8 `podcast`, de 2024-04-30 a **2024-10-28** (sin publicaciones desde entonces); 3 autores; 0 etiquetas; 0 comentarios                                                        |
+| Contenido de las entradas | Las **15** tras el muro de MemberPress: la API pública no da el cuerpo completo, por eso tampoco muestra incrustaciones ni el audio                                                             |
+| Audio del podcast         | **Desconocido** desde fuera: ningún reproductor ni archivo visible en lo que entrega la API                                                                                                     |
+| Páginas                   | 28, casi todas de la comunidad (grupos, mensajes, miembros, registro, login, cuenta, paneles de eventos), Elementor; entre ellas `politica-privacidad`, `blog`, `podcast` y `todos-los-podcast` |
+| Medios                    | 245, **1,39 GB** declarados: 180 PNG, 27 MP4, 26 JPEG, 6 GIF, 4 PDF, 1 SVG, 1 WebP                                                                                                              |
+| Fuera de la Etapa 2       | MemberPress Courses (1 curso, 36 lecciones), eventos (`event_listing`, 0), myCred, Advanced Ads, MailPoet: siguen en WordPress (decisión del 13 de octubre)                                     |
+
+Queda para hacer **con acceso de administrador**: exportación completa (WXR)
+con el cuerpo de las 15 entradas, borradores y revisiones; dónde está el audio
+y si hay feed RSS del podcast en uso (Spotify, Apple…); cuáles de los 245
+medios usan esas 15 entradas (el resto se queda en WordPress); y las URL
+antiguas que necesitan redirección.
 
 **Inventario de miembros (insumo pendiente, bloquea la Etapa 3):** dónde están
 hoy los miembros de ASPAL (y, cuando ANPR se incorpore, los de ANPR) en
