@@ -1,5 +1,5 @@
-import Footer from "@/components/layout/Footer";
-import Header from "@/components/layout/Header";
+import Footer from "@/components/organisms/Footer";
+import Header from "@/components/organisms/Header";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
 import { FichaComponente } from "@/catalogo/FichaComponente";
 import { CATEGORIAS, REGISTRO } from "@/catalogo/registro";

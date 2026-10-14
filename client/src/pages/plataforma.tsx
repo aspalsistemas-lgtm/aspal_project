@@ -1,10 +1,10 @@
-import Header from "@/components/layout/Header";
+import Header from "@/components/organisms/Header";
 import HeroSection from "@/components/sections/HeroSection";
 import { MembershipProblemSection } from "@/components/sections/ProblemSection";
 import FeaturesGrid from "@/components/sections/FeaturesGrid";
 import LogoCarousel from "@/components/sections/LogoCarousel";
 import CTASection from "@/components/sections/CTASection";
-import Footer from "@/components/layout/Footer";
+import Footer from "@/components/organisms/Footer";
 import communityImage from "@assets/recurso-8-comunidad.webp";
 import blogImage from "@assets/recurso-3-blog.webp";
 import certificationsImage from "@assets/recurso-40-certificaciones.webp";

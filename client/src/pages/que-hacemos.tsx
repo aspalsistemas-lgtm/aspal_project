@@ -1,11 +1,11 @@
 import { Hashtag } from "@/components/atoms/Hashtag";
 import { IndicePilares } from "@/components/molecules/IndicePilares";
-import { PanalPilares } from "@/components/institucional/PanalPilares";
-import { SeccionPilar } from "@/components/institucional/SeccionPilar";
+import { PanalPilares } from "@/components/organisms/PanalPilares";
+import { SeccionPilar } from "@/components/organisms/SeccionPilar";
 import { SubnavSeccion } from "@/components/molecules/SubnavSeccion";
 import { Banda } from "@/components/layout/Banda";
-import Footer from "@/components/layout/Footer";
-import Header from "@/components/layout/Header";
+import Footer from "@/components/organisms/Footer";
+import Header from "@/components/organisms/Header";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
 import { PatronPanal } from "@/components/atoms/PatronPanal";
 import { Button } from "@/components/ui/button";

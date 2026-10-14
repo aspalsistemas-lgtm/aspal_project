@@ -164,8 +164,8 @@ export const REGISTRO = [
   {
     id: "header",
     nombre: "Header",
-    archivo: "client/src/components/layout/Header.tsx",
-    importar: 'import Header from "@/components/layout/Header";',
+    archivo: "client/src/components/organisms/Header.tsx",
+    importar: 'import Header from "@/components/organisms/Header";',
     categoria: "layout",
     nivel: "organismo",
     descripcion:
@@ -179,8 +179,8 @@ export const REGISTRO = [
   {
     id: "footer",
     nombre: "Footer",
-    archivo: "client/src/components/layout/Footer.tsx",
-    importar: 'import Footer from "@/components/layout/Footer";',
+    archivo: "client/src/components/organisms/Footer.tsx",
+    importar: 'import Footer from "@/components/organisms/Footer";',
     categoria: "layout",
     nivel: "organismo",
     descripcion:
@@ -302,8 +302,8 @@ export const REGISTRO = [
   {
     id: "seccion-pilar",
     nombre: "SeccionPilar",
-    archivo: "client/src/components/institucional/SeccionPilar.tsx",
-    importar: 'import { SeccionPilar } from "@/components/institucional/SeccionPilar";',
+    archivo: "client/src/components/organisms/SeccionPilar.tsx",
+    importar: 'import { SeccionPilar } from "@/components/organisms/SeccionPilar";',
     categoria: "institucional",
     nivel: "organismo",
     descripcion:
@@ -334,8 +334,8 @@ export const REGISTRO = [
   {
     id: "panal-pilares",
     nombre: "PanalPilares",
-    archivo: "client/src/components/institucional/PanalPilares.tsx",
-    importar: 'import { PanalPilares } from "@/components/institucional/PanalPilares";',
+    archivo: "client/src/components/organisms/PanalPilares.tsx",
+    importar: 'import { PanalPilares } from "@/components/organisms/PanalPilares";',
     categoria: "institucional",
     nivel: "organismo",
     descripcion:
@@ -350,8 +350,8 @@ export const REGISTRO = [
   {
     id: "ruta-timeline",
     nombre: "RutaTimeline",
-    archivo: "client/src/components/institucional/RutaTimeline.tsx",
-    importar: 'import { RutaTimeline } from "@/components/institucional/RutaTimeline";',
+    archivo: "client/src/components/organisms/RutaTimeline.tsx",
+    importar: 'import { RutaTimeline } from "@/components/organisms/RutaTimeline";',
     categoria: "institucional",
     nivel: "organismo",
     descripcion:
@@ -413,8 +413,8 @@ export const REGISTRO = [
   {
     id: "muro-aliados",
     nombre: "MuroAliados",
-    archivo: "client/src/components/institucional/MuroAliados.tsx",
-    importar: 'import { MuroAliados } from "@/components/institucional/MuroAliados";',
+    archivo: "client/src/components/organisms/MuroAliados.tsx",
+    importar: 'import { MuroAliados } from "@/components/organisms/MuroAliados";',
     categoria: "institucional",
     nivel: "organismo",
     descripcion:
@@ -471,8 +471,8 @@ export const REGISTRO = [
   {
     id: "seccion-etapa",
     nombre: "SeccionEtapa",
-    archivo: "client/src/components/institucional/SeccionEtapa.tsx",
-    importar: 'import { SeccionEtapa } from "@/components/institucional/SeccionEtapa";',
+    archivo: "client/src/components/organisms/SeccionEtapa.tsx",
+    importar: 'import { SeccionEtapa } from "@/components/organisms/SeccionEtapa";',
     categoria: "institucional",
     nivel: "organismo",
     descripcion:
@@ -502,8 +502,8 @@ export const REGISTRO = [
   {
     id: "panal-etapas",
     nombre: "PanalEtapas",
-    archivo: "client/src/components/institucional/PanalEtapas.tsx",
-    importar: 'import { PanalEtapas } from "@/components/institucional/PanalEtapas";',
+    archivo: "client/src/components/organisms/PanalEtapas.tsx",
+    importar: 'import { PanalEtapas } from "@/components/organisms/PanalEtapas";',
     categoria: "institucional",
     nivel: "organismo",
     descripcion:
@@ -566,8 +566,8 @@ export const REGISTRO = [
   {
     id: "voces-red",
     nombre: "VocesRed",
-    archivo: "client/src/components/institucional/VocesRed.tsx",
-    importar: 'import { VocesRed } from "@/components/institucional/VocesRed";',
+    archivo: "client/src/components/organisms/VocesRed.tsx",
+    importar: 'import { VocesRed } from "@/components/organisms/VocesRed";',
     categoria: "institucional",
     nivel: "organismo",
     descripcion:
@@ -584,8 +584,8 @@ export const REGISTRO = [
   {
     id: "franja-podcast",
     nombre: "FranjaPodcast",
-    archivo: "client/src/components/content/FranjaPodcast.tsx",
-    importar: 'import { FranjaPodcast } from "@/components/content/FranjaPodcast";',
+    archivo: "client/src/components/organisms/FranjaPodcast.tsx",
+    importar: 'import { FranjaPodcast } from "@/components/organisms/FranjaPodcast";',
     categoria: "contenido",
     nivel: "organismo",
     descripcion:
@@ -709,9 +709,9 @@ export const REGISTRO = [
   {
     id: "contenido-reciente",
     nombre: "ContenidoReciente",
-    archivo: "client/src/components/content/ContenidoReciente.tsx",
+    archivo: "client/src/components/organisms/ContenidoReciente.tsx",
     importar:
-      'import { ContenidoReciente } from "@/components/content/ContenidoReciente";',
+      'import { ContenidoReciente } from "@/components/organisms/ContenidoReciente";',
     categoria: "contenido",
     nivel: "organismo",
     descripcion:
@@ -726,8 +726,8 @@ export const REGISTRO = [
   {
     id: "form-suscripcion",
     nombre: "FormSuscripcion",
-    archivo: "client/src/components/forms/FormSuscripcion.tsx",
-    importar: 'import { FormSuscripcion } from "@/components/forms/FormSuscripcion";',
+    archivo: "client/src/components/organisms/FormSuscripcion.tsx",
+    importar: 'import { FormSuscripcion } from "@/components/organisms/FormSuscripcion";',
     categoria: "formularios",
     nivel: "organismo",
     descripcion:

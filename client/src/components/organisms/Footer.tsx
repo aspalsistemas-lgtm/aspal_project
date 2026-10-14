@@ -1,5 +1,5 @@
 import logo from "@assets/aspal-logo-fondo-claro.webp";
-import { FormSuscripcion } from "@/components/forms/FormSuscripcion";
+import { FormSuscripcion } from "@/components/organisms/FormSuscripcion";
 import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
 import { Proximamente } from "@/components/atoms/Proximamente";
 import { Button } from "@/components/ui/button";

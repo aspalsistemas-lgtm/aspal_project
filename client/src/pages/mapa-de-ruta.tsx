@@ -1,11 +1,11 @@
 import { IndiceMapa } from "@/components/molecules/IndiceMapa";
 import { NavEtapas } from "@/components/molecules/NavEtapas";
-import { PanalEtapas } from "@/components/institucional/PanalEtapas";
-import { SeccionEtapa } from "@/components/institucional/SeccionEtapa";
+import { PanalEtapas } from "@/components/organisms/PanalEtapas";
+import { SeccionEtapa } from "@/components/organisms/SeccionEtapa";
 import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
 import { Banda } from "@/components/layout/Banda";
-import Footer from "@/components/layout/Footer";
-import Header from "@/components/layout/Header";
+import Footer from "@/components/organisms/Footer";
+import Header from "@/components/organisms/Header";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
 import { PatronPanal } from "@/components/atoms/PatronPanal";
 import { Button } from "@/components/ui/button";

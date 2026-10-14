@@ -1,13 +1,13 @@
 import { TarjetaArticulo } from "@/components/molecules/TarjetaArticulo";
 import { EpisodioFila } from "@/components/molecules/EpisodioFila";
-import { FranjaPodcast } from "@/components/content/FranjaPodcast";
+import { FranjaPodcast } from "@/components/organisms/FranjaPodcast";
 import { PortadaPodcast } from "@/components/molecules/PortadaPodcast";
 import { VerMas } from "@/components/molecules/VerMas";
 import { Hashtag } from "@/components/atoms/Hashtag";
 import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
 import { Banda } from "@/components/layout/Banda";
-import Footer from "@/components/layout/Footer";
-import Header from "@/components/layout/Header";
+import Footer from "@/components/organisms/Footer";
+import Header from "@/components/organisms/Header";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
 import { PatronPanal } from "@/components/atoms/PatronPanal";
 import { Button } from "@/components/ui/button";

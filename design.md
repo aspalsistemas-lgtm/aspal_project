@@ -25,12 +25,10 @@ components/
 │                      IlustracionPilar, Proximamente, AvisoMiembros, AvisoPestanaNueva
 ├── molecules/      ← moléculas ya migradas (§1.2): PilarCard, PerfilCard, TarjetaArticulo,
 │                      EpisodioFila, MetaArticulo, CifraAnimada, VerMas, BotonVolverArriba…
-├── layout/         ← estructura de página e infraestructura: Banda, HeroInstitucional,
-│                      Header, Footer, ErrorBoundary…
-├── institucional/  ← piezas de Nosotros, Qué hacemos, Equipo y Mapa de Ruta:
-│                      RutaTimeline, MuroAliados, SeccionPilar, SeccionEtapa…
-├── content/        ← contenido de WordPress: FranjaPodcast, ContenidoReciente
-├── forms/          ← FormSuscripcion
+├── organisms/      ← organismos ya migrados (§1.2): Header, Footer, FormSuscripcion,
+│                      ContenidoReciente, FranjaPodcast, SeccionPilar, RutaTimeline…
+├── layout/         ← pendientes de la F4: Banda y HeroInstitucional (plantillas) y
+│                      CabeceraRuta, ErrorBoundary, SaltarAlContenido, ScrollRestoration
 ├── ui/             ← primitivas shadcn/ui en uso (button, card, collapsible, input,
 │                      navigation-menu, toast, toaster, tooltip)
 └── sections/       ← legado de /plataforma: HeroSection, FeaturesGrid… No reutilizar.
@@ -55,7 +53,7 @@ Reglas vigentes:
 Decisión de octubre de 2026: migrar a la metodología Atomic Design de Brad
 Frost. Es un punto de la deuda técnica (P3), **en curso** según
 `docs/plans/2026-10-13-001-refactor-atomic-design-plan.md`: F0 (campo `nivel`
-en el catálogo), F1 (átomos) y F2 (moléculas) hechas. Cada entrada del catálogo declara su
+en el catálogo), F1 (átomos), F2 (moléculas) y F3 (organismos) hechas. Cada entrada del catálogo declara su
 nivel y el test exige que coincida con su carpeta. **Lo nuevo va ya a la
 carpeta de su nivel**; `ui/` (shadcn) y `sections/` (legado) no se mueven.
 
@@ -364,7 +362,7 @@ primero y se achica después. El repo cumple: no hay prefijos `max-*`.
 
 - **Navegación principal.** Menú completo desde `xl`; por debajo, panel móvil
   como diálogo modal (`role="dialog"`, `aria-modal`, foco al abrir, cierre con
-  Escape o enlace). Referencia: `components/layout/Header.tsx`.
+  Escape o enlace). Referencia: `components/organisms/Header.tsx`.
 - **Rejillas de tarjetas.** `grid gap-6 md:grid-cols-2 lg:grid-cols-3`
   (`pages/blog.tsx`) o `REJILLA_PILARES_PANAL`. Nunca scroll horizontal de
   tarjetas.

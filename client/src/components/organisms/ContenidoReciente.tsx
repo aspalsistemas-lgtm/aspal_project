@@ -1,4 +1,4 @@
-import { FranjaPodcast } from "@/components/content/FranjaPodcast";
+import { FranjaPodcast } from "@/components/organisms/FranjaPodcast";
 import { Banda } from "@/components/layout/Banda";
 import { useEnCliente } from "@/hooks/use-en-cliente";
 import { H2_BANDA, NUMERO_CONTORNO } from "@/lib/clases";

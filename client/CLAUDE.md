@@ -23,11 +23,9 @@ client/
     ├── components/
     │   ├── atoms/         ← átomos de Atomic Design (migración en curso, design.md §1.2)
     │   ├── molecules/     ← moléculas: tarjetas, índices, cifras, VerMas, BotonVolverArriba…
-    │   ├── layout/        ← Banda, HeroInstitucional, Header, Footer,
-    │   │                     ErrorBoundary, ScrollRestoration, CabeceraRuta…
-    │   ├── institucional/ ← secciones de pilares y mapa de ruta, aliados, voces
-    │   ├── content/       ← franja de podcast, contenido reciente
-    │   ├── forms/         ← FormSuscripcion
+    │   ├── organisms/     ← organismos: Header, Footer, FormSuscripcion, secciones…
+    │   ├── layout/        ← pendientes de la F4: Banda, HeroInstitucional,
+    │   │                     ErrorBoundary, ScrollRestoration, CabeceraRuta, SaltarAlContenido
     │   ├── ui/            ← primitivas shadcn/ui en uso (8). Fuera de lint y Prettier
     │   └── sections/      ← legado de /plataforma; no reutilizar
     ├── content/institucional/ ← textos de Nosotros, Qué hacemos, Equipo, Mapa, inicio (datos)
@@ -45,8 +43,8 @@ entorno `node`: no hay tests de componentes.
 ## 2. Componentes
 
 Catálogo obligatorio en `catalogo/registro.ts`. La migración a Atomic Design
-está en curso (`design.md` §1.2): átomos y moléculas ya viven en `atoms/` y
-`molecules/`; el resto sigue en sus carpetas por rol hasta su fase. Lo nuevo va
+está en curso (`design.md` §1.2): átomos, moléculas y organismos ya viven en `atoms/`,
+`molecules/` y `organisms/`; el resto sigue en `layout/` hasta la F4. Lo nuevo va
 ya a la carpeta de su nivel y declara su `nivel` en el catálogo.
 
 Nomenclatura: PascalCase español descriptivo.

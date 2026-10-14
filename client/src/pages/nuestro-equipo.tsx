@@ -1,11 +1,11 @@
 import { Hashtag } from "@/components/atoms/Hashtag";
-import { MuroAliados } from "@/components/institucional/MuroAliados";
+import { MuroAliados } from "@/components/organisms/MuroAliados";
 import { PerfilCard } from "@/components/molecules/PerfilCard";
 import { RacimoEquipo } from "@/components/molecules/RacimoEquipo";
 import { SubnavSeccion } from "@/components/molecules/SubnavSeccion";
 import { Banda } from "@/components/layout/Banda";
-import Footer from "@/components/layout/Footer";
-import Header from "@/components/layout/Header";
+import Footer from "@/components/organisms/Footer";
+import Header from "@/components/organisms/Header";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
 import { PatronPanal } from "@/components/atoms/PatronPanal";
 import { Proximamente } from "@/components/atoms/Proximamente";
