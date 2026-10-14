@@ -103,19 +103,27 @@ Aprobados: `Header` → `CabeceraSitio` · `Footer` → `PieSitio` ·
 `ScrollToTop` → `BotonVolverArriba` · `ScrollRestoration` →
 `RestaurarDesplazamiento`. Los siete de `sections/` dependen de DA-2.
 
-## 4. Clasificación propuesta
+## 4. Clasificación
 
-Parte de los candidatos de `design.md` §1.2. Los marcados con «?» se deciden al
-leer el componente en su fase; ante la duda, el nivel más simple.
+Cerrada en la F0 (2026-10-14) leyendo los casos dudosos, y registrada en el
+campo `nivel` de `client/src/catalogo/registro.ts`, que es la fuente de verdad.
+Criterio: combina otros componentes → molécula; carga sus propios datos o es
+una sección autónoma → organismo; ante la duda, el nivel más simple.
 
-| Nivel                     | Componentes                                                                                                                                                                                                      |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `atoms/`                  | AvisoMiembros · AvisoPestanaNueva · Hashtag · IlustracionPilar · PatronPanal · Proximamente · RetratoHex · FotoHero? · PortadaArticulo? · VerMas?                                                                |
-| `molecules/`              | BlogCard · CifraAnimada · EpisodioFila · IndiceEtapas · IndiceMapa · IndicePilares · MetaArticulo · NavEtapas · PerfilCard · PilarCard · SubnavSeccion · BotonVolverArriba (ScrollToTop) · PortadaPodcast?       |
-| `organisms/`              | ContenidoReciente · FormSuscripcion · Footer · FranjaPodcast · Header · ManifiestoNumerado? · MuroAliados · PanalEtapas? · PanalPilares? · RacimoEquipo? · RutaTimeline · SeccionEtapa · SeccionPilar · VocesRed |
-| `templates/`              | Banda · CabeceraRuta · HeroInstitucional                                                                                                                                                                         |
-| `infraestructura/` (DA-4) | ErrorBoundary · SaltarAlContenido · ScrollRestoration                                                                                                                                                            |
-| sin mover                 | `ui/` (DA-1) · `sections/` (DA-2)                                                                                                                                                                                |
+| Nivel                  | Componentes                                                                                                                                                                                                                                          |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `atoms/` (8)           | AvisoMiembros · AvisoPestanaNueva · FotoHero · Hashtag · IlustracionPilar · PatronPanal · Proximamente · RetratoHex                                                                                                                                  |
+| `molecules/` (17)      | BlogCard · CifraAnimada · EpisodioFila · IndiceEtapas · IndiceMapa · IndicePilares · ManifiestoNumerado · MetaArticulo · NavEtapas · PerfilCard · PilarCard · PortadaArticulo · PortadaPodcast · RacimoEquipo · ScrollToTop · SubnavSeccion · VerMas |
+| `organisms/` (12)      | ContenidoReciente · Footer · FormSuscripcion · FranjaPodcast · Header · MuroAliados · PanalEtapas · PanalPilares · RutaTimeline · SeccionEtapa · SeccionPilar · VocesRed                                                                             |
+| `templates/` (2)       | Banda · HeroInstitucional                                                                                                                                                                                                                            |
+| `infraestructura/` (4) | CabeceraRuta · ErrorBoundary · SaltarAlContenido · ScrollRestoration                                                                                                                                                                                 |
+| sin mover              | `ui/` (8, cuentan como átomos; DA-1) · `sections/` (7, legado; DA-2)                                                                                                                                                                                 |
+
+Cambios respecto a la propuesta inicial: `CabeceraRuta` no pinta nada (solo fija
+el título al navegar), así que va a infraestructura y no a plantillas;
+`PortadaArticulo`, `PortadaPodcast` y `VerMas` combinan otros componentes
+(moléculas); `ManifiestoNumerado` y `RacimoEquipo` no cargan datos propios
+(moléculas); `PanalEtapas` y `PanalPilares` leen los suyos (organismos).
 
 ## 5. Estrategia por fases
 
@@ -151,7 +159,9 @@ movimiento masivo genera conflictos con cualquier otra rama que los toque.
 - **CA-5:** `npm run check:browser` en las 11 rutas, a 1280 y 375 px, sin
   errores de consola.
 - **CA-6:** ningún componente propio con nombre en inglés (3.3) ni con
-  `export default` (4.2); ambos comprobados por test.
+  `export default` (4.2). `client/src/catalogo/pendientes.test.ts` lleva las dos
+  listas, que cada fase reduce. Un `export default` nuevo se detecta solo; un
+  nombre nuevo en inglés, no: lo vigila la revisión.
 - **CA-7:** `check`, `lint`, `format:check`, `test`, `test:coverage` y `build`
   en verde en cada fase.
 
@@ -168,4 +178,4 @@ movimiento masivo genera conflictos con cualquier otra rama que los toque.
 
 ## 8. Siguiente paso
 
-Decisiones cerradas. Siguiente: la F0, que no mueve ningún archivo.
+F0 hecha (2026-10-14): campo `nivel` en el catálogo, etiqueta en `/componentes` y listas de pendientes con test. Siguiente: F1 (átomos).
