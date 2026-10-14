@@ -3,7 +3,7 @@
  * plataforma de comunidad.
  *
  * Existe por la misma razón que `shared/wordpress/`: la URL de registro estaba
- * escrita a mano en dos sitios (`Header.tsx` y `HeroSection.tsx`), divergieron,
+ * escrita a mano en dos sitios (`Header.tsx`, hoy `CabeceraSitio.tsx`, y `HeroSection.tsx`), divergieron,
  * y la del Hero apuntaba a `asociacionesprofesionales.org` sin el subdominio
  * `comunidad.` — que sirve un documento vacío. Un solo módulo, dos consumidores.
  *

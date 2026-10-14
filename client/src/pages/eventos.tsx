@@ -1,8 +1,8 @@
 import { TEXTO_EVENTOS } from "@/content/institucional/inicio";
 import { FormSuscripcion } from "@/components/organisms/FormSuscripcion";
 import { Banda } from "@/components/layout/Banda";
-import Footer from "@/components/organisms/Footer";
-import Header from "@/components/organisms/Header";
+import { PieSitio } from "@/components/organisms/PieSitio";
+import { CabeceraSitio } from "@/components/organisms/CabeceraSitio";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
 
 /**
@@ -13,7 +13,7 @@ import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
 export default function Eventos() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Header />
+      <CabeceraSitio />
       <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
         <HeroInstitucional overline="Próximamente" titulo="Eventos">
           <p>
@@ -30,7 +30,7 @@ export default function Eventos() {
           </div>
         </Banda>
       </main>
-      <Footer conBoletin={false} />
+      <PieSitio conBoletin={false} />
     </div>
   );
 }

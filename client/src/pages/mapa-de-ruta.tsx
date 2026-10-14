@@ -4,8 +4,8 @@ import { PanalEtapas } from "@/components/organisms/PanalEtapas";
 import { SeccionEtapa } from "@/components/organisms/SeccionEtapa";
 import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
 import { Banda } from "@/components/layout/Banda";
-import Footer from "@/components/organisms/Footer";
-import Header from "@/components/organisms/Header";
+import { PieSitio } from "@/components/organisms/PieSitio";
+import { CabeceraSitio } from "@/components/organisms/CabeceraSitio";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
 import { PatronPanal } from "@/components/atoms/PatronPanal";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ function Flecha() {
 export default function MapaDeRuta() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Header />
+      <CabeceraSitio />
       <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
         {/* 1. Hero: el mapa como flor del panal */}
         <HeroInstitucional
@@ -143,7 +143,7 @@ export default function MapaDeRuta() {
           </div>
         </Banda>
       </main>
-      <Footer />
+      <PieSitio />
     </div>
   );
 }

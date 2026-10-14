@@ -139,7 +139,7 @@ function ColumnaPie({ entrada }: { entrada: EntradaNav }) {
  * `conBoletin`: las páginas que ya traen su propio formulario de suscripción
  * lo desactivan para no repetir el mismo formulario justo encima del pie.
  */
-export default function Footer({ conBoletin = true }: { conBoletin?: boolean }) {
+export function PieSitio({ conBoletin = true }: { conBoletin?: boolean }) {
   const columnas = ENTRADAS_PIE.map((id) =>
     NAVEGACION.find((e) => e.testid === id),
   ).filter((entrada): entrada is EntradaNav => entrada !== undefined);

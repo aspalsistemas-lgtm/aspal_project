@@ -541,7 +541,7 @@ function GrupoMovil({ entrada, ruta }: { entrada: EntradaNav; ruta: string }) {
   );
 }
 
-export default function Header() {
+export function CabeceraSitio() {
   const [ruta] = useLocation();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [compacto, setCompacto] = useState(false);

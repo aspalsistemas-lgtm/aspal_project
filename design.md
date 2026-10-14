@@ -25,7 +25,7 @@ components/
 │                      IlustracionPilar, Proximamente, AvisoMiembros, AvisoPestanaNueva
 ├── molecules/      ← moléculas ya migradas (§1.2): PilarCard, PerfilCard, TarjetaArticulo,
 │                      EpisodioFila, MetaArticulo, CifraAnimada, VerMas, BotonVolverArriba…
-├── organisms/      ← organismos ya migrados (§1.2): Header, Footer, FormSuscripcion,
+├── organisms/      ← organismos ya migrados (§1.2): CabeceraSitio, PieSitio, FormSuscripcion,
 │                      ContenidoReciente, FranjaPodcast, SeccionPilar, RutaTimeline…
 ├── layout/         ← pendientes de la F4: Banda y HeroInstitucional (plantillas) y
 │                      CabeceraRuta, ErrorBoundary, SaltarAlContenido, ScrollRestoration
@@ -43,7 +43,7 @@ Reglas vigentes:
   `CATEGORIAS_POR_CARPETA` y al tipo `Categoria`.
 - Un componente que nadie importa se borra; el test lo detecta.
 - Las páginas (`client/src/pages/`) son la única capa que lee la URL, lanza
-  consultas y compone `Header`, `main#contenido` y `Footer`.
+  consultas y compone `CabeceraSitio`, `main#contenido` y `PieSitio`.
 - Los imports son directos por alias: `import { Banda } from "@/components/layout/Banda"`.
   No hay barrels (`index.ts`) y el detector de uso del catálogo depende de esa
   forma de importar.
@@ -72,9 +72,10 @@ entre ellas `PilarCard`, `PerfilCard`, `TarjetaArticulo` (antes `BlogCard`),
 (antes `ScrollToTop`).
 
 **Organismos (`organisms/`):** sección completa y autónoma. Puede tener su
-propia query y estado complejo. Candidatos: `Header`, `Footer`,
+propia query y estado complejo. Migrados los 12 del catálogo, entre ellos
+`CabeceraSitio` (antes `Header`), `PieSitio` (antes `Footer`),
 `ContenidoReciente`, `FormSuscripcion`, `MuroAliados`, `RutaTimeline`,
-`SeccionPilar`, `SeccionEtapa`.
+`SeccionPilar` y `SeccionEtapa`.
 
 **Plantillas (`templates/`):** layout sin datos reales; recibe children o
 slots. Candidatos: `Banda`, `HeroInstitucional`, `CabeceraRuta`.
@@ -362,7 +363,7 @@ primero y se achica después. El repo cumple: no hay prefijos `max-*`.
 
 - **Navegación principal.** Menú completo desde `xl`; por debajo, panel móvil
   como diálogo modal (`role="dialog"`, `aria-modal`, foco al abrir, cierre con
-  Escape o enlace). Referencia: `components/organisms/Header.tsx`.
+  Escape o enlace). Referencia: `components/organisms/CabeceraSitio.tsx`.
 - **Rejillas de tarjetas.** `grid gap-6 md:grid-cols-2 lg:grid-cols-3`
   (`pages/blog.tsx`) o `REJILLA_PILARES_PANAL`. Nunca scroll horizontal de
   tarjetas.

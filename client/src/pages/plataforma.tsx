@@ -1,10 +1,10 @@
-import Header from "@/components/organisms/Header";
+import { CabeceraSitio } from "@/components/organisms/CabeceraSitio";
 import HeroSection from "@/components/sections/HeroSection";
 import { MembershipProblemSection } from "@/components/sections/ProblemSection";
 import FeaturesGrid from "@/components/sections/FeaturesGrid";
 import LogoCarousel from "@/components/sections/LogoCarousel";
 import CTASection from "@/components/sections/CTASection";
-import Footer from "@/components/organisms/Footer";
+import { PieSitio } from "@/components/organisms/PieSitio";
 import communityImage from "@assets/recurso-8-comunidad.webp";
 import blogImage from "@assets/recurso-3-blog.webp";
 import certificationsImage from "@assets/recurso-40-certificaciones.webp";
@@ -84,7 +84,7 @@ export default function Plataforma() {
         </div>
       </div>
 
-      <Header />
+      <CabeceraSitio />
       <main id="contenido" tabIndex={-1} className="focus:outline-none">
         <HeroSection />
 
@@ -419,8 +419,8 @@ export default function Plataforma() {
         <CTASection />
       </main>
 
-      {/* Footer */}
-      <Footer />
+      {/* PieSitio */}
+      <PieSitio />
     </div>
   );
 }

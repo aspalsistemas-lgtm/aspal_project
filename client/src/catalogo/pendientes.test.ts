@@ -31,8 +31,6 @@ const revisados = [...recorrer(join(SRC, "components")), ...recorrer(join(SRC, "
 
 /** 4.2: `export default` pendientes de pasar a `export function` nombrada. */
 const EXPORT_DEFAULT_PENDIENTES = [
-  "client/src/components/organisms/Footer.tsx",
-  "client/src/components/organisms/Header.tsx",
   "client/src/pages/blog-post.tsx",
   "client/src/pages/blog.tsx",
   "client/src/pages/componentes.tsx",
@@ -53,8 +51,6 @@ const EXPORT_DEFAULT_PENDIENTES = [
  * Un nombre nuevo en inglés no se detecta solo: lo vigila la revisión.
  */
 const NOMBRES_EN_INGLES_PENDIENTES: Record<string, string> = {
-  "client/src/components/organisms/Header.tsx": "CabeceraSitio",
-  "client/src/components/organisms/Footer.tsx": "PieSitio",
   "client/src/components/layout/ErrorBoundary.tsx": "LimiteDeErrores",
   "client/src/components/layout/ScrollRestoration.tsx": "RestaurarDesplazamiento",
 };

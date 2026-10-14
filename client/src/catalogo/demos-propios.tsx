@@ -368,7 +368,7 @@ export const DEMOS_PROPIOS: Record<IdDemoPropio, Demo> = {
   "subnav-seccion": {
     nota: "Sticky bajo la cabecera. Solo se pinta con dos o más destinos de Acerca de y marca la ruta activa.",
     render: () => <SubnavSeccion />,
-    codigo: () => `<Header />\n<SubnavSeccion />`,
+    codigo: () => `<CabeceraSitio />\n<SubnavSeccion />`,
   },
   "indice-etapas": {
     render: () => <IndiceEtapas />,

@@ -23,7 +23,7 @@ client/
     ├── components/
     │   ├── atoms/         ← átomos de Atomic Design (migración en curso, design.md §1.2)
     │   ├── molecules/     ← moléculas: tarjetas, índices, cifras, VerMas, BotonVolverArriba…
-    │   ├── organisms/     ← organismos: Header, Footer, FormSuscripcion, secciones…
+    │   ├── organisms/     ← organismos: CabeceraSitio, PieSitio, FormSuscripcion, secciones…
     │   ├── layout/        ← pendientes de la F4: Banda, HeroInstitucional,
     │   │                     ErrorBoundary, ScrollRestoration, CabeceraRuta, SaltarAlContenido
     │   ├── ui/            ← primitivas shadcn/ui en uso (8). Fuera de lint y Prettier
@@ -54,8 +54,8 @@ Nomenclatura: PascalCase español descriptivo.
 ❌  Card (genérico) · PilarCard2 (sufijo numérico) · pilarCard (camelCase)
 ```
 
-Los once nombres en inglés que quedan (`Header`, `Footer`, `ErrorBoundary`,
-`ScrollRestoration` y `sections/*`) son
+Los nueve nombres en inglés que quedan (`ErrorBoundary`, `ScrollRestoration` y
+`sections/*`) son
 heredados; no crear más.
 
 Antes de crear uno:
@@ -77,8 +77,8 @@ Añadir una página exige tres cosas, y TypeScript las comprueba:
 2. Su componente en `PAGINAS` o `PAGINAS_DINAMICAS` de `App.tsx`.
 3. Su título, descripción e `indexable` en `SEO` de `lib/seo.ts`.
 
-Toda página compone `Header`, `<main id="contenido" tabIndex={-1}>` con un
-solo `<h1>` (lo pone `HeroInstitucional`) y `Footer`. `prerender.mjs` aborta
+Toda página compone `CabeceraSitio`, `<main id="contenido" tabIndex={-1}>` con
+un solo `<h1>` (lo pone `HeroInstitucional`) y `PieSitio`. `prerender.mjs` aborta
 el build si falta el `<h1>` o el `main#contenido`.
 
 Las rutas estáticas se prerenderizan: lo que solo existe en el navegador
@@ -98,7 +98,7 @@ TODA pantalla, layout y componente nuevo se construye mobile-first, sin excepci�
 - Escalar hacia arriba con `sm:` / `md:` / `lg:` / `xl:` según necesidad
 - Nunca construir para desktop y adaptar hacia abajo; no usar `max-*:`
 - Menú: panel móvil como diálogo por debajo de `xl`, completo desde `xl`
-  (`Header.tsx`)
+  (`CabeceraSitio.tsx`)
 - Rejillas: `md:grid-cols-2 lg:grid-cols-3` (`pages/blog.tsx`)
 - Interactivos con `min-h-11` (44 px)
 - Verificar toda vista nueva en el navegador a ~375 px y ~1280 px antes de

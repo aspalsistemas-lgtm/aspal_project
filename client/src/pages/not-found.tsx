@@ -1,7 +1,7 @@
 import iconoAspal from "@assets/Aspal-Icono_1763675356866.webp";
 import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
-import Footer from "@/components/organisms/Footer";
-import Header from "@/components/organisms/Header";
+import { PieSitio } from "@/components/organisms/PieSitio";
+import { CabeceraSitio } from "@/components/organisms/CabeceraSitio";
 import { Button } from "@/components/ui/button";
 import { registrarEvento } from "@/lib/analitica";
 import { rutaAnterior } from "@/lib/historial";
@@ -105,7 +105,7 @@ export default function NotFound() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Header />
+      <CabeceraSitio />
 
       <main
         id="contenido"
@@ -228,7 +228,7 @@ export default function NotFound() {
         </div>
       </main>
 
-      <Footer />
+      <PieSitio />
     </div>
   );
 }

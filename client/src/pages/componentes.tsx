@@ -1,5 +1,5 @@
-import Footer from "@/components/organisms/Footer";
-import Header from "@/components/organisms/Header";
+import { PieSitio } from "@/components/organisms/PieSitio";
+import { CabeceraSitio } from "@/components/organisms/CabeceraSitio";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
 import { FichaComponente } from "@/catalogo/FichaComponente";
 import { CATEGORIAS, REGISTRO } from "@/catalogo/registro";
@@ -14,7 +14,7 @@ import { H2_BANDA } from "@/lib/clases";
 export default function Componentes() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Header />
+      <CabeceraSitio />
       <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
         <HeroInstitucional overline="Para el equipo" titulo="Componentes y estilos">
           <p>
@@ -76,7 +76,7 @@ export default function Componentes() {
           </div>
         </div>
       </main>
-      <Footer />
+      <PieSitio />
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import { FormSuscripcion } from "@/components/organisms/FormSuscripcion";
 import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
 import { Banda } from "@/components/layout/Banda";
-import Footer from "@/components/organisms/Footer";
-import Header from "@/components/organisms/Header";
+import { PieSitio } from "@/components/organisms/PieSitio";
+import { CabeceraSitio } from "@/components/organisms/CabeceraSitio";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
 import { Button } from "@/components/ui/button";
 import { registrarEvento } from "@/lib/analitica";
@@ -19,7 +19,7 @@ import { ArrowUpRight, BadgeCheck, Mail } from "lucide-react";
 export default function Unete() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Header />
+      <CabeceraSitio />
       <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
         <HeroInstitucional
           overline="#NingunDirectorDirigeSolo"
@@ -109,7 +109,7 @@ export default function Unete() {
               NOSOTROS; las redacta la Coordinación. */}
         </Banda>
       </main>
-      <Footer conBoletin={false} />
+      <PieSitio conBoletin={false} />
     </div>
   );
 }

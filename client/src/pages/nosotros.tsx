@@ -7,8 +7,8 @@ import { PilarCard } from "@/components/molecules/PilarCard";
 import { RutaTimeline } from "@/components/organisms/RutaTimeline";
 import { SubnavSeccion } from "@/components/molecules/SubnavSeccion";
 import { Banda } from "@/components/layout/Banda";
-import Footer from "@/components/organisms/Footer";
-import Header from "@/components/organisms/Header";
+import { PieSitio } from "@/components/organisms/PieSitio";
+import { CabeceraSitio } from "@/components/organisms/CabeceraSitio";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
 import { PatronPanal } from "@/components/atoms/PatronPanal";
 import { Proximamente } from "@/components/atoms/Proximamente";
@@ -114,7 +114,7 @@ export default function Nosotros() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Header />
+      <CabeceraSitio />
       <SubnavSeccion />
       <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
         {/* 1. Hero: el panal del isotipo se arma al cargar */}
@@ -389,7 +389,7 @@ export default function Nosotros() {
           </div>
         </Banda>
       </main>
-      <Footer />
+      <PieSitio />
     </div>
   );
 }

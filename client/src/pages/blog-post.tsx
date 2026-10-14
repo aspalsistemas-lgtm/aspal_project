@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation, Link } from "wouter";
-import Header from "@/components/organisms/Header";
-import Footer from "@/components/organisms/Footer";
+import { CabeceraSitio } from "@/components/organisms/CabeceraSitio";
+import { PieSitio } from "@/components/organisms/PieSitio";
 import { TarjetaArticulo } from "@/components/molecules/TarjetaArticulo";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Clock, Lock } from "lucide-react";
@@ -10,7 +10,7 @@ import { formatPublishedDate } from "@/lib/date";
 import { TITULO_SITIO } from "@/lib/marca";
 import type { TransformedPost } from "@shared/wordpress/types";
 
-/** URL de alta de socio. Misma que usa el Header; los UTM permiten medir
+/** URL de alta de socio. Misma que usa CabeceraSitio; los UTM permiten medir
  *  cuánta captación aporta el cierre del artículo, que es la prioridad 1. */
 const MEMBERSHIP_URL =
   "https://comunidad.asociacionesprofesionales.org/register/membresia-basica/";
@@ -91,7 +91,7 @@ export default function BlogPost() {
   }, [isPodcast, navigate]);
 
   // El foco caía a <body>: un usuario de teclado volvía a recorrer todo el
-  // Header en cada navegación y un lector de pantalla no anunciaba nada.
+  // CabeceraSitio en cada navegación y un lector de pantalla no anunciaba nada.
   useEffect(() => {
     if (post && titleRef.current) {
       titleRef.current.focus();
@@ -110,7 +110,7 @@ export default function BlogPost() {
   if (isLoading || isPodcast) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <CabeceraSitio />
         <main id="contenido" tabIndex={-1} className="focus:outline-none">
           <div className="container mx-auto px-4 md:px-8 py-16">
             <div className="max-w-[65ch] mx-auto space-y-8" aria-busy="true">
@@ -126,7 +126,7 @@ export default function BlogPost() {
             </div>
           </div>
         </main>
-        <Footer />
+        <PieSitio />
       </div>
     );
   }
@@ -137,7 +137,7 @@ export default function BlogPost() {
 
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <CabeceraSitio />
         <main id="contenido" tabIndex={-1} className="focus:outline-none">
           <div className="container mx-auto px-4 md:px-8 py-16">
             <div className="max-w-2xl mx-auto text-center space-y-6">
@@ -180,7 +180,7 @@ export default function BlogPost() {
             </div>
           </div>
         </main>
-        <Footer />
+        <PieSitio />
       </div>
     );
   }
@@ -192,7 +192,7 @@ export default function BlogPost() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <CabeceraSitio />
       <main id="contenido" tabIndex={-1} className="focus:outline-none">
         <article className="py-12 md:py-20" data-testid="article-post">
           <div className="container mx-auto px-4 md:px-8">
@@ -373,7 +373,7 @@ export default function BlogPost() {
           </div>
         </article>
       </main>
-      <Footer />
+      <PieSitio />
     </div>
   );
 }

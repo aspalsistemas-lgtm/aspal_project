@@ -162,10 +162,10 @@ export const REGISTRO = [
     vista: "sin-vista",
   },
   {
-    id: "header",
-    nombre: "Header",
-    archivo: "client/src/components/organisms/Header.tsx",
-    importar: 'import Header from "@/components/organisms/Header";',
+    id: "cabecera-sitio",
+    nombre: "CabeceraSitio",
+    archivo: "client/src/components/organisms/CabeceraSitio.tsx",
+    importar: 'import { CabeceraSitio } from "@/components/organisms/CabeceraSitio";',
     categoria: "layout",
     nivel: "organismo",
     descripcion:
@@ -177,10 +177,10 @@ export const REGISTRO = [
     vista: "en-esta-pagina",
   },
   {
-    id: "footer",
-    nombre: "Footer",
-    archivo: "client/src/components/organisms/Footer.tsx",
-    importar: 'import Footer from "@/components/organisms/Footer";',
+    id: "pie-sitio",
+    nombre: "PieSitio",
+    archivo: "client/src/components/organisms/PieSitio.tsx",
+    importar: 'import { PieSitio } from "@/components/organisms/PieSitio";',
     categoria: "layout",
     nivel: "organismo",
     descripcion:
@@ -855,7 +855,8 @@ export const REGISTRO = [
     categoria: "ui",
     nivel: "atomo",
     descripcion: "Primitiva del mega-menú de escritorio (Radix).",
-    usarCuando: "Solo la usa Header. axe marca su focus proxy: es interno de Radix.",
+    usarCuando:
+      "Solo la usa CabeceraSitio. axe marca su focus proxy: es interno de Radix.",
     props: "ver Radix NavigationMenu",
     estado: "en-uso",
     vista: "en-esta-pagina",

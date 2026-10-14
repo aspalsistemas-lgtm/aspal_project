@@ -4,8 +4,8 @@ import { PerfilCard } from "@/components/molecules/PerfilCard";
 import { RacimoEquipo } from "@/components/molecules/RacimoEquipo";
 import { SubnavSeccion } from "@/components/molecules/SubnavSeccion";
 import { Banda } from "@/components/layout/Banda";
-import Footer from "@/components/organisms/Footer";
-import Header from "@/components/organisms/Header";
+import { PieSitio } from "@/components/organisms/PieSitio";
+import { CabeceraSitio } from "@/components/organisms/CabeceraSitio";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
 import { PatronPanal } from "@/components/atoms/PatronPanal";
 import { Proximamente } from "@/components/atoms/Proximamente";
@@ -54,7 +54,7 @@ export default function NuestroEquipo() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Header />
+      <CabeceraSitio />
       <SubnavSeccion />
       <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
         {/* 1. Hero: el equipo como racimo del panal */}
@@ -156,7 +156,7 @@ export default function NuestroEquipo() {
           </div>
         </Banda>
       </main>
-      <Footer />
+      <PieSitio />
     </div>
   );
 }

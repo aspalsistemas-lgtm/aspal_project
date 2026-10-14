@@ -7,8 +7,8 @@ import { MuroAliados } from "@/components/organisms/MuroAliados";
 import { PilarCard } from "@/components/molecules/PilarCard";
 import { VocesRed } from "@/components/organisms/VocesRed";
 import { Banda } from "@/components/layout/Banda";
-import Footer from "@/components/organisms/Footer";
-import Header from "@/components/organisms/Header";
+import { PieSitio } from "@/components/organisms/PieSitio";
+import { CabeceraSitio } from "@/components/organisms/CabeceraSitio";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
 import { Button } from "@/components/ui/button";
 import { FotoHero, type EstiloFotoHero } from "@/components/atoms/FotoHero";
@@ -58,7 +58,7 @@ function VisualHero() {
 export default function Inicio() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Header />
+      <CabeceraSitio />
       <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
         {/* 1. Hero */}
         <HeroInstitucional
@@ -243,7 +243,7 @@ export default function Inicio() {
           </div>
         </Banda>
       </main>
-      <Footer conBoletin={false} />
+      <PieSitio conBoletin={false} />
     </div>
   );
 }
