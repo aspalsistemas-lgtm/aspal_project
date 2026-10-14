@@ -484,18 +484,35 @@ Las que cambian el modelo o el calendario; el resto se decide por la
 recomendación.
 
 Cerradas el 13 de octubre de 2026: identidad (D6, un solo login), Facebook
-(D5, fuera de alcance), forma del repositorio (D1) y servidor (D3). Quedan:
+(D5, fuera de alcance), forma del repositorio (D1) y servidor (D3).
 
-1. **Contenido editorial (sección 6):** ¿dónde está el audio del podcast, qué
-   contenido de WordPress se migra y qué dominios editoriales siguen en uso?
+Respondidas el 14 de octubre de 2026:
+
+- **Equipo:** el responsable decide y aprueba; la implementación la hace él con
+  Claude Code, por fases cortas como hasta ahora. Sin más aprobadores.
+- **Exportación de WordPress:** el responsable exporta desde wp-admin (WXR) y
+  entrega el archivo e indica dónde está el audio del podcast. No se comparten
+  credenciales.
+- **Aviso de privacidad:** se reutiliza la página `politica-privacidad` de
+  WordPress (existe, 2 045 palabras, actualizada 2024-11-19; cubre responsable,
+  finalidades y derechos ARCO). **No menciona el boletín ni Mailchimp, Google ni
+  Stripe**: antes de activar el acceso con Google o los cobros, y conviene que
+  ya para el boletín, hay que completarla (revisión legal a cargo del
+  responsable).
+- **D13 (renderizado y publicación):** se decide más adelante; no bloquea la
+  Etapa 1.
+
+Quedan:
+
+1. **Contenido editorial (sección 6):** pendiente de la exportación: dónde
+   está el audio, qué contenido se migra y qué dominios editoriales siguen en
+   uso.
 2. **Datos actuales (sección 6):** ¿dónde están hoy los miembros y pagos de
    ASPAL, y hay que conservar el historial de pagos? (Etapa 3.)
-3. **Equipo:** ¿quién desarrolla y quién aprueba (producto, legal, finanzas)?
-   Determina el tamaño de los cortes y la fecha objetivo de la Etapa 2.
-4. **Renderizado y publicación (D13):** cómo llega el contenido publicado al
-   sitio y cómo se conserva el 404 real.
-5. **Aviso de privacidad y términos:** ¿quién los redacta y cuándo? Bloquean
-   OAuth y Stripe.
+3. **Renderizado y publicación (D13):** abierto (ver arriba).
+4. **Términos de uso:** ¿se redactan o también se reutilizan? Bloquean OAuth y
+   Stripe junto con el aviso.
+5. ~~Equipo~~ y ~~aviso de privacidad~~: respondidas arriba.
 6. **Cuentas:** AWS (¿existe?, ¿qué región?) y Stripe (¿cuenta mexicana con
    Connect?).
 7. **Dominios:** confirmar `app.` y `*.asociacionesprofesionales.org` para la
