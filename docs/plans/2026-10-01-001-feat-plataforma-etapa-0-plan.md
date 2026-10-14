@@ -130,6 +130,11 @@ del sitio, no de la plataforma.
 
 ### D2 · Despliegue y dominios — cerrada (AWS) + propuesta (forma)
 
+**Decisión del responsable (14 de octubre de 2026):** la plataforma se
+desarrolla entera en local, en contenedores de Docker (`compose.yaml`), y se
+mueve a AWS u otro servidor más adelante. Lo que sigue describe la forma en la
+nube cuando llegue ese momento; mientras tanto, los cortes se cierran en local.
+
 **Cerrada por el plan:** AWS, PostgreSQL, SES. El sitio puede seguir en Vercel;
 su migración a AWS no bloquea.
 
@@ -156,13 +161,13 @@ y el sitio (`packages/contratos`), como ya se hace con
 los datos; las pantallas no contienen reglas de cobro, vigencia ni
 autorización (principio 2 del plan).
 
-### D4 · Acceso a datos — propuesta
+### D4 · Acceso a datos — cerrada (14 oct 2026)
 
 **Decisión:** Drizzle. **Descartado:** Prisma. **Motivo:** el aislamiento por
 asociación se apoya en Row Level Security (D8) y Drizzle define las políticas
 en el propio esquema y permite fijar el contexto por transacción sin rodeos;
 con Prisma eso exige extensiones y envolver cada consulta. Además es SQL
-explícito, que es lo que se querrá leer al auditar un cobro. **Consecuencia:**
+explícito, que es lo que se querrá leer al auditar un cobro. **Driver:** `pg` (node-postgres). **Consecuencia:**
 las migraciones se versionan con Drizzle Kit en el repositorio
 (`docs/database-design.md`, sección 5).
 
@@ -482,8 +487,16 @@ alcance que aprobó el responsable ese día:
 
 ## 8. Backlog de la Etapa 1 (esqueleto andante)
 
-Cinco cortes; cada uno llega desplegado a `staging` de AWS antes de abrir el
-siguiente:
+Cinco cortes. Por la decisión del 14 de octubre (D2), cada uno se cierra en el
+entorno local de Docker; el despliegue en la nube se hará después.
+
+**Corte 1, hecho el 2026-10-14 en local:** `apps/plataforma` (Fastify 5, Zod 4,
+Drizzle sobre `pg`), `GET /health` (`docs/api/plataforma.md`), migraciones con
+Drizzle Kit (la primera, vacía), PostgreSQL 17 y la plataforma en
+`compose.yaml`, y un job de CI con PostgreSQL real que construye la imagen. **Falta verificar la imagen:** en esta máquina el escudo web de Avast
+intercepta HTTPS y `npm ci` falla dentro de Docker; la construye la CI (exige
+push) o se resuelve Avast en local. Lo
+de la nube (CDK, RDS, S3, SES, Secrets Manager, Sentry) queda para la mudanza.
 
 | Corte                                    | Qué entrega                                                                                                                                                                   | Cierra cuando                                                                   |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |

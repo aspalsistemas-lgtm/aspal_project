@@ -54,7 +54,8 @@ Una modificación al sitio debe proteger primero:
 
 - Monorepo con npm workspaces (D1), sin Turborepo. Usar npm (un solo
   `package-lock.json` en la raíz); no introducir otro gestor. Workspaces:
-  `apps/sitio` (`@aspal/sitio`); la plataforma llegará como `apps/plataforma`.
+  `apps/sitio` (`@aspal/sitio`) y `apps/plataforma` (`@aspal/plataforma`, con
+  su propio `CLAUDE.md`).
   Los comandos se lanzan desde la raíz, que los reenvía al workspace.
 - `vercel.json` y `api/index.ts` de la raíz existen porque el proyecto de Vercel
   sigue con la raíz del repo como Root Directory: la puerta solo reexporta

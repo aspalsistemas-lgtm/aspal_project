@@ -62,6 +62,7 @@ export default tseslint.config(
       "apps/sitio/api/**/*.ts",
       "apps/sitio/shared/**/*.ts",
       "apps/sitio/scripts/**/*.mjs",
+      "apps/plataforma/**/*.ts",
     ],
     languageOptions: {
       globals: globals.node,

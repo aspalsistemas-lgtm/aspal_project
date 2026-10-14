@@ -13,7 +13,9 @@
 | `AGENTS.md`                                               | Reglas estables para cualquier agente; sin estado de sesión                      |
 | `apps/sitio/server/CLAUDE.md`                             | Al trabajar en `server/`, `api/` o `shared/` (backend y lógica compartida)       |
 | `apps/sitio/client/CLAUDE.md`                             | Al trabajar en cualquier archivo de `client/`                                    |
-| `docs/api/endpoints.md`                                   | Al crear o modificar endpoints                                                   |
+| `apps/plataforma/CLAUDE.md`                               | Al trabajar en la plataforma SaaS (`apps/plataforma/`)                           |
+| `docs/api/endpoints.md`                                   | Al crear o modificar endpoints del sitio                                         |
+| `docs/api/plataforma.md`                                  | Al crear o modificar endpoints de la plataforma                                  |
 | `design.md`                                               | Al crear o modificar componentes o estilos                                       |
 | `docs/database-design.md`                                 | Antes de crear, modificar o eliminar datos persistentes (plataforma, PostgreSQL) |
 | `docs/plan-plataforma-por-etapas.md`                      | Antes de tocar cualquier cosa de la plataforma SaaS (decisiones de negocio)      |
@@ -44,7 +46,8 @@ hay que confirmarla antes de implementarla, no improvisar una capa nueva.
 
 La **plataforma SaaS** (plan en `docs/plan-plataforma-por-etapas.md`,
 aterrizado en `docs/plans/2026-10-01-001-feat-plataforma-etapa-0-plan.md`) es
-una aplicación aparte, con PostgreSQL en AWS. Sus datos se rigen por
+una aplicación aparte (`apps/plataforma`, Fastify + Zod + Drizzle), con
+PostgreSQL; se desarrolla en local con Docker y se moverá a la nube más adelante. Sus datos se rigen por
 `docs/database-design.md`; el sitio sigue sin estado.
 
 - **Despliegue:** Vercel (estáticos prerenderizados + función serverless
@@ -58,8 +61,8 @@ una aplicación aparte, con PostgreSQL en AWS. Sus datos se rigen por
 ## 2. Stack
 
 ```
-Repo:       monorepo con npm workspaces (D1): apps/sitio; la plataforma llegará como
-            apps/plataforma · Node 22.x · TypeScript 5.6 strict
+Repo:       monorepo con npm workspaces (D1): apps/sitio y apps/plataforma ·
+            Node 22.x · TypeScript 5.6 strict
 Backend:    Express 4 · sin ORM ni BD · validación manual en shared/ · console como logger
 Frontend:   React 18 + Vite 7 + wouter 3 · Tailwind 3 + shadcn/ui (New York) · estado
             local con hooks de React · estado remoto con TanStack Query 5 · formularios
@@ -72,7 +75,8 @@ Calidad:    ESLint 10 + typescript-eslint · Prettier 3 · scripts/check-assets.
             GitHub Actions
 ```
 
-Versiones exactas en `package.json`. Toda librería que no esté en esa lista
+La plataforma tiene su stack en `apps/plataforma/CLAUDE.md` (Fastify 5, Zod 4,
+Drizzle sobre pg, PostgreSQL 17 en Docker). Versiones exactas en los `package.json`. Toda librería que no esté en esa lista
 requiere autorización explícita antes de agregarse (ver sección 6).
 
 ---
@@ -87,6 +91,7 @@ aspal/
 ├── package.json             ← raíz del monorepo: workspaces, lint, formato y atajos
 ├── vercel.json              ← despliegue del sitio (Root Directory = raíz del repo)
 ├── api/index.ts             ← puerta de Vercel: reexporta apps/sitio/api (una línea)
+├── compose.yaml             ← PostgreSQL 17 y la plataforma en Docker (local)
 ├── apps/sitio/              ← el sitio público (@aspal/sitio)
 │   ├── package.json · vite, vitest, tailwind, tsconfig…
 │   ├── client/              ← SPA (React + Vite)
@@ -98,6 +103,10 @@ aspal/
 │   ├── api/index.ts         ← función serverless de Vercel (solo wiring)
 │   ├── shared/              ← la lógica: wordpress/ y suscripcion/
 │   └── scripts/             ← check-assets, prerender, imagenes, check-browser
+├── apps/plataforma/         ← la plataforma SaaS (@aspal/plataforma)
+│   ├── CLAUDE.md · Dockerfile · drizzle.config.ts
+│   ├── src/                 ← servidor Fastify, configuración, base de datos, módulos
+│   └── migraciones/         ← SQL versionado de Drizzle Kit
 └── docs/
     ├── api/endpoints.md     ← catálogo de endpoints
     ├── adr/                 ← Architecture Decision Records
@@ -310,11 +319,12 @@ Runtime:          Node 22.22.0 local · npm 11.20.0 · engines 22.x
 Migraciones:      No aplica. El sitio no tiene BD. La plataforma aún no tiene
                   esquema ni código.
 
-En diseño:        Plataforma SaaS, Etapa 0 (plan 2026-10-01-001). Cerradas D1,
-                  D3, D5 y D6; D13 se decide más adelante. Inventario editorial
-                  hecho con la API y el WXR (§6: 15 entradas en Elementor, audio
-                  en Captivate). Monorepo (D1, §7) hecho: apps/sitio;
-                  packages/ui y contratos con su primer consumidor. Faltan del responsable: AWS, Stripe, DNS,
+En curso:         Plataforma SaaS, Etapa 1, corte 1 (esqueleto): apps/plataforma
+                  con Fastify + Zod + Drizzle, GET /health y migraciones, todo en
+                  local con Docker (la nube, más adelante). Etapa 0 cerrada:
+                  monorepo e inventario editorial (audio en Captivate). D4
+                  cerrada (Drizzle). Siguiente: corte 2 (asociacion y RLS), con
+                  propuesta de esquema. Faltan del responsable: Stripe, DNS,
                   miembros y pagos.
 
 Archivos NO:      vercel.json, variables de Vercel y .env*; dependencias solo con
@@ -358,6 +368,11 @@ npm run format:check   # Prettier; format para escribir
 npm test               # Vitest, una pasada; test:watch en modo vigilancia
 npm run test:coverage  # tests + cobertura de la lógica; falla si baja del umbral
 npm run check:browser  # Chrome sin ventana: captura en capturas/ y lista errores de consola
+
+# Plataforma (detalle en apps/plataforma/CLAUDE.md)
+npm run db:levantar          # PostgreSQL 17 en Docker, puerto 5433
+npm run test:plataforma      # unitarios · test:integracion contra PostgreSQL real
+npm run plataforma:levantar  # base + plataforma en contenedor, puerto 5010
 ```
 
 `check:browser` (`scripts/check-browser.mjs`) necesita el servidor levantado

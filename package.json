@@ -2,7 +2,7 @@
   "name": "aspal",
   "version": "1.0.0",
   "private": true,
-  "description": "Monorepo de ASPAL: el sitio público (apps/sitio) y, desde la Etapa 1, la plataforma",
+  "description": "Monorepo de ASPAL: el sitio público (apps/sitio) y la plataforma (apps/plataforma)",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -28,7 +28,17 @@
     "format:check": "prettier --check .",
     "test": "npm run test -w @aspal/sitio --",
     "test:coverage": "npm run test:coverage -w @aspal/sitio",
-    "test:watch": "npm run test:watch -w @aspal/sitio"
+    "test:watch": "npm run test:watch -w @aspal/sitio",
+    "dev:plataforma": "npm run dev -w @aspal/plataforma",
+    "build:plataforma": "npm run build -w @aspal/plataforma",
+    "check:plataforma": "npm run check -w @aspal/plataforma",
+    "test:plataforma": "npm run test -w @aspal/plataforma",
+    "test:integracion": "npm run test:integracion -w @aspal/plataforma",
+    "db:levantar": "docker compose up -d --wait db",
+    "db:migrar": "npm run db:migrar -w @aspal/plataforma",
+    "db:generar": "npm run db:generar -w @aspal/plataforma",
+    "plataforma:levantar": "docker compose up -d --build --wait",
+    "plataforma:detener": "docker compose down"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

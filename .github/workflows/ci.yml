@@ -44,3 +44,46 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  # La plataforma (apps/plataforma): typecheck, tests unitarios, tests de
+  # integración contra un PostgreSQL 17 real, build y la imagen de Docker.
+  plataforma:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: aspal
+          POSTGRES_PASSWORD: aspal_local
+          POSTGRES_DB: aspal_prueba
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U aspal -d aspal_prueba"
+          --health-interval 2s --health-timeout 3s --health-retries 15
+    env:
+      DATABASE_URL_PRUEBA: postgres://aspal:aspal_local@localhost:5433/aspal_prueba
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run check:plataforma
+
+      - name: Tests unitarios
+        run: npm run test:plataforma
+
+      - name: Tests de integración
+        run: npm run test:integracion
+
+      - name: Build
+        run: npm run build:plataforma
+
+      - name: Imagen de Docker
+        run: docker build -f apps/plataforma/Dockerfile -t aspal-plataforma .

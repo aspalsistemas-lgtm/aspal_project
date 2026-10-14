@@ -1,0 +1,8 @@
+# Contexto de docker compose build: solo lo que la imagen de la plataforma usa.
+**/node_modules
+**/dist
+.git
+docs
+capturas
+apps/sitio/**
+!apps/sitio/package.json
