@@ -1,6 +1,6 @@
-import { AvisoPestanaNueva } from "@/components/layout/AvisoPestanaNueva";
+import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
 import { Banda } from "@/components/layout/Banda";
-import { Proximamente } from "@/components/layout/Proximamente";
+import { Proximamente } from "@/components/atoms/Proximamente";
 import type { EnlaceContenido, Pilar } from "@/content/institucional/pilares";
 import { useAnimarAlVer } from "@/hooks/use-animar-al-ver";
 import { registrarEvento } from "@/lib/analitica";

@@ -1,5 +1,5 @@
 import { FormSuscripcion } from "@/components/forms/FormSuscripcion";
-import { AvisoPestanaNueva } from "@/components/layout/AvisoPestanaNueva";
+import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
 import { Banda } from "@/components/layout/Banda";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";

@@ -1,4 +1,4 @@
-import { PatronPanal } from "@/components/layout/PatronPanal";
+import { PatronPanal } from "@/components/atoms/PatronPanal";
 import { ETAPAS } from "@/content/institucional/mapa-ruta";
 import { HEXAGONO_PUNTA } from "@/lib/clases";
 import { cn } from "@/lib/utils";

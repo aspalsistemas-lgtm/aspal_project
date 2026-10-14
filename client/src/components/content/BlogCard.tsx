@@ -1,4 +1,4 @@
-import { AvisoMiembros } from "@/components/content/AvisoMiembros";
+import { AvisoMiembros } from "@/components/atoms/AvisoMiembros";
 import { MetaArticulo } from "@/components/content/MetaArticulo";
 import type { TransformedPost } from "@shared/wordpress/types";
 import { ArrowUpRight } from "lucide-react";

@@ -1,4 +1,4 @@
-import { AvisoMiembros } from "@/components/content/AvisoMiembros";
+import { AvisoMiembros } from "@/components/atoms/AvisoMiembros";
 import { HEXAGONO_PUNTA, NUMERO_CONTORNO } from "@/lib/clases";
 import { formatPublishedDate } from "@/lib/date";
 import { cn } from "@/lib/utils";

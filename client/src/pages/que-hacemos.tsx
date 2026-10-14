@@ -1,4 +1,4 @@
-import { Hashtag } from "@/components/institucional/Hashtag";
+import { Hashtag } from "@/components/atoms/Hashtag";
 import { IndicePilares } from "@/components/institucional/IndicePilares";
 import { PanalPilares } from "@/components/institucional/PanalPilares";
 import { SeccionPilar } from "@/components/institucional/SeccionPilar";
@@ -7,7 +7,7 @@ import { Banda } from "@/components/layout/Banda";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
-import { PatronPanal } from "@/components/layout/PatronPanal";
+import { PatronPanal } from "@/components/atoms/PatronPanal";
 import { Button } from "@/components/ui/button";
 import { MAPA_RUTA } from "@/content/institucional/mapa-ruta";
 import { CTA_FINAL, QUIENES_SOMOS } from "@/content/institucional/nosotros";

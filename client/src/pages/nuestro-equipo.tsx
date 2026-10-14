@@ -1,4 +1,4 @@
-import { Hashtag } from "@/components/institucional/Hashtag";
+import { Hashtag } from "@/components/atoms/Hashtag";
 import { MuroAliados } from "@/components/institucional/MuroAliados";
 import { PerfilCard } from "@/components/institucional/PerfilCard";
 import { RacimoEquipo } from "@/components/institucional/RacimoEquipo";
@@ -7,8 +7,8 @@ import { Banda } from "@/components/layout/Banda";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
-import { PatronPanal } from "@/components/layout/PatronPanal";
-import { Proximamente } from "@/components/layout/Proximamente";
+import { PatronPanal } from "@/components/atoms/PatronPanal";
+import { Proximamente } from "@/components/atoms/Proximamente";
 import { Button } from "@/components/ui/button";
 import { INTRO_EQUIPO, PERFILES } from "@/content/institucional/equipo";
 import {

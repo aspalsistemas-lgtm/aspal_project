@@ -1,4 +1,4 @@
-import { AvisoPestanaNueva } from "@/components/layout/AvisoPestanaNueva";
+import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
 import { ETAPAS, MAPA_RUTA } from "@/content/institucional/mapa-ruta";
 import { registrarEvento } from "@/lib/analitica";
 import { HEXAGONO_PUNTA } from "@/lib/clases";

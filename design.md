@@ -21,8 +21,10 @@ carpeta → categoría (`CATEGORIAS_POR_CARPETA`) y exige una entrada en
 
 ```
 components/
+├── atoms/          ← átomos ya migrados (§1.2): PatronPanal, FotoHero, Hashtag, RetratoHex,
+│                      IlustracionPilar, Proximamente, AvisoMiembros, AvisoPestanaNueva
 ├── layout/         ← estructura de página e infraestructura: Banda, HeroInstitucional,
-│                      Header, Footer, PatronPanal, FotoHero, ErrorBoundary, ScrollToTop…
+│                      Header, Footer, ErrorBoundary, ScrollToTop…
 ├── institucional/  ← piezas de Nosotros, Qué hacemos, Equipo y Mapa de Ruta: PilarCard,
 │                      PerfilCard, RutaTimeline, MuroAliados, CifraAnimada…
 ├── content/        ← contenido de WordPress: BlogCard, EpisodioFila, PortadaArticulo,
@@ -50,16 +52,19 @@ Reglas vigentes:
 ### 1.2 Objetivo: Atomic Design
 
 Decisión de octubre de 2026: migrar a la metodología Atomic Design de Brad
-Frost. Es un punto de la deuda técnica (P3) y **no se ha empezado**; hasta
-entonces, lo nuevo sigue la organización de §1.1. Cuando se haga, el test del
-catálogo y `CATEGORIAS_POR_CARPETA` se adaptan en el mismo cambio.
+Frost. Es un punto de la deuda técnica (P3), **en curso** según
+`docs/plans/2026-10-13-001-refactor-atomic-design-plan.md`: F0 (campo `nivel`
+en el catálogo) y F1 (átomos) hechas. Cada entrada del catálogo declara su
+nivel y el test exige que coincida con su carpeta. **Lo nuevo va ya a la
+carpeta de su nivel**; `ui/` (shadcn) y `sections/` (legado) no se mueven.
 
-Reglas de cada nivel, para planificar la migración:
+Reglas de cada nivel:
 
 **Átomos (`atoms/`):** la unidad más pequeña. Sin sub-componentes propios, sin
 llamadas a API ni queries, sin estado local complejo. Props estrictamente
-tipadas, siempre `className` opcional. Candidatos hoy: `ui/*`, `Proximamente`,
-`Hashtag`, `RetratoHex`, `AvisoMiembros`, `AvisoPestanaNueva`.
+tipadas, siempre `className` opcional. Migrados: `PatronPanal`, `FotoHero`,
+`Hashtag`, `RetratoHex`, `IlustracionPilar`, `Proximamente`, `AvisoMiembros` y
+`AvisoPestanaNueva`; las primitivas de `ui/` cuentan como átomos.
 
 **Moléculas (`molecules/`):** dos o más átomos con un propósito único. Estado
 local simple (abierto/cerrado, hover). Sin API. Candidatos: `PilarCard`,
@@ -254,7 +259,7 @@ md:px-8`), ritmo blanco → `bg-fondo-suave` → `bg-noche`.
 - **Isotipo** (panal de 4 hexágonos): `Aspal-Icono_*.webp`. Es la silueta de
   perfil cuando falta la foto.
 - **Motivo gráfico:** el hexágono del isotipo. `PatronPanal`
-  (`components/layout/PatronPanal.tsx`), panal estático en miel sobre noche, en
+  (`components/atoms/PatronPanal.tsx`), panal estático en miel sobre noche, en
   la columna visual del hero de la home; insignias hexagonales en el paso a
   paso del Mapa de Ruta y en las iniciales de «Voces de la red».
 - **Ilustraciones:** familia plana en miel y noche con manchas azul claro

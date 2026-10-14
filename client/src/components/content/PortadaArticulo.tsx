@@ -1,4 +1,4 @@
-import { AvisoMiembros } from "@/components/content/AvisoMiembros";
+import { AvisoMiembros } from "@/components/atoms/AvisoMiembros";
 import { MetaArticulo } from "@/components/content/MetaArticulo";
 import { cn } from "@/lib/utils";
 import type { TransformedPost } from "@shared/wordpress/types";

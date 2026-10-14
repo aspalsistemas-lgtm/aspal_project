@@ -1,5 +1,5 @@
 import iconoAspal from "@assets/Aspal-Icono_1763675356866.webp";
-import { AvisoPestanaNueva } from "@/components/layout/AvisoPestanaNueva";
+import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";

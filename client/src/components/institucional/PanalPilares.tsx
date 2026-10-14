@@ -1,4 +1,4 @@
-import { PatronPanal } from "@/components/layout/PatronPanal";
+import { PatronPanal } from "@/components/atoms/PatronPanal";
 import { PILARES } from "@/content/institucional/pilares";
 import { HEXAGONO_PUNTA } from "@/lib/clases";
 import { cn } from "@/lib/utils";

@@ -25,8 +25,8 @@ import {
   type EntradaNav,
   type GrupoNav,
 } from "@/lib/navegacion";
-import { AvisoPestanaNueva } from "@/components/layout/AvisoPestanaNueva";
-import { Proximamente } from "@/components/layout/Proximamente";
+import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
+import { Proximamente } from "@/components/atoms/Proximamente";
 import { registrarEvento } from "@/lib/analitica";
 import { indiceSiguiente } from "@/lib/teclado";
 import { cn } from "@/lib/utils";

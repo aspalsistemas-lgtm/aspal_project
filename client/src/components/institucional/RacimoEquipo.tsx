@@ -1,5 +1,5 @@
-import { RetratoHex } from "@/components/institucional/RetratoHex";
-import { PatronPanal } from "@/components/layout/PatronPanal";
+import { RetratoHex } from "@/components/atoms/RetratoHex";
+import { PatronPanal } from "@/components/atoms/PatronPanal";
 import type { Perfil } from "@/content/institucional/equipo";
 
 /** Posición de las 3 celdas: una arriba y dos abajo, encajadas como en el panal. */

@@ -1,5 +1,5 @@
-import { RetratoHex } from "@/components/institucional/RetratoHex";
-import { AvisoPestanaNueva } from "@/components/layout/AvisoPestanaNueva";
+import { RetratoHex } from "@/components/atoms/RetratoHex";
+import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
 import type { Perfil } from "@/content/institucional/equipo";
 import { registrarEvento } from "@/lib/analitica";
 import { Linkedin } from "lucide-react";

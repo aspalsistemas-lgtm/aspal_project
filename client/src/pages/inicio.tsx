@@ -11,8 +11,8 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
 import { Button } from "@/components/ui/button";
-import { FotoHero, type EstiloFotoHero } from "@/components/layout/FotoHero";
-import { PatronPanal } from "@/components/layout/PatronPanal";
+import { FotoHero, type EstiloFotoHero } from "@/components/atoms/FotoHero";
+import { PatronPanal } from "@/components/atoms/PatronPanal";
 import {
   CIFRAS,
   FOTO_HERO,

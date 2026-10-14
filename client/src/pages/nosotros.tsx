@@ -1,6 +1,6 @@
 import ilustracionVoz from "@assets/recurso-27-marketing.webp";
 import { CifraAnimada } from "@/components/institucional/CifraAnimada";
-import { Hashtag } from "@/components/institucional/Hashtag";
+import { Hashtag } from "@/components/atoms/Hashtag";
 import { ManifiestoNumerado } from "@/components/institucional/ManifiestoNumerado";
 import { MuroAliados } from "@/components/institucional/MuroAliados";
 import { PilarCard } from "@/components/institucional/PilarCard";
@@ -10,8 +10,8 @@ import { Banda } from "@/components/layout/Banda";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
-import { PatronPanal } from "@/components/layout/PatronPanal";
-import { Proximamente } from "@/components/layout/Proximamente";
+import { PatronPanal } from "@/components/atoms/PatronPanal";
+import { Proximamente } from "@/components/atoms/Proximamente";
 import { Button } from "@/components/ui/button";
 import { CIFRAS } from "@/content/institucional/inicio";
 import {

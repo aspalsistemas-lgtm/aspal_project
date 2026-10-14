@@ -103,8 +103,8 @@ export const REGISTRO = [
   {
     id: "proximamente",
     nombre: "Proximamente",
-    archivo: "client/src/components/layout/Proximamente.tsx",
-    importar: 'import { Proximamente } from "@/components/layout/Proximamente";',
+    archivo: "client/src/components/atoms/Proximamente.tsx",
+    importar: 'import { Proximamente } from "@/components/atoms/Proximamente";',
     categoria: "layout",
     nivel: "atomo",
     descripcion: "Etiqueta «Próximamente» para un destino que aún no existe.",
@@ -116,8 +116,8 @@ export const REGISTRO = [
   {
     id: "patron-panal",
     nombre: "PatronPanal",
-    archivo: "client/src/components/layout/PatronPanal.tsx",
-    importar: 'import { PatronPanal } from "@/components/layout/PatronPanal";',
+    archivo: "client/src/components/atoms/PatronPanal.tsx",
+    importar: 'import { PatronPanal } from "@/components/atoms/PatronPanal";',
     categoria: "layout",
     nivel: "atomo",
     descripcion:
@@ -133,8 +133,8 @@ export const REGISTRO = [
   {
     id: "foto-hero",
     nombre: "FotoHero",
-    archivo: "client/src/components/layout/FotoHero.tsx",
-    importar: 'import { FotoHero } from "@/components/layout/FotoHero";',
+    archivo: "client/src/components/atoms/FotoHero.tsx",
+    importar: 'import { FotoHero } from "@/components/atoms/FotoHero";',
     categoria: "layout",
     nivel: "atomo",
     descripcion:
@@ -150,9 +150,8 @@ export const REGISTRO = [
   {
     id: "aviso-pestana-nueva",
     nombre: "AvisoPestanaNueva",
-    archivo: "client/src/components/layout/AvisoPestanaNueva.tsx",
-    importar:
-      'import { AvisoPestanaNueva } from "@/components/layout/AvisoPestanaNueva";',
+    archivo: "client/src/components/atoms/AvisoPestanaNueva.tsx",
+    importar: 'import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";',
     categoria: "layout",
     nivel: "atomo",
     descripcion:
@@ -286,9 +285,8 @@ export const REGISTRO = [
   {
     id: "ilustracion-pilar",
     nombre: "IlustracionPilar",
-    archivo: "client/src/components/institucional/IlustracionPilar.tsx",
-    importar:
-      'import { IlustracionPilar } from "@/components/institucional/IlustracionPilar";',
+    archivo: "client/src/components/atoms/IlustracionPilar.tsx",
+    importar: 'import { IlustracionPilar } from "@/components/atoms/IlustracionPilar";',
     categoria: "institucional",
     nivel: "atomo",
     descripcion:
@@ -382,8 +380,8 @@ export const REGISTRO = [
   {
     id: "retrato-hex",
     nombre: "RetratoHex",
-    archivo: "client/src/components/institucional/RetratoHex.tsx",
-    importar: 'import { RetratoHex } from "@/components/institucional/RetratoHex";',
+    archivo: "client/src/components/atoms/RetratoHex.tsx",
+    importar: 'import { RetratoHex } from "@/components/atoms/RetratoHex";',
     categoria: "institucional",
     nivel: "atomo",
     descripcion:
@@ -552,8 +550,8 @@ export const REGISTRO = [
   {
     id: "hashtag",
     nombre: "Hashtag",
-    archivo: "client/src/components/institucional/Hashtag.tsx",
-    importar: 'import { Hashtag } from "@/components/institucional/Hashtag";',
+    archivo: "client/src/components/atoms/Hashtag.tsx",
+    importar: 'import { Hashtag } from "@/components/atoms/Hashtag";',
     categoria: "institucional",
     nivel: "atomo",
     descripcion:
@@ -631,8 +629,8 @@ export const REGISTRO = [
   {
     id: "aviso-miembros",
     nombre: "AvisoMiembros",
-    archivo: "client/src/components/content/AvisoMiembros.tsx",
-    importar: 'import { AvisoMiembros } from "@/components/content/AvisoMiembros";',
+    archivo: "client/src/components/atoms/AvisoMiembros.tsx",
+    importar: 'import { AvisoMiembros } from "@/components/atoms/AvisoMiembros";',
     categoria: "contenido",
     nivel: "atomo",
     descripcion:

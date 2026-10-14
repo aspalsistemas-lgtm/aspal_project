@@ -21,7 +21,8 @@ client/
     ├── index.css          ← tokens HSL, @font-face, reduced-motion, utilidades elevate
     ├── pages/             ← una página por ruta; kebab-case español
     ├── components/
-    │   ├── layout/        ← Banda, HeroInstitucional, Header, Footer, PatronPanal, FotoHero,
+    │   ├── atoms/         ← átomos de Atomic Design (migración en curso, design.md §1.2)
+    │   ├── layout/        ← Banda, HeroInstitucional, Header, Footer,
     │   │                     ErrorBoundary, ScrollToTop, ScrollRestoration, CabeceraRuta…
     │   ├── institucional/ ← pilares, mapa de ruta, perfiles, aliados, cifras
     │   ├── content/       ← tarjetas de blog y podcast, contenido reciente, VerMas
