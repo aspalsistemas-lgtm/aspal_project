@@ -418,19 +418,20 @@ Segunda pasada, 2026-10-14, con la exportación WXR de «Entradas» que entregó
 responsable (WordPress 7.1.3, 864 KB). El archivo **no se versiona**: trae
 datos de autores. Se guarda fuera del repo y se vuelve a pedir si hace falta.
 
-| Qué               | Medido                                                                                                                                                                                                 |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Entradas          | Las mismas **15**, todas publicadas: **sin borradores** (el WXR no incluye revisiones). 13 de un autor y 1 de cada uno de otros dos                                                                    |
-| Cuerpo            | Completo, pero **maquetado con Elementor** en las 15 (`_elementor_data`): texto, títulos, imágenes, espaciadores, botones y bloques de entradas relacionadas. Hay que extraer el texto, no copiar HTML |
-| Audio del podcast | **En Captivate.fm**, no en WordPress: los 8 episodios incrustan `player.captivate.fm/episode/<id>`. No hay audio que migrar; queda confirmar que el feed de Spotify y Apple sale de Captivate          |
-| Imágenes          | 37 distintas, todas en `comunidad.…/wp-content/uploads/2024/`. **13 son de la plantilla** (banners, redes, botones de Apple y Spotify, firma) y se repiten en todas; **24 son propias** y se migran    |
-| Adjuntos          | 39 en el export: 26 PNG, 9 JPEG, 3 GIF, 1 PDF. Ningún audio ni vídeo: los 27 MP4 de la biblioteca no los usan las entradas                                                                             |
-| SEO y extras      | Imagen destacada en las 15; Yoast con metadescripción en 14; extracto en las 15. 0 comentarios (un pingback sin aprobar); sin etiquetas. Metadatos de PeepSo, myCred y Advanced Ads: no se migran      |
-| URL antiguas      | `comunidad.asociacionesprofesionales.org/<slug>/`: las 15 necesitan redirección cuando el contenido cambie de casa                                                                                     |
+| Qué               | Medido                                                                                                                                                                                                                             |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Entradas          | Las mismas **15**, todas publicadas: **sin borradores** (el WXR no incluye revisiones). 13 de un autor y 1 de cada uno de otros dos                                                                                                |
+| Cuerpo            | Completo, pero **maquetado con Elementor** en las 15 (`_elementor_data`): texto, títulos, imágenes, espaciadores, botones y bloques de entradas relacionadas. Hay que extraer el texto, no copiar HTML                             |
+| Audio del podcast | **En Captivate.fm**, no en WordPress: los 8 episodios incrustan `player.captivate.fm/episode/<id>`. No hay audio que migrar, y el feed que leen Spotify y Apple también sale de Captivate (confirmado el 2026-10-14)               |
+| Imágenes          | 37 distintas, todas en `comunidad.…/wp-content/uploads/2024/`. **13 son de la plantilla** (banners, redes, botones de Apple y Spotify, firma) y se repiten en todas; **24 son propias** y se migran; las de plantilla se descartan |
+| Adjuntos          | 39 en el export: 26 PNG, 9 JPEG, 3 GIF, 1 PDF. Ningún audio ni vídeo: los 27 MP4 de la biblioteca no los usan las entradas                                                                                                         |
+| SEO y extras      | Imagen destacada en las 15; Yoast con metadescripción en 14; extracto en las 15. 0 comentarios (un pingback sin aprobar); sin etiquetas. Metadatos de PeepSo, myCred y Advanced Ads: no se migran                                  |
+| URL antiguas      | `comunidad.asociacionesprofesionales.org/<slug>/`: las 15 necesitan redirección cuando el contenido cambie de casa                                                                                                                 |
 
-Queda: confirmar el feed del podcast en Captivate y decidir si las 13 imágenes de
-plantilla (banners del boletín, del Mapa de Ruta y del estudio comparativo) se
-rehacen como bloques del gestor o se descartan.
+Decidido el 2026-10-14: el podcast sigue en Captivate (la plataforma solo
+incrusta el reproductor de cada episodio) y las 13 imágenes de plantilla
+(banners del boletín, del Mapa de Ruta y del estudio comparativo, redes,
+botones, firma) **se descartan**; no se rehacen como bloques del gestor.
 
 **Inventario de miembros (insumo pendiente, bloquea la Etapa 3):** dónde están
 hoy los miembros de ASPAL (y, cuando ANPR se incorpore, los de ANPR) en
@@ -519,9 +520,8 @@ Respondidas el 14 de octubre de 2026:
 
 Quedan:
 
-1. **Contenido editorial (sección 6):** exportación recibida y analizada (el
-   audio está en Captivate). Falta confirmar el feed del podcast y qué se hace
-   con las imágenes de plantilla.
+1. **Contenido editorial (sección 6):** cerrado el 2026-10-14: exportación
+   analizada, audio y feed en Captivate, imágenes de plantilla descartadas.
 2. **Datos actuales (sección 6):** ¿dónde están hoy los miembros y pagos de
    ASPAL, y hay que conservar el historial de pagos? (Etapa 3.)
 3. **Renderizado y publicación (D13):** abierto (ver arriba).
