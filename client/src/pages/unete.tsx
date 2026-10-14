@@ -1,9 +1,9 @@
 import { FormSuscripcion } from "@/components/organisms/FormSuscripcion";
 import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
-import { Banda } from "@/components/layout/Banda";
+import { Banda } from "@/components/templates/Banda";
 import { PieSitio } from "@/components/organisms/PieSitio";
 import { CabeceraSitio } from "@/components/organisms/CabeceraSitio";
-import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
+import { HeroInstitucional } from "@/components/templates/HeroInstitucional";
 import { Button } from "@/components/ui/button";
 import { registrarEvento } from "@/lib/analitica";
 import { H2_BANDA } from "@/lib/clases";

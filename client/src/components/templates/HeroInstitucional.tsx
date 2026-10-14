@@ -1,4 +1,4 @@
-import { Banda } from "@/components/layout/Banda";
+import { Banda } from "@/components/templates/Banda";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 

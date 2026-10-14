@@ -68,8 +68,8 @@ export const REGISTRO = [
   {
     id: "banda",
     nombre: "Banda",
-    archivo: "client/src/components/layout/Banda.tsx",
-    importar: 'import { Banda } from "@/components/layout/Banda";',
+    archivo: "client/src/components/templates/Banda.tsx",
+    importar: 'import { Banda } from "@/components/templates/Banda";',
     categoria: "layout",
     nivel: "plantilla",
     descripcion:
@@ -85,9 +85,9 @@ export const REGISTRO = [
   {
     id: "hero-institucional",
     nombre: "HeroInstitucional",
-    archivo: "client/src/components/layout/HeroInstitucional.tsx",
+    archivo: "client/src/components/templates/HeroInstitucional.tsx",
     importar:
-      'import { HeroInstitucional } from "@/components/layout/HeroInstitucional";',
+      'import { HeroInstitucional } from "@/components/templates/HeroInstitucional";',
     categoria: "layout",
     nivel: "plantilla",
     descripcion:
@@ -194,9 +194,9 @@ export const REGISTRO = [
   {
     id: "saltar-al-contenido",
     nombre: "SaltarAlContenido",
-    archivo: "client/src/components/layout/SaltarAlContenido.tsx",
+    archivo: "client/src/components/infraestructura/SaltarAlContenido.tsx",
     importar:
-      'import { SaltarAlContenido } from "@/components/layout/SaltarAlContenido";',
+      'import { SaltarAlContenido } from "@/components/infraestructura/SaltarAlContenido";',
     categoria: "infraestructura",
     nivel: "infraestructura",
     descripcion:
@@ -224,8 +224,8 @@ export const REGISTRO = [
   {
     id: "cabecera-ruta",
     nombre: "CabeceraRuta",
-    archivo: "client/src/components/layout/CabeceraRuta.tsx",
-    importar: 'import { CabeceraRuta } from "@/components/layout/CabeceraRuta";',
+    archivo: "client/src/components/infraestructura/CabeceraRuta.tsx",
+    importar: 'import { CabeceraRuta } from "@/components/infraestructura/CabeceraRuta";',
     categoria: "infraestructura",
     nivel: "infraestructura",
     descripcion:
@@ -239,9 +239,9 @@ export const REGISTRO = [
   {
     id: "scroll-restoration",
     nombre: "ScrollRestoration",
-    archivo: "client/src/components/layout/ScrollRestoration.tsx",
+    archivo: "client/src/components/infraestructura/ScrollRestoration.tsx",
     importar:
-      'import { ScrollRestoration } from "@/components/layout/ScrollRestoration";',
+      'import { ScrollRestoration } from "@/components/infraestructura/ScrollRestoration";',
     categoria: "infraestructura",
     nivel: "infraestructura",
     descripcion:
@@ -254,8 +254,9 @@ export const REGISTRO = [
   {
     id: "error-boundary",
     nombre: "ErrorBoundary",
-    archivo: "client/src/components/layout/ErrorBoundary.tsx",
-    importar: 'import { ErrorBoundary } from "@/components/layout/ErrorBoundary";',
+    archivo: "client/src/components/infraestructura/ErrorBoundary.tsx",
+    importar:
+      'import { ErrorBoundary } from "@/components/infraestructura/ErrorBoundary";',
     categoria: "infraestructura",
     nivel: "infraestructura",
     descripcion:

@@ -1,5 +1,5 @@
 import { AvisoPestanaNueva } from "@/components/atoms/AvisoPestanaNueva";
-import { Banda } from "@/components/layout/Banda";
+import { Banda } from "@/components/templates/Banda";
 import { Proximamente } from "@/components/atoms/Proximamente";
 import type { EnlaceContenido, Pilar } from "@/content/institucional/pilares";
 import { useAnimarAlVer } from "@/hooks/use-animar-al-ver";

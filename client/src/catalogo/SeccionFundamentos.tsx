@@ -1,4 +1,4 @@
-import { Banda } from "@/components/layout/Banda";
+import { Banda } from "@/components/templates/Banda";
 import { Button } from "@/components/ui/button";
 import { useEnCliente } from "@/hooks/use-en-cliente";
 import { BOTON_CONTORNO_NOCHE, BOTON_MIEL_NOCHE, H2_BANDA } from "@/lib/clases";

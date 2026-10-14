@@ -1,4 +1,4 @@
-import { Banda } from "@/components/layout/Banda";
+import { Banda } from "@/components/templates/Banda";
 import type { Testimonio } from "@/content/institucional/inicio";
 import { HASHTAG } from "@/content/institucional/nosotros";
 import { HEXAGONO_PUNTA } from "@/lib/clases";

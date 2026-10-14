@@ -1,4 +1,4 @@
-import { Banda } from "@/components/layout/Banda";
+import { Banda } from "@/components/templates/Banda";
 import { ETAPAS, type EtapaMapa as Etapa } from "@/content/institucional/mapa-ruta";
 import { useAnimarAlVer } from "@/hooks/use-animar-al-ver";
 import { HEXAGONO_PUNTA, NUMERO_CONTORNO } from "@/lib/clases";

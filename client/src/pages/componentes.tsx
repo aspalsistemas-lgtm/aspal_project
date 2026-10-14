@@ -1,6 +1,6 @@
 import { PieSitio } from "@/components/organisms/PieSitio";
 import { CabeceraSitio } from "@/components/organisms/CabeceraSitio";
-import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
+import { HeroInstitucional } from "@/components/templates/HeroInstitucional";
 import { FichaComponente } from "@/catalogo/FichaComponente";
 import { CATEGORIAS, REGISTRO } from "@/catalogo/registro";
 import { SeccionFundamentos } from "@/catalogo/SeccionFundamentos";

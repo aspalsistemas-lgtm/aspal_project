@@ -1,9 +1,9 @@
 import { TEXTO_EVENTOS } from "@/content/institucional/inicio";
 import { FormSuscripcion } from "@/components/organisms/FormSuscripcion";
-import { Banda } from "@/components/layout/Banda";
+import { Banda } from "@/components/templates/Banda";
 import { PieSitio } from "@/components/organisms/PieSitio";
 import { CabeceraSitio } from "@/components/organisms/CabeceraSitio";
-import { HeroInstitucional } from "@/components/layout/HeroInstitucional";
+import { HeroInstitucional } from "@/components/templates/HeroInstitucional";
 
 /**
  * Eventos, en modo «Próximamente» con captura (RF-09). Texto genérico: el

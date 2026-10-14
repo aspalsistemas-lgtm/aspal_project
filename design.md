@@ -27,8 +27,9 @@ components/
 │                      EpisodioFila, MetaArticulo, CifraAnimada, VerMas, BotonVolverArriba…
 ├── organisms/      ← organismos ya migrados (§1.2): CabeceraSitio, PieSitio, FormSuscripcion,
 │                      ContenidoReciente, FranjaPodcast, SeccionPilar, RutaTimeline…
-├── layout/         ← pendientes de la F4: Banda y HeroInstitucional (plantillas) y
-│                      CabeceraRuta, ErrorBoundary, SaltarAlContenido, ScrollRestoration
+├── templates/      ← plantillas: Banda, HeroInstitucional
+├── infraestructura/ ← sin aspecto propio: CabeceraRuta, ErrorBoundary, SaltarAlContenido,
+│                      ScrollRestoration
 ├── ui/             ← primitivas shadcn/ui en uso (button, card, collapsible, input,
 │                      navigation-menu, toast, toaster, tooltip)
 └── sections/       ← legado de /plataforma: HeroSection, FeaturesGrid… No reutilizar.
@@ -44,7 +45,7 @@ Reglas vigentes:
 - Un componente que nadie importa se borra; el test lo detecta.
 - Las páginas (`client/src/pages/`) son la única capa que lee la URL, lanza
   consultas y compone `CabeceraSitio`, `main#contenido` y `PieSitio`.
-- Los imports son directos por alias: `import { Banda } from "@/components/layout/Banda"`.
+- Los imports son directos por alias: `import { Banda } from "@/components/templates/Banda"`.
   No hay barrels (`index.ts`) y el detector de uso del catálogo depende de esa
   forma de importar.
 
@@ -53,7 +54,7 @@ Reglas vigentes:
 Decisión de octubre de 2026: migrar a la metodología Atomic Design de Brad
 Frost. Es un punto de la deuda técnica (P3), **en curso** según
 `docs/plans/2026-10-13-001-refactor-atomic-design-plan.md`: F0 (campo `nivel`
-en el catálogo), F1 (átomos), F2 (moléculas) y F3 (organismos) hechas. Cada entrada del catálogo declara su
+en el catálogo), F1 (átomos), F2 (moléculas), F3 (organismos) y F4 (plantillas e infraestructura) hechas. Cada entrada del catálogo declara su
 nivel y el test exige que coincida con su carpeta. **Lo nuevo va ya a la
 carpeta de su nivel**; `ui/` (shadcn) y `sections/` (legado) no se mueven.
 

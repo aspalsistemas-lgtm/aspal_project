@@ -51,8 +51,9 @@ const EXPORT_DEFAULT_PENDIENTES = [
  * Un nombre nuevo en inglés no se detecta solo: lo vigila la revisión.
  */
 const NOMBRES_EN_INGLES_PENDIENTES: Record<string, string> = {
-  "client/src/components/layout/ErrorBoundary.tsx": "LimiteDeErrores",
-  "client/src/components/layout/ScrollRestoration.tsx": "RestaurarDesplazamiento",
+  "client/src/components/infraestructura/ErrorBoundary.tsx": "LimiteDeErrores",
+  "client/src/components/infraestructura/ScrollRestoration.tsx":
+    "RestaurarDesplazamiento",
 };
 
 describe("pendientes de la migración a Atomic Design", () => {
