@@ -41,9 +41,8 @@ i18n (el sitio es solo en español).
 
 ### P4 · Estilo
 
-| #   | Punto                                                                                                                                                        | Archivos   | Esfuerzo |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- | -------- |
-| 4.6 | **Comentarios en inglés heredados** en `server/index.ts`, `server/vite.ts`, `index.css` (sistema elevate) y `ui/button.tsx`. Traducir al tocar cada archivo. | 4 archivos | S        |
+| #   | Punto | Archivos | Esfuerzo |
+| --- | ----- | -------- | -------- |
 
 ---
 
@@ -69,3 +68,4 @@ i18n (el sitio es solo en español).
 | 1.4a | `npm audit fix` sin `--force` (solo lockfile): `express` 4.22.3 con `body-parser`, `path-to-regexp`, `proxy-addr` (crítico) y `qs`; `vite` 5.4.21, `postcss` 8.5.30, `tailwindcss` 3.4.19. Avisos 29 → 14; la cadena de Express queda limpia. Verificado: HTML prerenderizado idéntico, CSS equivalente y API de producción probada en local.                                                                                                                                                                                              | `f47e221`                         | 2026-10-14 |
 | 1.4b | `vite` 5 → 7, `@vitejs/plugin-react` 4 → 5, `vitest` y `@vitest/coverage-v8` 3 → 5 (plan `2026-10-14-001`). `build.target` fijado a los navegadores de Vite 5 (Safari 14, Chrome 87). Cero avisos críticos (14 → 8). HTML prerenderizado idéntico; `check:browser` sin errores en desarrollo y producción; umbral de cobertura recalibrado por el nuevo cálculo de V8.                                                                                                                                                                     | `59cfa61` · `b2c1501`             | 2026-10-14 |
 | 3.8  | Funciones de página en español: `BlogPost` → `ArticuloBlog` y `NotFound` → `PaginaNoEncontrada`, con sus imports en `App.tsx`. HTML prerenderizado idéntico, 404 incluido.                                                                                                                                                                                                                                                                                                                                                                 | `82982bf`                         | 2026-10-14 |
+| 4.6  | 24 comentarios heredados en inglés traducidos (`server/index.ts`, `server/vite.ts`, `index.css` y `ui/button.tsx`); retirada la nota de Replit sobre puertos. CSS, JS del cliente y HTML idénticos byte a byte.                                                                                                                                                                                                                                                                                                                            | `df31e86`                         | 2026-10-14 |
