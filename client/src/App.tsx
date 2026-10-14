@@ -8,8 +8,8 @@ import { MotionConfig } from "framer-motion";
 import { BotonVolverArriba } from "@/components/molecules/BotonVolverArriba";
 import { SaltarAlContenido } from "@/components/infraestructura/SaltarAlContenido";
 import { CabeceraRuta } from "@/components/infraestructura/CabeceraRuta";
-import { ScrollRestoration } from "@/components/infraestructura/ScrollRestoration";
-import { ErrorBoundary } from "@/components/infraestructura/ErrorBoundary";
+import { RestaurarDesplazamiento } from "@/components/infraestructura/RestaurarDesplazamiento";
+import { LimiteDeErrores } from "@/components/infraestructura/LimiteDeErrores";
 import Inicio from "@/pages/inicio";
 import Plataforma from "@/pages/plataforma";
 import Nosotros from "@/pages/nosotros";
@@ -77,10 +77,10 @@ function App() {
           <SaltarAlContenido />
           <Toaster />
           <CabeceraRuta />
-          <ScrollRestoration />
-          <ErrorBoundary>
+          <RestaurarDesplazamiento />
+          <LimiteDeErrores>
             <Router />
-          </ErrorBoundary>
+          </LimiteDeErrores>
           <BotonVolverArriba />
         </TooltipProvider>
       </MotionConfig>

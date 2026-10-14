@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -47,13 +47,17 @@ const EXPORT_DEFAULT_PENDIENTES = [
 ];
 
 /**
- * 3.3: componentes heredados con nombre en inglés y su nombre aprobado (DA-5).
- * Un nombre nuevo en inglés no se detecta solo: lo vigila la revisión.
+ * 3.3, cerrado en la F4: los seis heredados en inglés ya tienen su nombre en
+ * español (DA-5). No deben volver. Un nombre nuevo en inglés no se detecta
+ * solo: lo vigila la revisión.
  */
-const NOMBRES_EN_INGLES_PENDIENTES: Record<string, string> = {
-  "client/src/components/infraestructura/ErrorBoundary.tsx": "LimiteDeErrores",
-  "client/src/components/infraestructura/ScrollRestoration.tsx":
-    "RestaurarDesplazamiento",
+const NOMBRES_RETIRADOS: Record<string, string> = {
+  Header: "CabeceraSitio",
+  Footer: "PieSitio",
+  BlogCard: "TarjetaArticulo",
+  ScrollToTop: "BotonVolverArriba",
+  ErrorBoundary: "LimiteDeErrores",
+  ScrollRestoration: "RestaurarDesplazamiento",
 };
 
 describe("pendientes de la migración a Atomic Design", () => {
@@ -68,12 +72,18 @@ describe("pendientes de la migración a Atomic Design", () => {
     expect(conDefault).toEqual([...EXPORT_DEFAULT_PENDIENTES].sort());
   });
 
-  it("CA-3: cada nombre en inglés de la lista sigue sin renombrar (3.3)", () => {
-    for (const archivo of Object.keys(NOMBRES_EN_INGLES_PENDIENTES)) {
-      expect(
-        existsSync(join(RAIZ, archivo)),
-        `${archivo} ya no existe: quítalo de NOMBRES_EN_INGLES_PENDIENTES`,
-      ).toBe(true);
-    }
+  it("CA-3: ningún componente vuelve a un nombre retirado en inglés (3.3)", () => {
+    const reaparecidos = revisados.filter((f) => {
+      const nombre =
+        f
+          .split("/")
+          .pop()
+          ?.replace(/\.tsx$/, "") ?? "";
+      return nombre in NOMBRES_RETIRADOS;
+    });
+    expect(
+      reaparecidos,
+      `usa el nombre aprobado: ${JSON.stringify(NOMBRES_RETIRADOS)}`,
+    ).toEqual([]);
   });
 });

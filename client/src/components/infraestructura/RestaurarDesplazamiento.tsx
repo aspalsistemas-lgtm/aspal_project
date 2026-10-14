@@ -83,7 +83,7 @@ function irAlAncla(hash: string): () => void {
  * - **Restaurar cuando el documento ya tiene altura**, no en el efecto de
  *   ruta. De ahí el reintento por `requestAnimationFrame`.
  */
-export function ScrollRestoration() {
+export function RestaurarDesplazamiento() {
   const [location] = useLocation();
   /** posición de scroll por índice de entrada del historial */
   const positions = useRef(new Map<number, number>());

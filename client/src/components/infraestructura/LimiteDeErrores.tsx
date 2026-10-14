@@ -16,7 +16,7 @@ interface State {
  * sin rastro para el usuario. El caso real que lo motivó: `format()` sobre una
  * fecha malformada lanzaba `RangeError` y tumbaba la aplicación entera.
  */
-export class ErrorBoundary extends Component<Props, State> {
+export class LimiteDeErrores extends Component<Props, State> {
   state: State = { hasError: false };
 
   static getDerivedStateFromError(): State {

@@ -237,11 +237,11 @@ export const REGISTRO = [
     vista: "sin-vista",
   },
   {
-    id: "scroll-restoration",
-    nombre: "ScrollRestoration",
-    archivo: "client/src/components/infraestructura/ScrollRestoration.tsx",
+    id: "restaurar-desplazamiento",
+    nombre: "RestaurarDesplazamiento",
+    archivo: "client/src/components/infraestructura/RestaurarDesplazamiento.tsx",
     importar:
-      'import { ScrollRestoration } from "@/components/infraestructura/ScrollRestoration";',
+      'import { RestaurarDesplazamiento } from "@/components/infraestructura/RestaurarDesplazamiento";',
     categoria: "infraestructura",
     nivel: "infraestructura",
     descripcion:
@@ -252,11 +252,11 @@ export const REGISTRO = [
     vista: "sin-vista",
   },
   {
-    id: "error-boundary",
-    nombre: "ErrorBoundary",
-    archivo: "client/src/components/infraestructura/ErrorBoundary.tsx",
+    id: "limite-de-errores",
+    nombre: "LimiteDeErrores",
+    archivo: "client/src/components/infraestructura/LimiteDeErrores.tsx",
     importar:
-      'import { ErrorBoundary } from "@/components/infraestructura/ErrorBoundary";',
+      'import { LimiteDeErrores } from "@/components/infraestructura/LimiteDeErrores";',
     categoria: "infraestructura",
     nivel: "infraestructura",
     descripcion:

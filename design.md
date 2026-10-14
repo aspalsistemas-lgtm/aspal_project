@@ -28,8 +28,8 @@ components/
 ├── organisms/      ← organismos ya migrados (§1.2): CabeceraSitio, PieSitio, FormSuscripcion,
 │                      ContenidoReciente, FranjaPodcast, SeccionPilar, RutaTimeline…
 ├── templates/      ← plantillas: Banda, HeroInstitucional
-├── infraestructura/ ← sin aspecto propio: CabeceraRuta, ErrorBoundary, SaltarAlContenido,
-│                      ScrollRestoration
+├── infraestructura/ ← sin aspecto propio: CabeceraRuta, LimiteDeErrores, SaltarAlContenido,
+│                      RestaurarDesplazamiento
 ├── ui/             ← primitivas shadcn/ui en uso (button, card, collapsible, input,
 │                      navigation-menu, toast, toaster, tooltip)
 └── sections/       ← legado de /plataforma: HeroSection, FeaturesGrid… No reutilizar.
@@ -313,7 +313,7 @@ md:px-8`), ritmo blanco → `bg-fondo-suave` → `bg-noche`.
 - Datos pendientes (año de fundación D7, fotos, LinkedIn, Consejo, Dossier)
   van como `PENDIENTE` en el módulo, nunca inventados.
 - Anclas: las secciones enlazables llevan `id` y `scroll-mt-32`;
-  `ScrollRestoration` lleva al ancla cuando la URL trae `#`.
+  `RestaurarDesplazamiento` lleva al ancla cuando la URL trae `#`.
 
 ---
 

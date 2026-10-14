@@ -25,7 +25,7 @@ client/
     │   ├── molecules/     ← moléculas: tarjetas, índices, cifras, VerMas, BotonVolverArriba…
     │   ├── organisms/     ← organismos: CabeceraSitio, PieSitio, FormSuscripcion, secciones…
     │   ├── templates/     ← plantillas: Banda, HeroInstitucional
-    │   ├── infraestructura/ ← CabeceraRuta, ErrorBoundary, SaltarAlContenido, ScrollRestoration
+    │   ├── infraestructura/ ← CabeceraRuta, LimiteDeErrores, SaltarAlContenido, RestaurarDesplazamiento
     │   ├── ui/            ← primitivas shadcn/ui en uso (8). Fuera de lint y Prettier
     │   └── sections/      ← legado de /plataforma; no reutilizar
     ├── content/institucional/ ← textos de Nosotros, Qué hacemos, Equipo, Mapa, inicio (datos)
@@ -55,9 +55,8 @@ Nomenclatura: PascalCase español descriptivo.
 ❌  Card (genérico) · PilarCard2 (sufijo numérico) · pilarCard (camelCase)
 ```
 
-Los nueve nombres en inglés que quedan (`ErrorBoundary`, `ScrollRestoration` y
-`sections/*`) son
-heredados; no crear más.
+Los únicos nombres en inglés que quedan son los de `sections/*`, legado que no
+se migra; no crear más.
 
 Antes de crear uno:
 

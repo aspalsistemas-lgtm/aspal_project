@@ -188,10 +188,10 @@ Hooks:        kebab-case con prefijo use- use-lista-paginada.ts · use-en-client
 Lib y shared: kebab-case español          contenido-reciente.ts · validacion.ts
 ```
 
-Nueve componentes heredados conservan nombre en inglés (`ErrorBoundary`,
-`ScrollRestoration` y los siete de `components/sections/`, marcados «legado» en
-el catálogo). La migración a Atomic Design renombra los dos primeros en la F4;
-los de `sections/` no se migran. No crees más.
+Solo los siete componentes de `components/sections/` (legado de `/plataforma`,
+marcados así en el catálogo) conservan nombre en inglés; no se migran. Los seis
+heredados restantes ya se renombraron y un test impide que vuelvan. No crees
+más.
 
 ### Componentes React — PascalCase español descriptivo
 
