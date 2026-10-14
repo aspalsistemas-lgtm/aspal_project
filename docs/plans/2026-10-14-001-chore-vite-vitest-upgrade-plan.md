@@ -1,7 +1,7 @@
 ---
 title: Subir vite y vitest para cerrar los avisos críticos de npm audit
 type: chore
-status: draft
+status: approved
 date: 2026-10-14
 origin: docs/sprints/deuda-tecnica.md (1.4) · ADR-0006 (SDD)
 ---
@@ -41,6 +41,10 @@ de desarrollo (`server/vite.ts` usa `createServer` en `middlewareMode` y
 `createLogger`). Por eso el cambio no es «solo de tests».
 
 ## 3. Decisiones
+
+**Cerradas el 2026-10-14 por el responsable, según la recomendación:** `vite` 7
+(DV-1), `vitest` directo a 5 (DV-2) y `build.target` fijado a los navegadores
+de hoy (DV-3).
 
 ### DV-1 · `vite` 7 o 8 — se recomienda **7**
 
@@ -102,4 +106,4 @@ Cada fase en su rama, en verde y fusionada antes de la siguiente.
 
 ## 7. Siguiente paso
 
-Responder DV-1 a DV-3. Con eso se abre la V1.
+Decisiones cerradas. Siguiente: la V1.
