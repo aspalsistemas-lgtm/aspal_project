@@ -5,6 +5,7 @@
  */
 import { crearServicioContrasenas } from "../acceso/contrasenas.js";
 import type { Dependencias } from "../app.js";
+import { crearBandejaDePrueba } from "./correo.js";
 
 export function dependenciasDePrueba(
   parciales: Partial<Dependencias> = {},
@@ -19,6 +20,7 @@ export function dependenciasDePrueba(
     secretoClaves: "secreto-de-prueba-con-mas-de-32-caracteres",
     // Parámetros baratos: las pruebas no necesitan el coste de producción.
     contrasenas: crearServicioContrasenas({ parametros: { N: 2 ** 14, r: 8, p: 1 } }),
+    correo: crearBandejaDePrueba().servicio,
     probabilidadLimpieza: 0,
     resolverAsociacion: async () => null,
     enAsociacion: async () => {

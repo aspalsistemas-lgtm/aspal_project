@@ -20,6 +20,7 @@ describe("cargarConfiguracion (CA-1)", () => {
       esquemaPublico: "https",
       puertoPublico: undefined,
       produccion: false,
+      correo: null,
     });
   });
 
@@ -158,7 +159,13 @@ describe("configuración del acceso (plan del corte 3, CA-4, CA-12 y CA-10)", ()
 
   it("en producción rechaza el secreto de desarrollo del repositorio (auditoría, B7)", () => {
     const desarrollo = "secreto-local-de-desarrollo-no-usar-en-la-nube-0001";
-    const produccion = { ...BASE, NODE_ENV: "production", TRUST_PROXY: "0" };
+    const produccion = {
+      ...BASE,
+      NODE_ENV: "production",
+      TRUST_PROXY: "0",
+      SMTP_HOST: "smtp.ejemplo.org",
+      CORREO_REMITENTE: "no-responder@ejemplo.org",
+    };
     expect(() =>
       cargarConfiguracion({ ...produccion, SECRETO_CLAVES: desarrollo }),
     ).toThrow(/SECRETO_CLAVES/);
@@ -167,6 +174,57 @@ describe("configuración del acceso (plan del corte 3, CA-4, CA-12 y CA-10)", ()
       cargarConfiguracion({ ...BASE, SECRETO_CLAVES: desarrollo }),
     ).not.toThrow();
     expect(() => cargarConfiguracion(produccion)).not.toThrow();
+  });
+
+  describe("correo (SMTP)", () => {
+    const SMTP = {
+      SMTP_HOST: "localhost",
+      SMTP_PORT: "1025",
+      CORREO_REMITENTE: "no-responder@x.org",
+    };
+
+    it("sin SMTP_HOST el correo queda desactivado fuera de producción", () => {
+      expect(cargarConfiguracion(BASE).correo).toBeNull();
+    });
+
+    it("lee la configuración SMTP", () => {
+      expect(cargarConfiguracion({ ...BASE, ...SMTP }).correo).toEqual({
+        host: "localhost",
+        puerto: 1025,
+        seguro: false,
+        remitente: "no-responder@x.org",
+      });
+    });
+
+    it("en producción SMTP_HOST es obligatorio", () => {
+      const produccion = {
+        ...BASE,
+        NODE_ENV: "production",
+        TRUST_PROXY: "0",
+        SECRETO_CLAVES: "x".repeat(40),
+      };
+      expect(() => cargarConfiguracion(produccion)).toThrow(/SMTP_HOST/);
+      expect(() => cargarConfiguracion({ ...produccion, ...SMTP })).not.toThrow();
+    });
+
+    it("exige remitente con SMTP_HOST, y usuario y clave juntos", () => {
+      expect(() => cargarConfiguracion({ ...BASE, SMTP_HOST: "h" })).toThrow(
+        /CORREO_REMITENTE/,
+      );
+      expect(() => cargarConfiguracion({ ...BASE, ...SMTP, SMTP_USUARIO: "u" })).toThrow(
+        /SMTP_USUARIO/,
+      );
+    });
+
+    it("rechaza un remitente con saltos de línea (inyección de cabeceras)", () => {
+      expect(() =>
+        cargarConfiguracion({
+          ...BASE,
+          ...SMTP,
+          CORREO_REMITENTE: "a@x.org\nBcc: v@x.org",
+        }),
+      ).toThrow(/CORREO_REMITENTE/);
+    });
   });
 
   describe("TRUST_PROXY", () => {
@@ -209,6 +267,8 @@ describe("configuración del acceso (plan del corte 3, CA-4, CA-12 y CA-10)", ()
         ...BASE,
         NODE_ENV: "production",
         TRUST_PROXY: "0",
+        SMTP_HOST: "smtp.ejemplo.org",
+        CORREO_REMITENTE: "no-responder@ejemplo.org",
       });
       expect(produccion.produccion).toBe(true);
       expect(produccion.trustProxy).toBe(0);

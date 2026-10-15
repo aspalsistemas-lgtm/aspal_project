@@ -93,6 +93,26 @@ const ESQUEMA_APLICACION = z.object({
     .max(65535, { error: "fuera de rango (1-65535)" })
     .optional(),
   NODE_ENV: z.string().optional(),
+  // Correo saliente (corte 3b). En local lo recoge Mailpit (localhost:1025); en la
+  // nube, SES por SMTP. Sin SMTP_HOST el correo queda desactivado (solo fuera de
+  // producción): lo que se iba a enviar se descarta y se registra.
+  SMTP_HOST: z.string().min(1, { error: "no puede estar vacío" }).optional(),
+  SMTP_PORT: z.coerce
+    .number({ error: "debe ser un número" })
+    .int({ error: "debe ser un entero" })
+    .min(1, { error: "fuera de rango (1-65535)" })
+    .max(65535, { error: "fuera de rango (1-65535)" })
+    .default(587),
+  SMTP_SEGURO: z.enum(["true", "false"], { error: "debe ser true o false" }).optional(),
+  SMTP_USUARIO: z.string().min(1).optional(),
+  SMTP_CLAVE: z.string().min(1).optional(),
+  // Sin saltos de línea: un valor así inyectaría cabeceras en cada correo.
+  CORREO_REMITENTE: z
+    .string()
+    .regex(/^[^\r\n]{3,200}$/, {
+      error: "no puede tener saltos de línea (3-200 caracteres)",
+    })
+    .optional(),
 });
 
 const ESQUEMA_ADMIN = z.object({
@@ -114,6 +134,18 @@ export interface Configuracion {
   esquemaPublico: "http" | "https";
   puertoPublico: number | undefined;
   produccion: boolean;
+  /** `null` = correo desactivado (solo fuera de producción). */
+  correo: ConfiguracionCorreo | null;
+}
+
+export interface ConfiguracionCorreo {
+  host: string;
+  puerto: number;
+  /** TLS desde el primer byte (puerto 465); si no, STARTTLS cuando el servidor lo ofrece. */
+  seguro: boolean;
+  usuario?: string;
+  clave?: string;
+  remitente: string;
 }
 
 export interface ConfiguracionAdmin {
@@ -169,6 +201,27 @@ export function cargarConfiguracion(entorno: Entorno): Configuracion {
     problemas.push("SECRETO_CLAVES: es el valor de desarrollo; genera uno propio");
   }
 
+  let correo: ConfiguracionCorreo | null = null;
+  if (datos.SMTP_HOST !== undefined) {
+    if (datos.CORREO_REMITENTE === undefined) {
+      problemas.push("CORREO_REMITENTE: falta (obligatorio con SMTP_HOST)");
+    } else {
+      correo = {
+        host: datos.SMTP_HOST,
+        puerto: datos.SMTP_PORT,
+        seguro: datos.SMTP_SEGURO === "true",
+        ...(datos.SMTP_USUARIO ? { usuario: datos.SMTP_USUARIO } : {}),
+        ...(datos.SMTP_CLAVE ? { clave: datos.SMTP_CLAVE } : {}),
+        remitente: datos.CORREO_REMITENTE,
+      };
+    }
+    if ((datos.SMTP_USUARIO === undefined) !== (datos.SMTP_CLAVE === undefined)) {
+      problemas.push("SMTP_USUARIO y SMTP_CLAVE: van juntos o ninguno");
+    }
+  } else if (produccion) {
+    problemas.push("SMTP_HOST: es obligatorio en producción");
+  }
+
   if (problemas.length > 0) {
     throw new Error(`Configuración inválida: ${problemas.join("; ")}`);
   }
@@ -182,6 +235,7 @@ export function cargarConfiguracion(entorno: Entorno): Configuracion {
     esquemaPublico: datos.ESQUEMA_PUBLICO,
     puertoPublico: datos.PUERTO_PUBLICO,
     produccion,
+    correo,
   };
 }
 

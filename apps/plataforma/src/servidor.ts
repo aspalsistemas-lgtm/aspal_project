@@ -12,6 +12,8 @@ import {
 } from "./base-de-datos.js";
 import { crearServicioContrasenas } from "./acceso/contrasenas.js";
 import { cargarConfiguracion } from "./configuracion.js";
+import { crearServicioCorreo } from "./correo/servicio.js";
+import { crearTransporteSmtp, transporteDescartado } from "./correo/transporte-smtp.js";
 import { LIMITE_GRUESO_POR_DEFECTO } from "./http/proteccion.js";
 
 const configuracion = cargarConfiguracion(process.env);
@@ -27,6 +29,21 @@ try {
   process.exit(1);
 }
 
+// Sin SMTP (solo fuera de producción) el correo se descarta; la configuración exige
+// SMTP_HOST en producción. Los eventos se registran sin direcciones ni contenido.
+const correo = crearServicioCorreo({
+  transporte: configuracion.correo
+    ? crearTransporteSmtp(configuracion.correo, {
+        // Nunca en claro en producción; solo el entorno local con http (Mailpit) lo evita.
+        exigirTls: configuracion.produccion && configuracion.esquemaPublico === "https",
+      })
+    : transporteDescartado,
+  remitente: configuracion.correo?.remitente ?? "no-responder@localhost",
+  registrar: (evento) => {
+    if (evento !== "enviado") console.warn(`correo: ${evento}`);
+  },
+});
+
 const app = construirApp(
   {
     comprobarBaseDeDatos: () => comprobarBaseDeDatos(pool),
@@ -37,6 +54,7 @@ const app = construirApp(
     limiteGrueso: LIMITE_GRUESO_POR_DEFECTO,
     secretoClaves: configuracion.secretoClaves,
     contrasenas: crearServicioContrasenas(),
+    correo,
     resolverAsociacion: (subdominio) => resolverAsociacion(pool, subdominio),
     enAsociacion: (asociacionId, fn) => conAsociacion(pool, asociacionId, fn),
   },
@@ -47,6 +65,7 @@ const app = construirApp(
 for (const senal of ["SIGINT", "SIGTERM"] as const) {
   process.once(senal, async () => {
     await app.close();
+    await correo.vaciar();
     await pool.end();
     process.exit(0);
   });

@@ -59,16 +59,30 @@ services:
       PUERTO_PUBLICO: "5010"
       # Obligatorio en producción (la imagen usa NODE_ENV=production): 0 = sin proxy.
       TRUST_PROXY: "0"
+      # Correo (corte 3b): Mailpit recoge todo; ver los mensajes en http://localhost:8025
+      SMTP_HOST: correo
+      SMTP_PORT: "1025"
+      CORREO_REMITENTE: no-responder@aspal.localhost
     ports:
       - "5010:3000"
     depends_on:
       migrador:
         condition: service_completed_successfully
+      correo:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/health || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 10
+
+  # Servidor SMTP de desarrollo: recibe los correos y los muestra en una web local.
+  # No envía nada a internet. Puertos 1025 (SMTP) y 8025 (web).
+  correo:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
 volumes:
   datos-postgres:

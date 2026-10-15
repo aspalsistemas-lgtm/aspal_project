@@ -7,6 +7,7 @@ import type { Writable } from "node:stream";
 import Fastify, { type FastifyInstance } from "fastify";
 import cookie from "@fastify/cookie";
 import type { ServicioContrasenas } from "./acceso/contrasenas.js";
+import type { ServicioCorreo } from "./correo/servicio.js";
 import { registrarGestionDePersonas } from "./acceso/rutas-personas.js";
 import { registrarSesiones } from "./acceso/rutas-sesion.js";
 import { registrarAsociaciones } from "./asociaciones/rutas.js";
@@ -33,6 +34,8 @@ export interface Dependencias {
   /** Secreto del servidor para las claves HMAC de los límites de uso. */
   secretoClaves: string;
   contrasenas: ServicioContrasenas;
+  /** Correo saliente: encola sin esperar (corte 3b). */
+  correo: ServicioCorreo;
   /** Probabilidad de limpiar tablas de acceso en un login (0 a 1). Por defecto, 0,02. */
   probabilidadLimpieza?: number;
   resolverAsociacion: (subdominio: string) => Promise<AsociacionResuelta | null>;

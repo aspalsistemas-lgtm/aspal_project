@@ -114,6 +114,13 @@ describe("guardián de código (CA-3)", () => {
     expect(infractores).toEqual([]);
   });
 
+  it("solo correo/transporte-smtp.ts importa nodemailer", () => {
+    const infractores = archivos
+      .filter((a) => /from\s+["']nodemailer["']/.test(a.codigo))
+      .map((a) => a.ruta);
+    expect(infractores).toEqual(["correo/transporte-smtp.ts"]);
+  });
+
   describe("acceso (corte 3)", () => {
     const HASH = /\b(hash_contrasena|hashContrasena|token_hash|tokenHash)\b/;
     const LLAMADA = /\b(?:enAsociacion|conAsociacion)\(\s*([^,]+?)\s*,/g;
