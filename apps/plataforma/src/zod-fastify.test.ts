@@ -1,3 +1,4 @@
+import { Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
@@ -80,5 +81,36 @@ describe("validación con Zod (CA-1)", () => {
       success: false,
       error: { codigo: "ERROR_INTERNO", mensaje: "Error interno" },
     });
+  });
+});
+
+describe("registro de errores no controlados (auditoría del 3b, B1)", () => {
+  it("no vuelca el mensaje ni la pila: la consulta de Drizzle trae correos y hashes", async () => {
+    const lineas: string[] = [];
+    const flujo = new Writable({
+      write(trozo, _codificacion, listo) {
+        lineas.push(String(trozo));
+        listo();
+      },
+    });
+    app = construirApp(dependenciasDePrueba(), { logger: { stream: flujo } });
+    app.get("/rompe", { config: { categoria: "global" } }, async () => {
+      const error = new Error(
+        "Failed query: insert into cuenta_acceso params: ana@ejemplo.org,scrypt$16384$8$1$sal$clave",
+      );
+      throw Object.assign(error, { cause: { code: "40P01" } });
+    });
+    const respuesta = await app.inject({ method: "GET", url: "/rompe" });
+    expect(respuesta.statusCode).toBe(500);
+    const log = lineas.join("");
+    expect(log).toContain("40P01");
+    for (const secreto of [
+      "ana@ejemplo.org",
+      "scrypt$",
+      "Failed query",
+      "cuenta_acceso",
+    ]) {
+      expect(log, secreto).not.toContain(secreto);
+    }
   });
 });

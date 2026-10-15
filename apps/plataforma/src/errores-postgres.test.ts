@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { codigoPostgres } from "./errores.js";
+import { codigoPostgres } from "./errores-postgres.js";
 
 describe("codigoPostgres", () => {
   it("lee el SQLSTATE directo o dentro de la causa que pone Drizzle", () => {

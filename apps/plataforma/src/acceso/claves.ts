@@ -10,6 +10,7 @@
  *   correos tienen cuenta.
  */
 import { createHmac } from "node:crypto";
+import { esDireccionSegura } from "../correo/direccion.js";
 import { isIPv4, isIPv6 } from "node:net";
 
 /** Quita espacios, pasa a minúsculas y aplica NFKC. La cuenta guarda este valor exacto. */
@@ -25,11 +26,12 @@ export function normalizarCorreo(correo: string): string {
 export function esCorreoValido(correo: string): boolean {
   if (!/^[\x21-\x7e]{3,254}$/.test(correo)) return false;
   if (correo !== correo.toLowerCase()) return false;
-  const partes = correo.split("@");
-  return partes.length === 2 && partes[0]!.length > 0 && partes[1]!.length > 0;
+  return esDireccionSegura(correo);
 }
 
 const DOMINIOS_GMAIL = new Set(["gmail.com", "googlemail.com"]);
+/** Gmail y Googlemail son el mismo buzón. */
+const DOMINIO_CANONICO: Record<string, string> = { "googlemail.com": "gmail.com" };
 
 /**
  * El correo tal como cuenta para los **límites** (no para la cuenta): sin `+etiqueta`
@@ -41,10 +43,11 @@ export function correoParaLimite(correo: string): string {
   const arroba = normalizado.lastIndexOf("@");
   if (arroba < 0) return normalizado;
   let usuario = normalizado.slice(0, arroba);
-  const dominio = normalizado.slice(arroba + 1);
+  const dominioOriginal = normalizado.slice(arroba + 1);
+  const dominio = DOMINIO_CANONICO[dominioOriginal] ?? dominioOriginal;
   const mas = usuario.indexOf("+");
   if (mas >= 0) usuario = usuario.slice(0, mas);
-  if (DOMINIOS_GMAIL.has(dominio)) usuario = usuario.replaceAll(".", "");
+  if (DOMINIOS_GMAIL.has(dominioOriginal)) usuario = usuario.replaceAll(".", "");
   return `${usuario}@${dominio}`;
 }
 

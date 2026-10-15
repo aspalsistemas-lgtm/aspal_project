@@ -40,7 +40,7 @@ const personaNoActiva = (mensaje: string) =>
   new RespuestaDeError(409, "PERSONA_NO_ACTIVA", mensaje);
 
 /** Un bloqueo por asociación, liberado al terminar la transacción. */
-async function bloquearGestion(base: BaseDeAsociacion): Promise<void> {
+export async function bloquearGestion(base: BaseDeAsociacion): Promise<void> {
   await base.execute(
     sql`SELECT pg_advisory_xact_lock(hashtextextended('roles:' || app.asociacion_actual()::text, 0))`,
   );
@@ -70,6 +70,16 @@ async function administradoresActivos(base: BaseDeAsociacion): Promise<number> {
       JOIN public.persona p ON p.asociacion_id = r.asociacion_id AND p.id = r.persona_id
      WHERE r.rol = 'administrador' AND r.revocado_en IS NULL AND p.estado = 'activa'`);
   return Number(rows[0]?.n ?? 0);
+}
+
+/** ¿Es la persona un administrador activo ahora mismo? (leer tras tomar el bloqueo). */
+export async function esAdministradorActivo(
+  base: BaseDeAsociacion,
+  personaId: string,
+): Promise<boolean> {
+  const estado = await estadoDe(base, personaId);
+  const roles = await rolesVigentes(base, personaId);
+  return estado === "activa" && roles.includes("administrador");
 }
 
 /**

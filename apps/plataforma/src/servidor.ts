@@ -34,8 +34,11 @@ try {
 const correo = crearServicioCorreo({
   transporte: configuracion.correo
     ? crearTransporteSmtp(configuracion.correo, {
-        // Nunca en claro en producción; solo el entorno local con http (Mailpit) lo evita.
-        exigirTls: configuracion.produccion && configuracion.esquemaPublico === "https",
+        // Nunca en claro con credenciales ni en producción; solo el entorno local con
+        // http y sin usuario (Mailpit) lo evita.
+        exigirTls:
+          configuracion.correo?.usuario !== undefined ||
+          (configuracion.produccion && configuracion.esquemaPublico === "https"),
       })
     : transporteDescartado,
   remitente: configuracion.correo?.remitente ?? "no-responder@localhost",

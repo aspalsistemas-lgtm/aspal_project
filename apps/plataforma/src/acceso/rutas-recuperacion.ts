@@ -21,7 +21,7 @@ import { cuerpoEnlaceInvalido } from "./errores.js";
 import { claveDeOrigen, esCorreoValido, normalizarCorreo } from "./claves.js";
 import { validarContrasena } from "./contrasenas.js";
 import { limpiezaOportunista } from "./limpieza.js";
-import { reservarEnvio } from "./presupuestos.js";
+import { reservarDia, reservarEnvio, reservarSolicitud } from "./presupuestos.js";
 import { ColaLlena } from "./semaforo.js";
 import { revocarCredenciales } from "./sesiones.js";
 import {
@@ -80,20 +80,29 @@ export function registrarRecuperacion(
       const correo = normalizarCorreo(enviado);
       await limpiezaOportunista(dependencias, peticion);
 
-      // Una transacción corta y confirmada: el presupuesto se cuenta pase lo que pase.
-      const decision = await enAsociacion(asociacion.id, async (base) => {
-        const permitido = await reservarEnvio(base, secretoClaves, {
+      // 1. Una transacción propia y corta, confirmada: la solicitud se cuenta pase lo que
+      //    pase (exista o no la cuenta), sin retener filas mientras se decide.
+      const aceptada = await enAsociacion(asociacion.id, (base) =>
+        reservarSolicitud(base, secretoClaves, {
           tipo: "recuperacion",
           destinatario: correo,
           origen: claveDeOrigen(peticion.ip),
-        });
-        if (!permitido || !esCorreoValido(correo)) return null;
-        const cuenta = await cuentaActivaPorCorreo(base, correo);
-        if (!cuenta) return null;
-        const token = await crearTokenRecuperacion(base, cuenta.cuentaId);
-        if (!token) return null;
-        return { token, asociacion: await nombreDeAsociacion(base) };
-      });
+        }),
+      );
+
+      // 2. Solo si va a salir un correo se gasta el cupo diario de la asociación: con
+      //    correos inventados no se puede agotar y dejar a todos sin recuperación.
+      const decision =
+        aceptada && esCorreoValido(correo)
+          ? await enAsociacion(asociacion.id, async (base) => {
+              const cuenta = await cuentaActivaPorCorreo(base, correo);
+              if (!cuenta) return null;
+              if (!(await reservarDia(base, secretoClaves, "recuperacion"))) return null;
+              const token = await crearTokenRecuperacion(base, cuenta.cuentaId);
+              if (!token) return null;
+              return { token, asociacion: await nombreDeAsociacion(base) };
+            })
+          : null;
 
       if (decision) {
         servicioCorreo.encolar(
@@ -179,7 +188,7 @@ export function registrarRecuperacion(
         await revocarCredenciales(base, reclamado.cuentaId, hashNuevo);
         await invalidarTokensDeRecuperacion(base, reclamado.cuentaId);
         const permitido = await reservarEnvio(base, secretoClaves, {
-          tipo: "aviso",
+          tipo: "aviso_cambio",
           destinatario: reclamado.correo,
           origen: claveDeOrigen(peticion.ip),
         });

@@ -16,6 +16,7 @@ import {
   fijarCookieDeSesion,
 } from "./altas.js";
 import { esCorreoValido, normalizarCorreo } from "./claves.js";
+import { bloquearGestion, esAdministradorActivo } from "./gestion-personas.js";
 import { rutaAutenticada } from "./con-sesion.js";
 import { validarContrasena } from "./contrasenas.js";
 import {
@@ -56,7 +57,10 @@ const DATOS_INVITACION = z.object({
   rol: z.string(),
   expiraEn: z.string(),
 });
-const RESPUESTA_CREADA = z.object({ success: z.literal(true), data: DATOS_INVITACION });
+const RESPUESTA_CREADA = z.object({
+  success: z.literal(true),
+  data: DATOS_INVITACION.extend({ enviada: z.boolean() }),
+});
 const RESPUESTA_LISTA = z.object({
   success: z.literal(true),
   data: z.object({ invitaciones: z.array(DATOS_INVITACION) }),
@@ -153,8 +157,16 @@ export function registrarInvitaciones(
       const nombre = await nombreDeAsociacion(contexto.base);
       const subdominio = peticion.asociacion!.subdominio;
       // El correo sale solo si la transacción se confirma.
+      // `enviada` dice si el correo entró en la cola (si no, se puede revocar y repetir).
+      const datos = {
+        id: creada.id,
+        correo,
+        rol,
+        expiraEn: creada.expiraEn.toISOString(),
+        enviada: false,
+      };
       contexto.alConfirmar(() => {
-        servicioCorreo.encolar(
+        datos.enviada = servicioCorreo.encolar(
           plantillaInvitacion(
             { asociacion: nombre, para: correo },
             construirEnlace(dependencias, subdominio, "/invitacion", creada.token),
@@ -162,15 +174,7 @@ export function registrarInvitaciones(
         );
       });
       respuesta.code(201);
-      return {
-        success: true as const,
-        data: {
-          id: creada.id,
-          correo,
-          rol,
-          expiraEn: creada.expiraEn.toISOString(),
-        },
-      };
+      return { success: true as const, data: datos };
     },
   );
 
@@ -289,6 +293,10 @@ export function registrarInvitaciones(
       // 5. Persona, cuenta y rol, y la primera sesión, en una transacción. La UNIQUE
       //    (asociacion_id, correo) es el árbitro final.
       const alta = await enAsociacion(asociacion.id, async (base) => {
+        // Entre reclamar y crear hubo un scrypt: el invitador pudo perder el rol. Con el
+        // bloqueo de gestión se serializa con quien se lo quita (auditoría, M3).
+        await bloquearGestion(base);
+        if (!(await esAdministradorActivo(base, reclamada.invitadaPor))) return null;
         if (await existeCuentaConCorreo(base, reclamada.correo)) return null;
         const { cuentaId } = await crearCuentaVerificada(base, {
           nombre,
@@ -298,8 +306,12 @@ export function registrarInvitaciones(
           asignadoPor: reclamada.invitadaPor,
         });
         return abrirPrimeraSesion(base, cuentaId, reclamada.rol);
-      }).catch((error: unknown) => {
+      }).catch(async (error: unknown) => {
         if (codigoPostgres(error) === "23505") return null;
+        // Fallo transitorio (interbloqueo, tiempo agotado…): la invitación no se pierde.
+        await enAsociacion(asociacion.id, (base) => liberarInvitacion(base, token)).catch(
+          () => peticion.log.warn("no se pudo devolver la invitación reclamada"),
+        );
         throw error;
       });
       if (!alta) return respuesta.code(400).send(cuerpoEnlaceInvalido());

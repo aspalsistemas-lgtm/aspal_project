@@ -6,6 +6,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { crearServicioContrasenas } from "./contrasenas.js";
 import { ColaLlena } from "./semaforo.js";
+import { conAsociacion } from "../base-de-datos.js";
 import { tokenDelCorreo } from "../pruebas/correo.js";
 import { crearEntornoHttp, type EntornoHttp } from "../pruebas/http-acceso.js";
 
@@ -376,5 +377,68 @@ describe("POST /registros/confirmar (CA-23)", () => {
       sinOrigen: true,
     });
     expect(r.statusCode).toBe(403);
+  });
+});
+
+describe("correcciones de la auditoría del 3b", () => {
+  it("M1: direcciones que otros sistemas entregarían a otro buzón no producen pendientes ni correo", async () => {
+    const antes = e.bandeja.mensajes.length;
+    const extranas = [
+      "x:victima@gmail.com",
+      "victima(1)@gmail.com",
+      "victima@gmail.com.",
+      "a..b@ejemplo.org",
+      "<victima@gmail.com>",
+      "victima@gmail.com,otro@gmail.com",
+    ];
+    for (const correo of extranas) {
+      const r = await solicitar(correo);
+      expect(r.statusCode, correo).toBe(202);
+    }
+    await e.bandeja.servicio.vaciar();
+    expect(e.bandeja.mensajes.slice(antes)).toHaveLength(0);
+    const { rows } = await e.admin.query(
+      "SELECT count(*)::int AS n FROM public.registro_pendiente WHERE asociacion_id = $1 AND (correo LIKE '%(%' OR correo LIKE '%:%' OR correo LIKE '%..%')",
+      [A],
+    );
+    expect(rows[0].n).toBe(0);
+  });
+
+  it("M1: gmail.com y googlemail.com cuentan como el mismo destinatario", async () => {
+    const origen = e.ip();
+    const base = `unificado${n++}`;
+    const antes = e.bandeja.mensajes.length;
+    await solicitar(`${base}@gmail.com`, "reg-a", origen);
+    await solicitar(`${base}@googlemail.com`, "reg-a", origen);
+    await e.bandeja.servicio.vaciar();
+    expect(e.bandeja.mensajes.slice(antes)).toHaveLength(1);
+  });
+
+  it("B2: un fallo transitorio al crear la cuenta devuelve el token", async () => {
+    const correo = correoNuevo();
+    const token = await pedirToken(correo);
+    let llamadas = 0;
+    const app = e.otraApp({
+      enAsociacion: async (id, fn) => {
+        llamadas++;
+        if (llamadas === 3) {
+          throw Object.assign(new Error("deadlock detected"), { code: "40P01" });
+        }
+        return conAsociacion(e.pool, id, fn);
+      },
+    });
+    try {
+      const r = await app.inject({
+        method: "POST",
+        url: "/registros/confirmar",
+        remoteAddress: e.ip(),
+        headers: { host: "reg-a.localhost:5010", origin: "http://reg-a.localhost:5010" },
+        payload: { token, nombre: "Ana Pérez", contrasena: NUEVA, aceptaTerminos: true },
+      });
+      expect(r.statusCode).toBe(500);
+    } finally {
+      await app.close();
+    }
+    expect((await confirmar(token)).statusCode).toBe(200);
   });
 });

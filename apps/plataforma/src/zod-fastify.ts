@@ -8,6 +8,7 @@
  */
 import type { FastifyError, FastifyInstance } from "fastify";
 import { z } from "zod";
+import { codigoPostgres } from "./errores-postgres.js";
 
 /** Cuerpo de error del sobre único (`docs/api/plataforma.md`). */
 export interface CuerpoError {
@@ -70,7 +71,19 @@ export function registrarZod(app: FastifyInstance): void {
             : ["VALIDACION_FALLIDA", "La petición no es válida"];
       return respuesta.code(estado).send(cuerpoError(codigo, mensaje));
     }
-    peticion.log.error({ err: error }, "error no controlado");
+    // Nunca el error entero: el de Drizzle trae la consulta con sus parámetros (correos,
+    // hashes de contraseña) en el mensaje y en la pila (auditoría, B1). Solo lo que
+    // diagnostica sin datos: el tipo y los códigos de PostgreSQL.
+    peticion.log.error(
+      {
+        err: {
+          type: error.name,
+          code: error.code,
+          sqlstate: codigoPostgres(error),
+        },
+      },
+      "error no controlado",
+    );
     return respuesta.code(500).send(cuerpoError("ERROR_INTERNO", "Error interno"));
   });
 

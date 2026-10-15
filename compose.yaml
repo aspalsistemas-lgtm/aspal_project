@@ -80,9 +80,10 @@ services:
   # No envía nada a internet. Puertos 1025 (SMTP) y 8025 (web).
   correo:
     image: axllent/mailpit:latest
+    # Solo en esta máquina: cualquiera de la red leería los enlaces (tokens) de los correos.
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
 
 volumes:
   datos-postgres:

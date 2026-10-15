@@ -11,6 +11,8 @@
  * - Las plantillas (`plantillas.ts`) no llevan campos libres de quien solicita.
  */
 
+import { esDireccionSegura } from "./direccion.js";
+
 export interface MensajeCorreo {
   para: string;
   asunto: string;
@@ -46,13 +48,11 @@ export interface ServicioCorreo {
 
 const HORA_MS = 3_600_000;
 const SIN_SALTOS = /^[^\r\n]+$/;
-const DIRECCION = /^[\x21-\x7e]{3,254}$/;
 
 /** ¿Es seguro usar esto como destinatario y asunto? Impide inyectar cabeceras. */
 function esMensajeValido({ para, asunto, texto }: MensajeCorreo): boolean {
   return (
-    DIRECCION.test(para) &&
-    !/[<>,;"]/.test(para) &&
+    esDireccionSegura(para) &&
     SIN_SALTOS.test(asunto) &&
     asunto.length <= 200 &&
     texto.length > 0 &&

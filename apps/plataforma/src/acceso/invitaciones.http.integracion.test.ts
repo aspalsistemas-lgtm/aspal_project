@@ -86,6 +86,7 @@ describe("POST /invitaciones (CA-26)", () => {
       correo,
       rol: "gestor",
       expiraEn: expect.any(String),
+      enviada: true,
     });
     await e.bandeja.servicio.vaciar();
     const mensaje = e.bandeja.mensajes.slice(antes).find((m) => m.para === correo)!;
@@ -498,5 +499,111 @@ describe("POST /invitaciones/aceptar (CA-26)", () => {
       sinOrigen: true,
     });
     expect(r.statusCode).toBe(403);
+  });
+});
+
+describe("correcciones de la auditoría del 3b", () => {
+  /** Una app cuya N-ésima transacción se sustituye o va seguida de `alLlegar`. */
+  function conGanchoEn(
+    numero: number,
+    alLlegar: () => Promise<unknown>,
+    despues: boolean,
+  ) {
+    let llamadas = 0;
+    return e.otraApp({
+      enAsociacion: async (id, fn) => {
+        llamadas++;
+        if (llamadas === numero && !despues) {
+          await alLlegar();
+          throw new Error("no debería continuar");
+        }
+        const resultado = await conAsociacion(e.pool, id, fn);
+        if (llamadas === numero && despues) await alLlegar();
+        return resultado;
+      },
+    });
+  }
+
+  const aceptarEn = (app: ReturnType<typeof e.otraApp>, token: string) =>
+    app.inject({
+      method: "POST",
+      url: "/invitaciones/aceptar",
+      remoteAddress: e.ip(),
+      headers: { host: "inv-a.localhost:5010", origin: "http://inv-a.localhost:5010" },
+      payload: { token, nombre: "Beto Gómez", contrasena: NUEVA, aceptaTerminos: true },
+    });
+
+  it("M3: si el invitador pierde el rol entre reclamar y crear la cuenta, no se crea", async () => {
+    const jefe = await administrador();
+    const correo = correoNuevo();
+    const { token } = await invitarYRecibir(jefe, correo);
+    // Tras la 2.ª transacción (reclamar), antes de la 3.ª (crear la cuenta).
+    const app = conGanchoEn(
+      2,
+      async () => {
+        await e.admin.query(
+          "UPDATE public.asignacion_rol SET revocado_en = now() WHERE persona_id = $1",
+          [jefe.personaId],
+        );
+      },
+      true,
+    );
+    try {
+      const r = await aceptarEn(app, token);
+      expect(r.statusCode).toBe(400);
+      expect(r.json().error.codigo).toBe("ENLACE_INVALIDO");
+    } finally {
+      await app.close();
+    }
+    const { rows } = await e.admin.query(
+      "SELECT count(*)::int AS n FROM public.cuenta_acceso WHERE asociacion_id = $1 AND correo = $2",
+      [A, correo],
+    );
+    expect(rows[0].n).toBe(0);
+  });
+
+  it("B2: un fallo transitorio al crear la cuenta devuelve la invitación", async () => {
+    const jefe = await administrador();
+    const { token } = await invitarYRecibir(jefe, correoNuevo());
+    let llamadas = 0;
+    const app = e.otraApp({
+      enAsociacion: async (id, fn) => {
+        llamadas++;
+        if (llamadas === 3) {
+          throw Object.assign(new Error("deadlock detected"), { code: "40P01" });
+        }
+        return conAsociacion(e.pool, id, fn);
+      },
+    });
+    try {
+      expect((await aceptarEn(app, token)).statusCode).toBe(500);
+    } finally {
+      await app.close();
+    }
+    expect((await aceptar(token)).statusCode).toBe(200);
+  });
+
+  it("la respuesta dice si el correo no entró en la cola (enviada: false)", async () => {
+    const jefe = await administrador();
+    const llena = e.otraApp({
+      correo: { encolar: () => false, vaciar: async () => {} },
+    });
+    try {
+      const r = await llena.inject({
+        method: "POST",
+        url: "/invitaciones",
+        remoteAddress: e.ip(),
+        headers: {
+          host: "inv-a.localhost:5010",
+          origin: "http://inv-a.localhost:5010",
+          cookie: `aspal_sesion=${jefe.token}`,
+        },
+        payload: { correo: correoNuevo(), rol: "miembro" },
+      });
+      expect(r.statusCode).toBe(201);
+      expect(r.json().data.enviada).toBe(false);
+    } finally {
+      await llena.close();
+    }
   });
 });

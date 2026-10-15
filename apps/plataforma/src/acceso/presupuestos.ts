@@ -21,7 +21,7 @@ import {
   type ResultadoReserva,
 } from "./limites.js";
 
-export type TipoEnvio = "registro" | "recuperacion" | "aviso";
+export type TipoEnvio = "registro" | "recuperacion" | "aviso" | "aviso_cambio";
 
 const HORA = 3600;
 const DIA = 86_400;
@@ -48,8 +48,15 @@ export const PRESUPUESTOS: Record<TipoEnvio, PresupuestoDeTipo> = {
     origen: cupo(10, HORA),
     dia: cupo(500, DIA),
   },
-  // Avisos (cuenta ya existente, contraseña cambiada): los más baratos de abusar.
+  // Aviso de «ya tienes una cuenta». Aparte del de cambio de contraseña (auditoría, B4):
+  // un tercero que pida registro con el correo de la víctima no debe suprimir el aviso
+  // de que su contraseña cambió.
   aviso: { destinatario: cupo(1, HORA), origen: cupo(10, HORA), dia: cupo(500, DIA) },
+  aviso_cambio: {
+    destinatario: cupo(1, HORA),
+    origen: cupo(10, HORA),
+    dia: cupo(500, DIA),
+  },
 };
 
 /** Invitaciones: 20 al día por administrador y 500 al día por asociación. */
@@ -67,11 +74,13 @@ export interface DatosEnvio {
 }
 
 /**
- * Cuenta el envío y dice si puede hacerse. Debe llamarse en una transacción corta y
- * propia, confirmada antes de enviar: dentro de una transacción que luego falla se
- * perdería el conteo.
+ * Cuenta la **solicitud** (origen y destinatario). Se cuenta siempre, exista o no la
+ * cuenta, para que ni las respuestas ni los tiempos distingan casos. El cupo diario de
+ * la asociación **no** entra aquí: solo se gasta cuando de verdad va a enviarse un
+ * correo (`reservarDia`), para que peticiones con correos inventados no lo agoten y
+ * dejen sin recuperación a toda la asociación (auditoría, M2).
  */
-export async function reservarEnvio(
+export async function reservarSolicitud(
   base: BaseDeAsociacion,
   secreto: string,
   { tipo, destinatario, origen }: DatosEnvio,
@@ -88,13 +97,37 @@ export async function reservarEnvio(
     claveHmac(secreto, `envio:${tipo}:destinatario`, correoParaLimite(destinatario)),
     presupuesto.destinatario,
   );
-  if (!porDestinatario.permitido) return false;
+  return porDestinatario.permitido;
+}
+
+/** El cupo diario de la asociación para ese tipo: se gasta justo antes de encolar un correo. */
+export async function reservarDia(
+  base: BaseDeAsociacion,
+  secreto: string,
+  tipo: TipoEnvio,
+  presupuesto: PresupuestoDeTipo = PRESUPUESTOS[tipo],
+): Promise<boolean> {
   const porDia = await reservarIntento(
     base,
     claveHmac(secreto, `envio:${tipo}:dia`, "asociacion"),
     presupuesto.dia,
   );
   return porDia.permitido;
+}
+
+/**
+ * Cuenta el envío y dice si puede hacerse (solicitud + día). Debe llamarse en una transacción corta y
+ * propia, confirmada antes de enviar: dentro de una transacción que luego falla se
+ * perdería el conteo.
+ */
+export async function reservarEnvio(
+  base: BaseDeAsociacion,
+  secreto: string,
+  datos: DatosEnvio,
+  presupuesto: PresupuestoDeTipo = PRESUPUESTOS[datos.tipo],
+): Promise<boolean> {
+  if (!(await reservarSolicitud(base, secreto, datos, presupuesto))) return false;
+  return reservarDia(base, secreto, datos.tipo, presupuesto);
 }
 
 /**

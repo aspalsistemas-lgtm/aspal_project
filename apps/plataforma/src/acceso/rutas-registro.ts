@@ -24,7 +24,7 @@ import { claveDeOrigen, esCorreoValido, normalizarCorreo } from "./claves.js";
 import { validarContrasena } from "./contrasenas.js";
 import { codigoPostgres, cuerpoEnlaceInvalido } from "./errores.js";
 import { limpiezaOportunista } from "./limpieza.js";
-import { reservarEnvio } from "./presupuestos.js";
+import { reservarDia, reservarEnvio, reservarSolicitud } from "./presupuestos.js";
 import {
   comprobarRegistro,
   crearRegistroPendiente,
@@ -92,28 +92,36 @@ export function registrarRegistro(
       await limpiezaOportunista(dependencias, peticion);
       const origen = claveDeOrigen(peticion.ip);
 
-      // Una transacción corta y confirmada: el presupuesto se cuenta pase lo que pase.
-      const decision = await enAsociacion(asociacion.id, async (base) => {
-        const permitido = await reservarEnvio(base, secretoClaves, {
+      // 1. Una transacción propia y corta, confirmada: la solicitud se cuenta pase lo que
+      //    pase, sin retener filas mientras se decide.
+      const aceptada = await enAsociacion(asociacion.id, (base) =>
+        reservarSolicitud(base, secretoClaves, {
           tipo: "registro",
           destinatario: correo,
           origen,
-        });
-        if (!permitido || !esCorreoValido(correo)) return null;
-        if (!(await registroAbierto(base))) return null;
-        const nombre = await nombreDeAsociacion(base);
-        if (await existeCuentaConCorreo(base, correo)) {
-          // Ya tiene cuenta (de cualquier estado): un aviso en lugar del enlace.
-          const avisar = await reservarEnvio(base, secretoClaves, {
-            tipo: "aviso",
-            destinatario: correo,
-            origen,
-          });
-          return avisar ? { tipo: "aviso" as const, nombre } : null;
-        }
-        const token = await crearRegistroPendiente(base, correo);
-        return token ? { tipo: "registro" as const, nombre, token } : null;
-      });
+        }),
+      );
+
+      // 2. El cupo diario solo se gasta si de verdad va a salir un correo (auditoría, M2).
+      const decision =
+        aceptada && esCorreoValido(correo)
+          ? await enAsociacion(asociacion.id, async (base) => {
+              if (!(await registroAbierto(base))) return null;
+              const nombre = await nombreDeAsociacion(base);
+              if (await existeCuentaConCorreo(base, correo)) {
+                // Ya tiene cuenta (de cualquier estado): un aviso en lugar del enlace.
+                const avisar = await reservarEnvio(base, secretoClaves, {
+                  tipo: "aviso",
+                  destinatario: correo,
+                  origen,
+                });
+                return avisar ? { tipo: "aviso" as const, nombre } : null;
+              }
+              if (!(await reservarDia(base, secretoClaves, "registro"))) return null;
+              const token = await crearRegistroPendiente(base, correo);
+              return token ? { tipo: "registro" as const, nombre, token } : null;
+            })
+          : null;
 
       if (decision?.tipo === "registro") {
         servicioCorreo.encolar(
@@ -226,8 +234,12 @@ export function registrarRegistro(
         });
         await invalidarRegistrosDeCorreo(base, reclamado.correo);
         return abrirPrimeraSesion(base, cuentaId, "miembro");
-      }).catch((error: unknown) => {
+      }).catch(async (error: unknown) => {
         if (codigoPostgres(error) === "23505") return null;
+        // Fallo transitorio (interbloqueo, tiempo agotado…): el enlace no se pierde.
+        await enAsociacion(asociacion.id, (base) => liberarRegistro(base, token)).catch(
+          () => peticion.log.warn("no se pudo devolver el token reclamado"),
+        );
         throw error;
       });
       if (!alta) return respuesta.code(400).send(cuerpoEnlaceInvalido());

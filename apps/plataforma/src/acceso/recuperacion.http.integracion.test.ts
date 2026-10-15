@@ -6,6 +6,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { crearServicioContrasenas } from "./contrasenas.js";
 import { ColaLlena } from "./semaforo.js";
+import { claveHmac } from "./claves.js";
 import { tokenDelCorreo } from "../pruebas/correo.js";
 import { CLAVE, crearEntornoHttp, type EntornoHttp } from "../pruebas/http-acceso.js";
 
@@ -283,5 +284,52 @@ describe("POST /restablecimientos-contrasena (CA-25)", () => {
       sinOrigen: true,
     });
     expect(r.statusCode).toBe(403);
+  });
+});
+
+describe("correcciones de la auditoría del 3b", () => {
+  const SECRETO = "secreto-de-prueba-con-mas-de-32-caracteres";
+  const contadorDia = async (asociacion: string, tipo: string) => {
+    const { rows } = await e.admin.query(
+      "SELECT contador FROM public.limite_uso WHERE asociacion_id = $1 AND clave = $2",
+      [asociacion, claveHmac(SECRETO, `envio:${tipo}:dia`, "asociacion")],
+    );
+    return rows[0]?.contador as number | undefined;
+  };
+
+  it("M2: solicitudes que no envían nada no gastan el cupo diario de la asociación", async () => {
+    const D = await e.crearAsociacion("rec-dia");
+    for (let i = 0; i < 6; i++) {
+      await solicitar(`inventado${i}@ejemplo.org`, "rec-dia");
+      await solicitar("esto no es un correo", "rec-dia");
+    }
+    expect(await contadorDia(D, "recuperacion")).toBeUndefined();
+    // Con una cuenta real sí se gasta (y solo uno por correo enviado).
+    const u = await e.crearUsuario(D);
+    await solicitar(u.correo, "rec-dia");
+    expect(await contadorDia(D, "recuperacion")).toBe(1);
+  });
+
+  it("B4: el aviso de «ya tienes cuenta» no suprime el aviso de cambio de contraseña", async () => {
+    const u = await e.crearUsuario(A);
+    // Un tercero pide registro con ese correo en una asociación abierta.
+    await e.admin.query(
+      "UPDATE public.asociacion SET registro_abierto = true WHERE id = $1",
+      [A],
+    );
+    try {
+      await e.pedir("POST", "/registros", { sub: "rec-a", cuerpo: { correo: u.correo } });
+    } finally {
+      await e.admin.query(
+        "UPDATE public.asociacion SET registro_abierto = false WHERE id = $1",
+        [A],
+      );
+    }
+    const token = await pedirToken(u.correo);
+    expect((await restablecer(token)).statusCode).toBe(200);
+    await e.bandeja.servicio.vaciar();
+    const asuntos = correosA(u.correo).map((m) => m.asunto);
+    expect(asuntos.some((a) => a.startsWith("Ya tienes una cuenta"))).toBe(true);
+    expect(asuntos.some((a) => a.startsWith("Tu contraseña cambió"))).toBe(true);
   });
 });
