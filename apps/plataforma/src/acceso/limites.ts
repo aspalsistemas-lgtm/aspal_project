@@ -162,3 +162,15 @@ export async function limpiarLimites(
           GREATEST((SELECT count(*) FROM public.limite_uso) - ${tope}, 0)))`);
   return borradasPorVencer + (excedentes.rowCount ?? 0);
 }
+
+/**
+ * Por correo, sin origen: 50 por hora. **Solo alerta, nunca bloquea**: bloquearía a su
+ * dueño legítimo desde cualquier sitio (un atacante bastaría con teclear mal 50 veces).
+ * La fuerza bruta distribuida contra una cuenta es un riesgo aceptado hasta el doble
+ * factor (plan del corte 3, §2.2).
+ */
+export const POLITICA_CUENTA_GLOBAL: PoliticaLimite = {
+  limite: 50,
+  ventanaSegundos: 3600,
+  esperasSegundos: [60],
+};

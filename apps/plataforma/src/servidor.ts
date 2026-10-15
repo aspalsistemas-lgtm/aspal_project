@@ -10,6 +10,7 @@ import {
   resolverAsociacion,
   verificarRolDeAplicacion,
 } from "./base-de-datos.js";
+import { crearServicioContrasenas } from "./acceso/contrasenas.js";
 import { cargarConfiguracion } from "./configuracion.js";
 import { LIMITE_GRUESO_POR_DEFECTO } from "./http/proteccion.js";
 
@@ -34,6 +35,8 @@ const app = construirApp(
     puertoPublico: configuracion.puertoPublico,
     trustProxy: configuracion.trustProxy,
     limiteGrueso: LIMITE_GRUESO_POR_DEFECTO,
+    secretoClaves: configuracion.secretoClaves,
+    contrasenas: crearServicioContrasenas(),
     resolverAsociacion: (subdominio) => resolverAsociacion(pool, subdominio),
     enAsociacion: (asociacionId, fn) => conAsociacion(pool, asociacionId, fn),
   },

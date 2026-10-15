@@ -41,8 +41,12 @@ function construir(
   });
   app.get("/pub", { config: { categoria: "publica" } }, manejador);
   app.post("/pub", { config: { categoria: "publica" } }, manejador);
-  app.put("/aut", { config: { categoria: "autenticada" } }, manejador);
-  app.delete("/aut", { config: { categoria: "autenticada" } }, manejador);
+  app.put("/aut", { config: { categoria: "autenticada", conSesion: true } }, manejador);
+  app.delete(
+    "/aut",
+    { config: { categoria: "autenticada", conSesion: true } },
+    manejador,
+  );
   return { app, resolverAsociacion };
 }
 
@@ -59,6 +63,31 @@ describe("categorías de ruta (CA-16)", () => {
       // @ts-expect-error categoría inventada a propósito
       app.get("/rara", { config: { categoria: "secreta" } }, async () => ({})),
     ).toThrow(/categor/i);
+  });
+
+  it("rechaza una ruta autenticada que no pasa por rutaAutenticada (CA-16)", () => {
+    const { app } = construir();
+    expect(() =>
+      app.get("/suelta", { config: { categoria: "autenticada" } }, async () => ({})),
+    ).toThrow(/rutaAutenticada/);
+  });
+
+  it("toda ruta autenticada de la aplicación responde 401 sin cookie (CA-16)", async () => {
+    const { app } = construir();
+    const autenticadas = app.rutasRegistradas.filter(
+      // `/aut` es una ruta falsa de este archivo, sin sesión real.
+      (r) => r.categoria === "autenticada" && r.url !== "/aut",
+    );
+    expect(autenticadas.length).toBeGreaterThan(0);
+    for (const ruta of autenticadas) {
+      const respuesta = await app.inject({
+        method: ruta.metodo as "GET",
+        url: ruta.url,
+        headers: { host: "aspal.localhost:5010", origin: "http://aspal.localhost:5010" },
+        payload: ruta.metodo === "GET" ? undefined : {},
+      });
+      expect(respuesta.statusCode, ruta.url).toBe(401);
+    }
   });
 
   it("deja registro de todas las rutas con su categoría", () => {

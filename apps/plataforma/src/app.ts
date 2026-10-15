@@ -5,6 +5,9 @@
  */
 import type { Writable } from "node:stream";
 import Fastify, { type FastifyInstance } from "fastify";
+import cookie from "@fastify/cookie";
+import type { ServicioContrasenas } from "./acceso/contrasenas.js";
+import { registrarSesiones } from "./acceso/rutas-sesion.js";
 import { registrarAsociaciones } from "./asociaciones/rutas.js";
 import type { AsociacionResuelta, BaseDeAsociacion } from "./base-de-datos.js";
 import {
@@ -26,6 +29,11 @@ export interface Dependencias {
   /** `0` (ningún proxy) o las IP/CIDR exactas del balanceador. */
   trustProxy: 0 | string[];
   limiteGrueso: LimiteGrueso;
+  /** Secreto del servidor para las claves HMAC de los límites de uso. */
+  secretoClaves: string;
+  contrasenas: ServicioContrasenas;
+  /** Probabilidad de limpiar tablas de acceso en un login (0 a 1). Por defecto, 0,02. */
+  probabilidadLimpieza?: number;
   resolverAsociacion: (subdominio: string) => Promise<AsociacionResuelta | null>;
   /** `conAsociacion` con el pool ya puesto: la única vía a datos de una asociación. */
   enAsociacion: <T>(
@@ -57,9 +65,11 @@ export function construirApp(
     trustProxy: dependencias.trustProxy === 0 ? false : dependencias.trustProxy,
   });
   registrarZod(app);
+  app.register(cookie);
   // Primero: sus hooks exigen categoría a toda ruta y resuelven la asociación.
   registrarProteccion(app, dependencias);
   registrarAsociaciones(app, dependencias);
+  registrarSesiones(app, dependencias);
   registrarSalud(app, dependencias);
   return app;
 }

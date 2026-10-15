@@ -163,6 +163,14 @@ export async function resolverAsociacion(
   return rows[0] ?? null;
 }
 
+/**
+ * Un error de negocio **esperado** (no autenticado, prohibido, no encontrado,
+ * conflicto…) lanzado dentro de `conAsociacion`: revierte la transacción y la
+ * relanza, pero devuelve la conexión limpia al pool. Los errores que no lo son
+ * destruyen la conexión.
+ */
+export class RevertirTransaccion extends Error {}
+
 /** Lo que recibe el código de un módulo dentro de `conAsociacion`: Drizzle sobre la transacción. */
 export type BaseDeAsociacion = NodePgDatabase;
 
@@ -285,11 +293,21 @@ export async function conAsociacion<T>(
       await cliente.query("COMMIT");
       return resultado;
     } catch (error) {
-      destruir ??= error instanceof Error ? error : new Error(String(error));
+      // Un error de negocio esperado (RevertirTransaccion) revierte, pero la conexión
+      // vuelve limpia al pool: si cada 403 o 404 la destruyera, quien los provocara sin
+      // parar la haría rotar. Cualquier otro error la destruye, aunque el ROLLBACK
+      // funcione (red de seguridad).
+      if (!(error instanceof RevertirTransaccion)) {
+        destruir ??= error instanceof Error ? error : new Error(String(error));
+      }
       try {
         await cliente.query("ROLLBACK");
-      } catch {
+      } catch (errorDeRollback) {
         // La conexión no responde: se destruye igualmente.
+        destruir ??=
+          errorDeRollback instanceof Error
+            ? errorDeRollback
+            : new Error(String(errorDeRollback));
       }
       throw error;
     } finally {

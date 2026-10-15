@@ -113,4 +113,68 @@ describe("guardián de código (CA-3)", () => {
       .filter((ruta) => !permitidos.includes(ruta));
     expect(infractores).toEqual([]);
   });
+
+  describe("acceso (corte 3)", () => {
+    const HASH = /\b(hash_contrasena|hashContrasena|token_hash|tokenHash)\b/;
+    const LLAMADA = /\b(?:enAsociacion|conAsociacion)\(\s*([^,]+?)\s*,/g;
+    const CAMPO_SECRETO_EN_ESQUEMA =
+      /\b(hash\w*|token\w*|cuentaId|sesionId|personaId|credencial\w*)\s*:\s*z\./i;
+
+    it("sus detectores detectan una infracción de muestra (sin falsos verdes)", () => {
+      expect(HASH.test("SELECT token_hash FROM x")).toBe(true);
+      expect(HASH.test("const { hashContrasena } = fila")).toBe(true);
+      expect([..."enAsociacion(peticion.body.id, fn)".matchAll(LLAMADA)][0]?.[1]).toBe(
+        "peticion.body.id",
+      );
+      expect(
+        [..."enAsociacion((peticion.body as X).id, fn)".matchAll(LLAMADA)][0]?.[1],
+      ).toBe("(peticion.body as X).id");
+      expect(CAMPO_SECRETO_EN_ESQUEMA.test("z.object({ tokenHash: z.string() })")).toBe(
+        true,
+      );
+      expect(CAMPO_SECRETO_EN_ESQUEMA.test("z.object({ nombre: z.string() })")).toBe(
+        false,
+      );
+    });
+
+    it("solo el módulo acceso/ (y el esquema y las semillas) nombra hashes y tokens guardados", () => {
+      const infractores = archivos
+        .filter((a) => HASH.test(a.codigo))
+        .map((a) => a.ruta)
+        .filter(
+          (ruta) =>
+            !ruta.startsWith("acceso/") && !["esquema.ts", "sembrar.ts"].includes(ruta),
+        );
+      expect(infractores).toEqual([]);
+    });
+
+    it("el id con que se entra en una asociación sale de peticion.asociacion, nunca de la entrada", () => {
+      const llamadas = archivos
+        .filter((a) => !["base-de-datos.ts", "servidor.ts", "app.ts"].includes(a.ruta))
+        .flatMap((a) =>
+          [...a.codigo.matchAll(LLAMADA)].map((m) => ({
+            ruta: a.ruta,
+            argumento: m[1]!,
+            codigo: a.codigo,
+          })),
+        );
+      expect(llamadas.length).toBeGreaterThan(0);
+      for (const { ruta, argumento, codigo } of llamadas) {
+        const directo = /^peticion\.asociacion!?\.id$/.test(argumento);
+        // Una variable solo vale si el archivo la toma de peticion.asociacion.
+        const variable =
+          /^(asociacionId|asociacion\.id)$/.test(argumento) &&
+          /=\s*peticion\.asociacion\b/.test(codigo);
+        expect(directo || variable, `${ruta}: enAsociacion(${argumento}, …)`).toBe(true);
+      }
+    });
+
+    it("los esquemas de las rutas no declaran hashes, tokens ni ids de cuenta o sesión", () => {
+      const infractores = archivos
+        .filter((a) => /(^|\/)rutas[^/]*\.ts$/.test(a.ruta))
+        .filter((a) => CAMPO_SECRETO_EN_ESQUEMA.test(a.codigo))
+        .map((a) => a.ruta);
+      expect(infractores).toEqual([]);
+    });
+  });
 });

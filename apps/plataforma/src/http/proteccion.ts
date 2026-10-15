@@ -36,6 +36,8 @@ export interface RutaRegistrada {
 declare module "fastify" {
   interface FastifyContextConfig {
     categoria?: Categoria;
+    /** Solo lo pone `rutaAutenticada`: una ruta autenticada sin esto no se registra. */
+    conSesion?: boolean;
   }
   interface FastifyRequest {
     /** La asociación del `Host`, o null si la dirección no es de ninguna. */
@@ -109,6 +111,11 @@ export function registrarProteccion(
     if (!categoria || !CATEGORIAS.includes(categoria)) {
       throw new Error(
         `La ruta ${String(ruta.method)} ${ruta.url} no declara una categoría válida (${CATEGORIAS.join(", ")})`,
+      );
+    }
+    if (categoria === "autenticada" && !ruta.config?.conSesion) {
+      throw new Error(
+        `La ruta ${String(ruta.method)} ${ruta.url} es autenticada: regístrala con rutaAutenticada`,
       );
     }
     registro.push({ metodo: String(ruta.method), url: ruta.url, categoria });

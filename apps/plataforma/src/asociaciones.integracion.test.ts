@@ -12,6 +12,7 @@ import {
   crearPool,
   resolverAsociacion,
 } from "./base-de-datos.js";
+import { dependenciasDePrueba } from "./pruebas/dependencias.js";
 import { urlsDePrueba } from "./pruebas/preparar-integracion.js";
 import { sembrar } from "./sembrar.js";
 
@@ -26,17 +27,13 @@ beforeAll(async () => {
   await cliente.end();
   // Pool pequeño a propósito: fuerza a reutilizar conexiones entre peticiones.
   pool = crearPool(urls.app, { max: 2 });
-  app = construirApp({
-    comprobarBaseDeDatos: () => comprobarBaseDeDatos(pool),
-    dominioBase: "localhost",
-    esquemaPublico: "http",
-    puertoPublico: undefined,
-    trustProxy: 0,
-    // Holgado: la prueba de concurrencia manda 200 peticiones desde un mismo origen.
-    limiteGrueso: { publica: 100_000, autenticada: 100_000, ventanaMs: 60_000 },
-    resolverAsociacion: (subdominio) => resolverAsociacion(pool, subdominio),
-    enAsociacion: (id, fn) => conAsociacion(pool, id, fn),
-  });
+  app = construirApp(
+    dependenciasDePrueba({
+      comprobarBaseDeDatos: () => comprobarBaseDeDatos(pool),
+      resolverAsociacion: (subdominio) => resolverAsociacion(pool, subdominio),
+      enAsociacion: (id, fn) => conAsociacion(pool, id, fn),
+    }),
+  );
 });
 
 afterAll(async () => {

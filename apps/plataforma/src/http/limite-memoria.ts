@@ -20,12 +20,15 @@ interface Ventana {
 
 /** Tope duro de claves: un atacante que rote orígenes no puede agotar la memoria. */
 const MAXIMO_CLAVES = 50_000;
+const INTERVALO_BARRIDO_MS = 1000;
 
 export class LimitadorMemoria {
   private readonly ventanas = new Map<string, Ventana>();
   private readonly max: number;
   private readonly ventanaMs: number;
   private readonly ahora: () => number;
+  /** Último barrido de vencidas: con el mapa lleno, barrer en cada alta sería O(n) por petición. */
+  private ultimoBarrido = -Infinity;
 
   constructor(opciones: { max: number; ventanaMs: number; ahora?: () => number }) {
     this.max = opciones.max;
@@ -55,12 +58,18 @@ export class LimitadorMemoria {
     return this.ventanas.size;
   }
 
-  /** Descarta las ventanas vencidas y, si siguen faltando huecos, las más antiguas. */
+  /**
+   * Libera un hueco. Las vencidas se barren como mucho una vez por segundo; el resto
+   * del tiempo se desaloja la más antigua, que es O(1) (un Map conserva el orden de
+   * inserción).
+   */
   private hacerHueco(ahora: number): void {
-    for (const [clave, ventana] of this.ventanas) {
-      if (ahora - ventana.inicio >= this.ventanaMs) this.ventanas.delete(clave);
+    if (ahora - this.ultimoBarrido >= INTERVALO_BARRIDO_MS) {
+      this.ultimoBarrido = ahora;
+      for (const [clave, ventana] of this.ventanas) {
+        if (ahora - ventana.inicio >= this.ventanaMs) this.ventanas.delete(clave);
+      }
     }
-    // Un Map conserva el orden de inserción: las primeras son las más antiguas.
     for (const clave of this.ventanas.keys()) {
       if (this.ventanas.size < MAXIMO_CLAVES) break;
       this.ventanas.delete(clave);

@@ -93,3 +93,54 @@ export async function borrarAsociacionesDePrueba(
   }
   await admin.query("DELETE FROM public.asociacion WHERE id = ANY ($1)", [asociaciones]);
 }
+
+export interface PersonaDePrueba {
+  personaId: string;
+  cuentaId: string;
+  correo: string;
+}
+
+/** Una persona con su cuenta (y los roles indicados) en una asociación, ya verificada. */
+export async function crearPersonaConCuenta(
+  admin: pg.Pool,
+  asociacionId: string,
+  correo: string,
+  opciones: {
+    roles?: string[];
+    estado?: string;
+    hash?: string | null;
+    nombre?: string;
+  } = {},
+): Promise<PersonaDePrueba> {
+  const personaId = randomUUID();
+  const cuentaId = randomUUID();
+  await admin.query(
+    "INSERT INTO public.persona (id, asociacion_id, nombre, estado) VALUES ($1, $2, $3, $4)",
+    [
+      personaId,
+      asociacionId,
+      opciones.nombre ?? "Persona de prueba",
+      opciones.estado ?? "activa",
+    ],
+  );
+  await admin.query(
+    `INSERT INTO public.cuenta_acceso
+       (id, asociacion_id, persona_id, correo, correo_verificado_en, hash_contrasena)
+     VALUES ($1, $2, $3, $4, now(), $5)`,
+    [
+      cuentaId,
+      asociacionId,
+      personaId,
+      correo,
+      opciones.hash === undefined ? "hash-de-prueba" : opciones.hash,
+    ],
+  );
+  for (const rol of opciones.roles ?? ["miembro"]) {
+    await admin.query(
+      `INSERT INTO public.asignacion_rol (asociacion_id, persona_id, rol, asignado_por)
+       VALUES ($1, $2, $3, NULL)`,
+      [asociacionId, personaId, rol],
+    );
+  }
+  return { personaId, cuentaId, correo };
+}
