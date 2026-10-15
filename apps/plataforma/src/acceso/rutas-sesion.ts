@@ -33,18 +33,16 @@ import {
   POLITICA_CUENTA_GLOBAL,
   POLITICA_CUENTA_ORIGEN,
   POLITICA_ORIGEN,
-  LIMPIEZA_POR_DEFECTO,
-  limpiarLimites,
   liberarIntento,
   reiniciarLimite,
   reservarIntento,
 } from "./limites.js";
+import { limpiarTodo } from "./limpieza.js";
 import { ColaLlena } from "./semaforo.js";
 import {
   buscarCuentaParaAcceso,
   crearSesion,
   generarToken,
-  limpiarSesiones,
   rehashearContrasena,
   revocarSesion,
 } from "./sesiones.js";
@@ -120,10 +118,9 @@ export function registrarSesiones(
       if (
         Math.random() < (dependencias.probabilidadLimpieza ?? PROBABILIDAD_DE_LIMPIEZA)
       ) {
-        await enAsociacion(asociacionId, async (base) => {
-          await limpiarLimites(base, LIMPIEZA_POR_DEFECTO);
-          await limpiarSesiones(base, LIMPIEZA_POR_DEFECTO.lote);
-        }).catch(() => peticion.log.warn("la limpieza oportunista falló"));
+        await enAsociacion(asociacionId, limpiarTodo).catch(() =>
+          peticion.log.warn("la limpieza oportunista falló"),
+        );
       }
 
       // Paso 1: contar el intento y leer la cuenta, en una transacción corta que se confirma.
