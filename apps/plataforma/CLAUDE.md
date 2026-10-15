@@ -77,8 +77,10 @@ de estas reglas se rompe, un test falla.
 **Toda tabla nueva de una asociación:**
 
 1. `asociacion_id uuid NOT NULL REFERENCES asociacion (id) ON DELETE RESTRICT`.
-2. `UNIQUE (asociacion_id, id)`, y **toda** otra clave única incluye
-   `asociacion_id`: una clave global delata si un dato existe en otra asociación.
+2. `UNIQUE (asociacion_id, id)` en toda tabla que otras referencian (una tabla
+   que nadie referencia, como `limite_uso`, puede prescindir de `id`), y **toda**
+   otra clave única incluye `asociacion_id`: una clave global delata si un dato
+   existe en otra asociación.
 3. Las FK hacia otra tabla de asociación son compuestas:
    `(asociacion_id, x_id) REFERENCES x (asociacion_id, id)`.
 4. La migración termina con `SELECT app.aplicar_aislamiento('public.<tabla>');`

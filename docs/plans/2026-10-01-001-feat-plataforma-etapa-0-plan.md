@@ -197,7 +197,7 @@ hasta la Etapa 7.
 hoy «Próximamente», pasan a ser **bloqueantes** antes del primer OAuth y antes
 de Stripe.
 
-### D6 · Identidad, persona y afiliación — cerrada (13 oct 2026)
+### D6 · Identidad, persona y afiliación — cerrada (13 oct) y **modificada el 16 oct 2026**
 
 `docs/database-design.md` separa **cuenta de acceso, persona, asociación
 cliente, institución miembro, representación, plan, membresía, rol y permiso**,
@@ -210,10 +210,20 @@ representaciones, roles) es independiente y no se hereda de una asociación a
 otra. «Accesos separados» se cumple como autorización, no como credenciales
 distintas.
 
-**Decisión del responsable (13 de octubre de 2026):** un solo login por
-persona. Una persona con membresía en varias asociaciones usa la misma cuenta
-de acceso; la autorización se resuelve por afiliación y nunca por coincidencia
-de correo.
+**Decisión del responsable (13 de octubre de 2026), sustituida:** un solo login
+por persona.
+
+**Decisión vigente (16 de octubre de 2026): cuentas independientes por
+asociación.** La cuenta y la persona viven **dentro** de la asociación; el mismo
+correo en dos asociaciones son dos cuentas distintas, con sus propias
+contraseñas, sesiones y roles. No hay tablas de acceso globales y desaparece la
+entidad `afiliacion` (la persona ya es de la asociación). **Motivo:** una
+revisión adversarial del diseño con login global encontró tres fallos críticos y
+ocho altos, casi todos por la globalidad (revocar sesiones entre asociaciones,
+`persona` editable desde otra, funciones privilegiadas de acceso); con cuentas
+independientes desaparecen por construcción. **Los operadores de ASPAL** (corte
+4, dashboard maestro) no son miembros de ninguna asociación: son un reino aparte,
+con su propia identidad, rol y pool. Detalle: `2026-10-16-001-…-corte-3-acceso-plan.md`.
 
 ### D7 · Roles y permisos — propuesta
 
@@ -516,9 +526,17 @@ de la nube (CDK, RDS, S3, SES, Secrets Manager, Sentry) queda para la mudanza.
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | 1 · Infraestructura mínima               | Cuenta AWS, CDK: contenedor, RDS, S3, SES (verificación de dominio y salida del sandbox pedidas), Secrets Manager, Sentry; CI que despliega; `/health`; migraciones corriendo | `app.asociacionesprofesionales.org/health` responde desde AWS                   |
 | 2 · Asociaciones y aislamiento           | `asociacion`, resolución por subdominio, RLS con contexto por transacción, página pública mínima con logo y colores                                                           | El test de cruce ASPAL ↔ organización de prueba se niega en lectura y escritura |
-| 3 · Acceso                               | `cuenta_acceso` global, `persona`, sesiones, correo y Google; roles globales y de asociación; `puede()`; invitaciones y recuperación                                          | Un administrador de la organización de prueba entra y no ve nada de ASPAL       |
+| 3 · Acceso                               | `cuenta_acceso` **por asociación**, `persona`, sesiones, correo y Google; roles globales y de asociación; `puede()`; invitaciones y recuperación                              | Un administrador de la organización de prueba entra y no ve nada de ASPAL       |
 | 4 · Panel de operador y de administrador | Alta de asociación, contrato (precio, comisión, prueba) con historial; módulos habilitados; marca de la asociación; decisión D13 tomada                                       | ASPAL da de alta a una organización sin tocar código                            |
 | 5 · Estados y auditoría                  | Prueba, activa, vencida, solo lectura; registro de acciones sensibles; archivos con ámbito; ensayo de restauración desde respaldo                                             | Se cumple el cierre de la Etapa 1 del plan                                      |
+
+**Requisito del responsable (16 de octubre de 2026): dashboard maestro.** El corte 4
+entrega un dashboard maestro que da de alta y administra las asociaciones y sus
+administradores, con estadísticas agregadas y otras funciones de operación. Los
+operadores son personal de ASPAL y no son miembros de ninguna asociación: tienen
+su propia identidad en el host reservado `app`, un rol y un pool de base de datos
+propios y todo queda auditado. Se diseña, con su propuesta de esquema y su
+revisión adversarial, al abrir ese corte (ver el plan del corte 3, §8.2).
 
 La **Etapa 2 (gestor de contenido)** es la primera entrega operativa y tiene su
 propio backlog, que se escribe al cerrar la Etapa 1: contenido, medios, flujo
