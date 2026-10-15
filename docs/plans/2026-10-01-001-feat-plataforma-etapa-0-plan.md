@@ -144,6 +144,9 @@ red privada) + RDS PostgreSQL + S3 + SES, definido con CDK. Sin Kubernetes.
 comodín `*.asociacionesprofesionales.org` (subdominio por asociación) apuntan
 a AWS; `comunidad.` sigue en WordPress. Las cookies de sesión se limitan al
 subdominio en que se emiten.
+El dominio principal (y `www.`) es de ASPAL como asociación principal
+(decisión del 15 de octubre de 2026): usa el mismo sistema que las demás, sin
+subdominio propio.
 
 **Motivo:** ~300 miembros y 10 administradores no justifican más piezas; un
 contenedor y una base gestionada cubren las etapas 1–5. **Consecuencia:** hay

@@ -23,7 +23,7 @@ Se conserva la aplicación modular integrada con API, PostgreSQL y la orientaci�
 | Sitio público           | Sigue sin base de datos ni sesiones propias. Obtiene el contenido por la API de la plataforma y conserva el contrato público de `/api/posts` y `/api/posts/:slug`: cambia la fuente, no el formato.                                    |
 | Identidad               | Una persona tiene **un solo login** (cuenta de acceso global). La afiliación a cada asociación (membresías, representaciones, roles) es independiente y no se hereda entre asociaciones.                                               |
 | Acceso al lanzamiento   | Correo y Google. Facebook queda fuera del alcance; solo se reconsidera si la audiencia lo pide. SSO institucional es un candidato posterior.                                                                                           |
-| Páginas por asociación  | Cada asociación tiene su subdominio dentro del dominio de ASPAL, con logo, colores y contenido propios.                                                                                                                                |
+| Páginas por asociación  | Cada asociación tiene su subdominio dentro del dominio de ASPAL, con logo, colores y contenido propios. ASPAL es la asociación principal: usa el mismo sistema, pero se sirve en el dominio principal, sin subdominio.                 |
 | Otros clientes          | Arquitectura y pruebas con dos organizaciones desde el inicio; ASPAL es el primer cliente operativo. ANPR permanece como candidato a siguiente piloto, sujeto a coordinación.                                                          |
 | Arquitectura            | Aplicación modular integrada; interfaces claras entre módulos.                                                                                                                                                                         |
 | SaaS                    | Contratos configurables por organización, sin obligar a escoger planes comerciales fijos.                                                                                                                                              |
@@ -334,7 +334,7 @@ Los correos operativos y de marketing mantendrán finalidades y preferencias sep
 
 - Vinculación segura de Google a la cuenta de acceso global (el modelo de identidad ya está decidido).
 - Inventario exacto de contenido WordPress, audio, feeds, adjuntos y redirecciones.
-- Propiedad editorial de las páginas del operador y de ASPAL asociación, aunque compartan dominio público.
+- Propiedad editorial de las páginas del operador y de ASPAL asociación, aunque compartan dominio público (el sitio actual es de ASPAL asociación, decisión del 15 de octubre de 2026; queda por decidir si el operador tendrá páginas propias y dónde).
 - Primer catálogo de bloques, campos de tipos configurables y límites de personalización.
 - Estrategia de renderizado, distribución, dominios, alojamiento y recuperación.
 - Equipo, presupuesto, responsables de publicación y fecha objetivo para estimar entregas.
@@ -367,3 +367,4 @@ Después se completará la migración editorial y se validará que el sitio cont
 - Diseño de datos: `docs/database-design.md`.
 - Código inspeccionado: `client/src/App.tsx`, `client/src/lib/rutas.ts`, las páginas `inicio.tsx` y `nuestro-equipo.tsx` y `vercel.json`.
 - Decisiones del responsable del producto del 13 de octubre de 2026: contenido primero y sustitución de WordPress en blog y podcast; ASPAL como primer cliente y preparación para otras organizaciones; configuración comercial flexible; monorepo con plataforma nueva (Fastify + Zod); sitio sin estado que lee la API de la plataforma; un solo login global por persona; Google sin Facebook; subdominio por asociación.
+- Decisión del responsable del producto del 15 de octubre de 2026: el sitio actual es de ASPAL, que será la primera asociación (tenant) del sistema; a diferencia de las demás, se sirve en el dominio principal y no en un subdominio.
