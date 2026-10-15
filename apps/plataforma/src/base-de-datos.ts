@@ -110,18 +110,78 @@ const ID_ASOCIACION = z.uuid();
 const dentroDeConAsociacion = new AsyncLocalStorage<true>();
 
 /**
+ * Sentencias que el código de un módulo no puede ejecutar dentro de
+ * `conAsociacion`: las que abren, cierran o parten la transacción, cambian el
+ * contexto o el rol, o alteran el estado de la sesión que heredaría la
+ * siguiente petición (auditoría del corte 2, hallazgos 2 y 10).
+ */
+const SENTENCIAS_PROHIBIDAS =
+  /^\s*(begin|start|commit|end|rollback|abort|savepoint|release|prepare|set|reset|discard|listen|unlisten|notify)\b|\bset_config\b/i;
+
+/**
+ * El cliente que ve el código de un módulo: el de la transacción, vigilado.
+ *
+ * - Rechaza cualquier consulta en cuanto `fn` termina. Sin esto, una consulta
+ *   lanzada tarde (una rama de `Promise.all`, un `void base.insert(…)`) podía
+ *   ejecutarse sobre la conexión ya devuelta al pool y tomada por otra
+ *   asociación, y escribir a su nombre (auditoría, hallazgo 1, reproducido).
+ * - Rechaza las sentencias de `SENTENCIAS_PROHIBIDAS`.
+ * - No deja devolver ni cerrar la conexión: eso lo hace solo `conAsociacion`.
+ */
+function clienteVigilado(
+  cliente: pg.PoolClient,
+  estaCerrada: () => boolean,
+): pg.PoolClient {
+  return new Proxy(cliente, {
+    get(objetivo, propiedad) {
+      if (propiedad === "query") {
+        return (consulta: unknown, ...resto: unknown[]) => {
+          if (estaCerrada()) {
+            return Promise.reject(
+              new Error("conAsociacion ya está cerrada: consulta rechazada"),
+            );
+          }
+          const texto =
+            typeof consulta === "string"
+              ? consulta
+              : ((consulta as { text?: string } | null)?.text ?? "");
+          if (SENTENCIAS_PROHIBIDAS.test(texto)) {
+            return Promise.reject(
+              new Error("Sentencia no permitida dentro de conAsociacion"),
+            );
+          }
+          return (objetivo.query as (...argumentos: unknown[]) => unknown).call(
+            objetivo,
+            consulta,
+            ...resto,
+          );
+        };
+      }
+      if (propiedad === "release" || propiedad === "end" || propiedad === "connect") {
+        return () => {
+          throw new Error(`Operación no permitida dentro de conAsociacion: ${propiedad}`);
+        };
+      }
+      const valor: unknown = Reflect.get(objetivo, propiedad, objetivo);
+      return typeof valor === "function" ? valor.bind(objetivo) : valor;
+    },
+  });
+}
+
+/**
  * Ejecuta `fn` en una transacción cuyo contexto de RLS es `asociacionId`: toda
  * consulta que haga `fn` con la base que recibe ve y escribe **solo** filas de
  * esa asociación (plan del corte 2, §4).
  *
+ * - Antes de empezar comprueba que la conexión no trae un contexto de sesión
+ *   (por configuración o por un `SET` previo); si lo trae, la destruye.
  * - El contexto se fija con `set_config(…, true)`, local a la transacción y con el
  *   valor como parámetro enlazado (nunca interpolado). Al terminar, la conexión
  *   vuelve al pool sin contexto.
- * - Si la transacción no se cierra limpia (ni COMMIT ni ROLLBACK), la conexión se
- *   destruye en vez de devolverse: otra petición no puede heredarla abierta.
+ * - `fn` recibe un cliente vigilado (`clienteVigilado`): ninguna consulta suya
+ *   puede ejecutarse después de que termine, ni tocar la transacción o la sesión.
+ * - Si `fn` falla, la conexión se destruye siempre, aunque el ROLLBACK funcione.
  * - No se puede anidar: un segundo contexto dentro del primero sería ambiguo.
- * - `fn` debe usar solo la base que recibe; una consulta por otra vía no tiene
- *   contexto y no verá nada.
  */
 export async function conAsociacion<T>(
   pool: pg.Pool,
@@ -134,28 +194,41 @@ export async function conAsociacion<T>(
   const id = ID_ASOCIACION.parse(asociacionId);
   return dentroDeConAsociacion.run(true, async () => {
     const cliente = await pool.connect();
-    let cerradaLimpia = false;
+    let cerrada = false;
+    let destruir: Error | undefined;
     try {
+      const { rows } = await cliente.query<{ contexto: string | null }>(
+        "SELECT current_setting('app.asociacion_id', true) AS contexto",
+      );
+      if (rows[0]?.contexto) {
+        destruir = new Error(
+          "La conexión llegó con un contexto de asociación: descartada",
+        );
+        throw destruir;
+      }
       await cliente.query("BEGIN");
       await cliente.query("SELECT set_config('app.asociacion_id', $1, true)", [id]);
-      const resultado = await fn(drizzle(cliente));
+      let resultado: T;
+      try {
+        resultado = await fn(drizzle(clienteVigilado(cliente, () => cerrada)));
+      } finally {
+        // Desde aquí, nada de lo que lanzó fn puede llegar a la base.
+        cerrada = true;
+      }
       await cliente.query("COMMIT");
-      cerradaLimpia = true;
       return resultado;
     } catch (error) {
+      destruir ??= error instanceof Error ? error : new Error(String(error));
       try {
         await cliente.query("ROLLBACK");
-        cerradaLimpia = true;
       } catch {
-        // La conexión no responde: se destruye en el finally.
+        // La conexión no responde: se destruye igualmente.
       }
       throw error;
     } finally {
-      cliente.release(
-        cerradaLimpia
-          ? undefined
-          : new Error("transacción sin cerrar: conexión descartada"),
-      );
+      cerrada = true;
+      // Con error, la conexión no vuelve al pool: se destruye.
+      cliente.release(destruir);
     }
   });
 }

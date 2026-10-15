@@ -11,7 +11,7 @@ import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { sql } from "drizzle-orm";
-import { conAsociacion, crearPool } from "./base-de-datos.js";
+import { conAsociacion, crearPool, type BaseDeAsociacion } from "./base-de-datos.js";
 import { urlsDePrueba } from "./pruebas/preparar-integracion.js";
 import { buscarProblemasDeAislamiento } from "./pruebas/guardianes.js";
 
@@ -33,6 +33,17 @@ function enAsociacion<T extends pg.QueryResultRow = Record<string, unknown>>(
   return conAsociacion(app, asociacion, (base) =>
     (base as unknown as { $client: pg.PoolClient }).$client.query<T>(texto, valores),
   );
+}
+
+/** Motivo con que falla una promesa, incluida la causa que envuelve Drizzle. */
+async function motivo(promesa: Promise<unknown>): Promise<string> {
+  try {
+    await promesa;
+    return "no falló";
+  } catch (error) {
+    const { message, cause } = error as { message: string; cause?: { message?: string } };
+    return `${message} | ${cause?.message ?? ""}`;
+  }
 }
 
 /** Código SQLSTATE con que falla una promesa (o «ok» si no falla). */
@@ -305,7 +316,7 @@ describe("testigos: la batería distingue un rol que se salta RLS", () => {
 });
 
 describe("conAsociacion y el pool (CA-3)", () => {
-  it("si la función lanza, revierte y la conexión vuelve sin transacción ni contexto", async () => {
+  it("si la función lanza, revierte y destruye la conexión: la siguiente es nueva y sin contexto", async () => {
     const unaSola = crearPool(urls.app, { max: 1 });
     const clave = `revertida-${randomUUID()}`;
     await expect(
@@ -318,7 +329,9 @@ describe("conAsociacion y el pool (CA-3)", () => {
       SELECT xact_start = query_start AS transaccion_nueva,
              current_setting('app.asociacion_id', true) AS contexto
         FROM pg_stat_activity WHERE pid = pg_backend_pid()`);
-    expect(rows[0]).toEqual({ transaccion_nueva: true, contexto: "" });
+    // contexto NULL (no ''): la conexión de la transacción fallida se destruyó y
+    // esta es otra recién abierta (auditoría 1).
+    expect(rows[0]).toEqual({ transaccion_nueva: true, contexto: null });
     const revertida = await admin.query(
       "SELECT count(*)::int AS n FROM t WHERE clave = $1",
       [clave],
@@ -339,6 +352,88 @@ describe("conAsociacion y el pool (CA-3)", () => {
       base.execute<{ actual: string }>(sql`SELECT app.asociacion_actual() AS actual`),
     );
     expect(siguiente.rows[0]?.actual).toBe(B);
+    await unaSola.end();
+  });
+
+  it("una consulta que llega tarde se rechaza y nunca entra en la transacción de otra (auditoría 1)", async () => {
+    // Promise.all con una rama que falla: la otra rama consulta después de que
+    // conAsociacion cerró. Antes, esa consulta podía caer en la conexión ya
+    // tomada por otra asociación e insertar a su nombre.
+    const unaSola = crearPool(urls.app, { max: 1 });
+    const clave = `tardia-${randomUUID()}`;
+    let tardia: Promise<unknown> | undefined;
+    await expect(
+      conAsociacion(unaSola, A, async (base) => {
+        tardia = (async () => {
+          await new Promise((resolver) => setTimeout(resolver, 50));
+          return base.execute(sql`INSERT INTO t (clave) VALUES (${clave})`);
+        })();
+        throw new Error("rama que falla");
+      }),
+    ).rejects.toThrow("rama que falla");
+    const deB = conAsociacion(unaSola, B, async (base) => {
+      await base.execute(sql`SELECT pg_sleep(0.15)`);
+      return "B intacta";
+    });
+    expect(await motivo(tardia!)).toMatch(/cerrada/);
+    await expect(deB).resolves.toBe("B intacta");
+    const { rows } = await admin.query(
+      "SELECT count(*)::int AS n FROM t WHERE clave = $1",
+      [clave],
+    );
+    expect(rows[0].n).toBe(0);
+    await unaSola.end();
+  });
+
+  it.each([
+    [
+      "abrir otra transacción",
+      (base: BaseDeAsociacion) => base.transaction(async () => 1),
+    ],
+    [
+      "cambiar el contexto",
+      (base: BaseDeAsociacion) =>
+        base.execute(sql`SELECT set_config('app.asociacion_id', ${B}, false)`),
+    ],
+    [
+      "SET de sesión",
+      (base: BaseDeAsociacion) => base.execute(sql.raw(`SET app.asociacion_id = '${B}'`)),
+    ],
+    ["confirmar a mitad", (base: BaseDeAsociacion) => base.execute(sql.raw("COMMIT"))],
+    [
+      "cambiar de rol",
+      (base: BaseDeAsociacion) => base.execute(sql.raw("SET ROLE aspal_dueno")),
+    ],
+    [
+      "descartar el estado",
+      (base: BaseDeAsociacion) => base.execute(sql.raw("DISCARD ALL")),
+    ],
+    [
+      "devolver la conexión",
+      async (base: BaseDeAsociacion) =>
+        (base as unknown as { $client: { release: () => void } }).$client.release(),
+    ],
+  ])(
+    "dentro de conAsociacion no se puede %s (auditoría 2 y 10)",
+    async (_accion, intento) => {
+      expect(
+        await motivo(conAsociacion(app, A, (base) => intento(base) as Promise<unknown>)),
+      ).toMatch(/no permitid/);
+    },
+  );
+
+  it("una conexión que llega con contexto de sesión se descarta antes de usarla (auditoría 5)", async () => {
+    const unaSola = crearPool(urls.app, { max: 1 });
+    const contaminada = await unaSola.connect();
+    await contaminada.query(`SET app.asociacion_id = '${B}'`);
+    contaminada.release();
+    await expect(conAsociacion(unaSola, A, async () => "no debe correr")).rejects.toThrow(
+      /contexto/,
+    );
+    const siguiente = await conAsociacion(unaSola, A, (base) =>
+      base.execute<{ actual: string }>(sql`SELECT app.asociacion_actual() AS actual`),
+    );
+    expect(siguiente.rows[0]?.actual).toBe(A);
     await unaSola.end();
   });
 
