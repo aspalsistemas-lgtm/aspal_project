@@ -103,6 +103,20 @@ export function rutaAutenticada(
     url,
     schema,
     config: { categoria: "autenticada", conSesion: true },
+    // Sin cookie válida en forma, 401 antes de validar el cuerpo: quien no ha entrado
+    // no recibe un 400 distinto según lo que mande. No toca la base.
+    preValidation: async (peticion, respuesta) => {
+      const token = peticion.cookies?.[nombreCookieSesion(dependencias.esquemaPublico)];
+      if (peticion.asociacion && token && FORMA_DE_TOKEN.test(token)) return;
+      const error = noAutenticado();
+      return respuesta
+        .clearCookie(
+          nombreCookieSesion(dependencias.esquemaPublico),
+          opcionesParaBorrar(dependencias.esquemaPublico),
+        )
+        .code(error.estado)
+        .send(cuerpoError(error.codigo, error.message));
+    },
     handler: async (peticion, respuesta) => {
       try {
         return await conSesion(dependencias, peticion, (contexto) =>

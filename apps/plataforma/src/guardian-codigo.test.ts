@@ -169,11 +169,34 @@ describe("guardián de código (CA-3)", () => {
       }
     });
 
-    it("los esquemas de las rutas no declaran hashes, tokens ni ids de cuenta o sesión", () => {
-      const infractores = archivos
-        .filter((a) => /(^|\/)rutas[^/]*\.ts$/.test(a.ruta))
-        .filter((a) => CAMPO_SECRETO_EN_ESQUEMA.test(a.codigo))
-        .map((a) => a.ruta);
+    // Los esquemas de salida son las constantes RESPUESTA_* y DATOS_* (terminan en «});»).
+    // Un parámetro de entrada como `personaId` no es una fuga.
+    const ESQUEMA_DE_SALIDA = /const (?:RESPUESTA|DATOS)\w*\s*=[\s\S]*?\n\}\);/g;
+
+    it("el detector de esquemas de salida distingue entrada de salida", () => {
+      const muestra = [
+        "const PARAMETROS = z.object({ personaId: z.uuid() });",
+        "const DATOS_X = z.object({",
+        "  tokenHash: z.string(),",
+        "});",
+      ].join("\n");
+      const salidas = [...muestra.matchAll(ESQUEMA_DE_SALIDA)].map((m) => m[0]);
+      expect(salidas).toHaveLength(1);
+      expect(CAMPO_SECRETO_EN_ESQUEMA.test(salidas[0]!)).toBe(true);
+    });
+
+    it("los esquemas de salida no declaran hashes, tokens ni ids de cuenta o sesión", () => {
+      const rutas = archivos.filter((a) => /(^|\/)rutas[^/]*\.ts$/.test(a.ruta));
+      const salidas = rutas.flatMap((a) =>
+        [...a.codigo.matchAll(ESQUEMA_DE_SALIDA)].map((m) => ({
+          ruta: a.ruta,
+          texto: m[0],
+        })),
+      );
+      expect(salidas.length).toBeGreaterThan(0);
+      const infractores = salidas
+        .filter((s) => CAMPO_SECRETO_EN_ESQUEMA.test(s.texto))
+        .map((s) => s.ruta);
       expect(infractores).toEqual([]);
     });
   });

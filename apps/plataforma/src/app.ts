@@ -7,6 +7,7 @@ import type { Writable } from "node:stream";
 import Fastify, { type FastifyInstance } from "fastify";
 import cookie from "@fastify/cookie";
 import type { ServicioContrasenas } from "./acceso/contrasenas.js";
+import { registrarGestionDePersonas } from "./acceso/rutas-personas.js";
 import { registrarSesiones } from "./acceso/rutas-sesion.js";
 import { registrarAsociaciones } from "./asociaciones/rutas.js";
 import type { AsociacionResuelta, BaseDeAsociacion } from "./base-de-datos.js";
@@ -70,6 +71,7 @@ export function construirApp(
   registrarProteccion(app, dependencias);
   registrarAsociaciones(app, dependencias);
   registrarSesiones(app, dependencias);
+  registrarGestionDePersonas(app, dependencias);
   registrarSalud(app, dependencias);
   return app;
 }
