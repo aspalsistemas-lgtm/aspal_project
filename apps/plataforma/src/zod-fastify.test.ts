@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { construirApp } from "./app.js";
+import { dependenciasDePrueba } from "./pruebas/dependencias.js";
 
 let app: FastifyInstance | undefined;
 
@@ -12,7 +13,7 @@ afterEach(async () => {
 
 /** Una app con una ruta de prueba que valida la entrada y la salida con Zod. */
 function appConRutaDePrueba(respuesta: unknown) {
-  app = construirApp({ comprobarBaseDeDatos: async () => true });
+  app = construirApp(dependenciasDePrueba());
   app.post(
     "/prueba",
     {

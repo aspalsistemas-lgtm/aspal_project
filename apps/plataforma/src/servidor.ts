@@ -5,7 +5,9 @@
 import { construirApp } from "./app.js";
 import {
   comprobarBaseDeDatos,
+  conAsociacion,
   crearPool,
+  resolverAsociacion,
   verificarRolDeAplicacion,
 } from "./base-de-datos.js";
 import { cargarConfiguracion } from "./configuracion.js";
@@ -24,7 +26,12 @@ try {
 }
 
 const app = construirApp(
-  { comprobarBaseDeDatos: () => comprobarBaseDeDatos(pool) },
+  {
+    comprobarBaseDeDatos: () => comprobarBaseDeDatos(pool),
+    dominioBase: configuracion.dominioBase,
+    resolverAsociacion: (subdominio) => resolverAsociacion(pool, subdominio),
+    enAsociacion: (asociacionId, fn) => conAsociacion(pool, asociacionId, fn),
+  },
   { logger: true },
 );
 

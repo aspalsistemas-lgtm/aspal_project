@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { construirApp } from "./app.js";
+import { dependenciasDePrueba } from "./pruebas/dependencias.js";
 
 let app: FastifyInstance | undefined;
 
@@ -10,7 +11,7 @@ afterEach(async () => {
 });
 
 async function pedirSalud(comprobarBaseDeDatos: () => Promise<boolean>) {
-  app = construirApp({ comprobarBaseDeDatos });
+  app = construirApp(dependenciasDePrueba({ comprobarBaseDeDatos }));
   return app.inject({ method: "GET", url: "/health" });
 }
 
@@ -44,7 +45,7 @@ describe("GET /health (CA-2)", () => {
 
 describe("rutas desconocidas", () => {
   it("responden 404 con el sobre único", async () => {
-    app = construirApp({ comprobarBaseDeDatos: async () => true });
+    app = construirApp(dependenciasDePrueba());
     const respuesta = await app.inject({ method: "GET", url: "/no-existe" });
     expect(respuesta.statusCode).toBe(404);
     expect(respuesta.json()).toEqual({

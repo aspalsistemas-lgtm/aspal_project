@@ -80,6 +80,29 @@ export async function comprobarBaseDeDatos(pool: pg.Pool): Promise<boolean> {
   }
 }
 
+/** La asociación de una petición, ya resuelta. El `id` nunca sale en una respuesta. */
+export interface AsociacionResuelta {
+  id: string;
+  subdominio: string;
+}
+
+/**
+ * Del subdominio a la asociación, sin contexto: la única consulta permitida
+ * fuera de `conAsociacion`, y solo a través de `app.resolver_asociacion`
+ * (igualdad exacta, una fila como mucho). Con su `id` se entra después en
+ * `conAsociacion`.
+ */
+export async function resolverAsociacion(
+  pool: pg.Pool,
+  subdominio: string,
+): Promise<AsociacionResuelta | null> {
+  const { rows } = await pool.query<AsociacionResuelta>(
+    "SELECT id, subdominio FROM app.resolver_asociacion($1)",
+    [subdominio],
+  );
+  return rows[0] ?? null;
+}
+
 /** Lo que recibe el código de un módulo dentro de `conAsociacion`: Drizzle sobre la transacción. */
 export type BaseDeAsociacion = NodePgDatabase;
 
