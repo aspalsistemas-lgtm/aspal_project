@@ -9,6 +9,7 @@ const ESPERADO: Record<string, readonly string[]> = {
   "personas:ver_correo": ["administrador", "gestor"],
   "roles:asignar": ["administrador"],
   "personas:cambiar_estado": ["administrador"],
+  "invitaciones:gestionar": ["administrador"],
 };
 
 describe("matriz rol × acción (CA-17)", () => {

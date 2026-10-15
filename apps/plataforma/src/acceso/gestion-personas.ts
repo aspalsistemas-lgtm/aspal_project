@@ -10,6 +10,7 @@
 import { sql } from "drizzle-orm";
 import type { BaseDeAsociacion } from "../base-de-datos.js";
 import { RespuestaDeError, noEncontrado, prohibido } from "./errores.js";
+import { revocarInvitacionesDe } from "./invitaciones.js";
 import { ROLES, esRol, type Rol } from "./rol.js";
 import {
   revocarCredenciales,
@@ -120,6 +121,8 @@ export async function cambiarRoles(
       INSERT INTO public.asignacion_rol (persona_id, rol, asignado_por)
       VALUES (${personaId}, ${rol}, ${actor.personaId})`);
   }
+  // Quien deja de ser administrador pierde sus invitaciones pendientes.
+  if (retirados.includes("administrador")) await revocarInvitacionesDe(base, personaId);
   // Vuelve a entrar y recibe sus roles nuevos (y la duración de sesión que les toca).
   await revocarSesionesDePersona(base, personaId);
   return rolesVigentes(base, personaId);
@@ -164,6 +167,7 @@ export async function cambiarEstado(
   }
 
   if (nuevo !== "activa") {
+    await revocarInvitacionesDe(base, personaId);
     // Sube la versión de credencial (un login en curso no podrá abrir sesión) y cierra
     // todas las sesiones, en esta misma transacción.
     const { rows } = await base.execute<{ id: string }>(sql`

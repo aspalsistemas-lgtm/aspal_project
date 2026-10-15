@@ -38,6 +38,8 @@ export interface ContextoSesion {
   nombre: string;
   roles: Rol[];
   expiraEn: Date;
+  /** Ejecuta `fn` solo si la transacción se confirma (por ejemplo, enviar un correo). */
+  alConfirmar: (fn: () => void) => void;
 }
 
 type DependenciasDeSesion = Pick<Dependencias, "enAsociacion" | "esquemaPublico">;
@@ -54,7 +56,8 @@ export async function conSesion<T>(
   const token = peticion.cookies?.[nombreCookieSesion(dependencias.esquemaPublico)];
   if (!asociacion || !token || !FORMA_DE_TOKEN.test(token)) throw noAutenticado();
 
-  return dependencias.enAsociacion(asociacion.id, async (base) => {
+  const alConfirmar: Array<() => void> = [];
+  const resultado = await dependencias.enAsociacion(asociacion.id, async (base) => {
     const sesion = await resolverSesion(base, hashDeToken(token));
     if (
       !sesion ||
@@ -77,8 +80,12 @@ export async function conSesion<T>(
       nombre: sesion.nombre,
       roles: sesion.roles,
       expiraEn: sesion.expiraEn,
+      alConfirmar: (accion) => void alConfirmar.push(accion),
     });
   });
+  // La transacción ya se confirmó: ahora sí, lo que dependía de ello.
+  for (const accion of alConfirmar) accion();
+  return resultado;
 }
 
 type Metodo = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";

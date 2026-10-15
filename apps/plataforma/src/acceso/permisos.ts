@@ -13,6 +13,7 @@ const MATRIZ = {
   "personas:ver_correo": ["administrador", "gestor"],
   "roles:asignar": ["administrador"],
   "personas:cambiar_estado": ["administrador"],
+  "invitaciones:gestionar": ["administrador"],
 } as const satisfies Record<string, readonly Rol[]>;
 
 export type Accion = keyof typeof MATRIZ;
