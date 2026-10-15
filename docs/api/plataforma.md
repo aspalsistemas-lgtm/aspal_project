@@ -53,3 +53,42 @@ Notas:
   que el 503 hace que el orquestador deje de mandarle tráfico.
 - No devuelve versiones, nombres de host ni el error de la base.
 - Etapa 1, corte 1 (plan de la Etapa 0, sección 8).
+
+---
+
+## Resolución de la asociación por subdominio
+
+Cada petición se atiende en nombre de la asociación de su `Host`:
+`<subdominio>.<DOMINIO_BASE>` (`aspal.localhost` en local,
+`aspal.asociacionesprofesionales.org` en la nube). Reglas:
+
+- El `Host` debe terminar en `.` + `DOMINIO_BASE`: `aspal.evillocalhost` no
+  resuelve. Se ignoran el puerto, el punto final y las mayúsculas.
+- Un solo nivel: `a.b.localhost` no resuelve. Tampoco un host sin subdominio
+  ni un subdominio reservado.
+- `X-Forwarded-Host` se ignora.
+- El contexto de aislamiento (RLS) sale **solo** de esta resolución hecha en el
+  servidor, nunca de un parámetro de la petición.
+
+### GET /asociaciones/actual
+
+```
+Auth:      público
+Módulo:    src/asociaciones
+Respuestas:
+  200 { "success": true,
+        "data": { "nombre": "ASPAL", "subdominio": "aspal",
+                  "zonaHoraria": "America/Merida" } }
+  404 { "success": false,
+        "error": { "codigo": "RECURSO_NO_ENCONTRADO",
+                   "mensaje": "No hay una asociación en esta dirección" } }
+Cabeceras: Cache-Control: private, no-store
+```
+
+Notas:
+
+- Demuestra la resolución por subdominio (Etapa 1, corte 2). La página pública
+  con marca llega cuando se decida D13.
+- No expone el `id` interno de la asociación.
+- `no-store`: la respuesta depende del `Host`; una caché compartida no debe
+  servir la de una asociación a otra.

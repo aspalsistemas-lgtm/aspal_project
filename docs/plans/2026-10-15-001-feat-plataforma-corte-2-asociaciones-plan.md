@@ -1,294 +1,290 @@
 ---
-title: Etapa 1, corte 2 — asociaciones y aislamiento entre ellas
+title: Etapa 1, corte 2 — asociaciones y aislamiento verificado entre asociaciones
 type: feat
-status: propuesta
+status: aprobado
 date: 2026-10-15
 origin: docs/plans/2026-10-01-001-feat-plataforma-etapa-0-plan.md (§8, D8) · ADR-0006 · docs/database-design.md (§6)
 ---
 
-# feat(plataforma): asociaciones y aislamiento entre asociaciones
+# feat(plataforma): asociaciones y aislamiento verificado entre asociaciones
 
-> Especificación, propuesta de esquema y plan del corte 2. **No se escribe
-> ninguna migración ni código hasta que el responsable apruebe este documento.**
+## Contexto
 
-## 1. Objetivo y alcance
+La plataforma (`apps/plataforma`: Fastify 5 + Zod 4 + Drizzle/pg, PostgreSQL 17 en
+Docker) servirá a varias asociaciones con **esquema compartido y RLS** (decisión D8).
+El responsable exige que **ninguna asociación pueda ver ni modificar datos de otra** y
+que esté **verificado, no supuesto**. Este corte fija el patrón que heredarán todas
+las tablas futuras.
 
-Dejar resuelto, una sola vez y con tests, **cómo se aísla una asociación de
-otra**. Todo lo que venga después (afiliaciones, planes, membresías, pagos,
-contenido) hereda este patrón; si aquí queda mal, queda mal en todo.
+Una revisión adversarial del primer borrador (sin commit) encontró fallos que lo habrían dejado **aislado solo en apariencia**:
 
-**Dentro:**
+- En Docker, `aspal` es **superusuario**. Todo objeto creado por las migraciones sería
+  suyo, y un dueño superusuario anula `FORCE RLS`, las vistas y las funciones
+  `SECURITY DEFINER`. En la nube (RDS) el maestro no es superusuario, así que el
+  entorno local se comportaría distinto del real.
+- El `Dockerfile` ejecuta `migrar && servidor` en el mismo contenedor: la aplicación
+  tendría en su entorno las credenciales del migrador.
+- `current_setting(...)::uuid` devuelve `''` en una conexión reutilizada y lanza un
+  error. Por eso «sin contexto» daría resultados distintos según el orden de los tests.
+- Por defecto, PUBLIC tiene `EXECUTE` sobre todas las funciones y `CONNECT`/`TEMP`
+  sobre las bases; el borrador decía «nada más».
+- Las políticas PERMISSIVE se suman con OR: una política futura podría abrirlo todo.
+  El guardián del borrador solo miraba las tablas que ya tienen `asociacion_id`.
+- Las claves únicas y foráneas se comprueban **sin RLS**: con el diseño del borrador
+  sirven para descubrir si un dato existe en otra asociación y para referenciar sus filas.
+- Los roles se creaban en una migración y en mal orden; los scripts de
+  `initdb.d` no se vuelven a ejecutar con un volumen ya existente.
 
-- La tabla `asociacion` (ámbito plataforma).
-- Un rol de PostgreSQL propio de la aplicación, sin privilegios para saltarse
-  RLS.
-- El mecanismo de RLS: contexto por transacción y una función que aplica la
-  política estándar a cualquier tabla de una asociación.
-- El test de cruce entre ASPAL y la organización de prueba, en lectura y
-  escritura, en los dos sentidos.
-- La resolución de la asociación por el `Host`, demostrada con
-  `GET /asociaciones/actual`: el dominio principal resuelve ASPAL y cada
-  subdominio resuelve su asociación (§2.1).
-- Semillas locales: ASPAL y la organización de prueba.
+Este documento sustituye al borrador del 2026-10-15 e incorpora esas correcciones. Aprobado por el responsable el 2026-10-15.
 
-**Fuera (decidido el 2026-10-15):**
+**Alcance acordado el 2026-10-15.** Fuera de este corte quedan:
 
-- La página pública con logo y colores: obliga a decidir el renderizado (D13),
-  que el plan reserva para el corte 4.
-- Logo y colores: van con la marca de la asociación en el corte 4. El logo
-  necesita además almacenamiento de archivos (corte 5).
-- El estado de la asociación (prueba, activa, vencida, solo lectura): es el
-  estado del **contrato**, que llega en los cortes 4 y 5.
-- Alta y edición de asociaciones: panel de operador, corte 4.
-- Sesiones y usuarios: corte 3. Aquí el «contexto de asociación» lo fija el
-  servidor a partir del subdominio, no una sesión.
+- la página pública con logo y colores, que depende de D13;
+- el estado del contrato, el alta y edición de asociaciones, y las sesiones.
 
-## 2. Hallazgo que fija el diseño
+## Diseño
 
-En el contenedor local, `aspal` (el `POSTGRES_USER`) es **superusuario**, y
-PostgreSQL **nunca aplica RLS a un superusuario** ni a un rol con `BYPASSRLS`.
-Tampoco la aplica al dueño de una tabla, salvo con `FORCE ROW LEVEL SECURITY`.
-Si la plataforma se conectara como `aspal`, las políticas existirían pero no
-filtrarían nada, y los tests pasarían en verde sin probar nada.
+### 1. Tres roles, creados por un script de arranque (no por migración)
 
-Por eso hay **dos roles**:
+Nuevo `apps/plataforma/src/preparar-base.ts`, ejecutado con `npm run db:preparar`.
+Corre como el administrador, antes de migrar, y es idempotente (bloques `DO` con
+`IF NOT EXISTS`).
 
-| Rol         | Para qué                                   | Privilegios                                                                      |
-| ----------- | ------------------------------------------ | -------------------------------------------------------------------------------- |
-| `aspal`     | Migraciones y semillas (dueño del esquema) | Los de dueño                                                                     |
-| `aspal_app` | La aplicación en ejecución (pool de `pg`)  | `LOGIN`, `NOSUPERUSER`, `NOBYPASSRLS`; solo los `GRANT` explícitos de cada tabla |
+| Rol           | Atributos                                                                  | Uso                                                                      |
+| ------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `aspal`       | administrador (superusuario en local; maestro en la nube)                  | solo `db:preparar`, y migrar haciendo `SET ROLE`                         |
+| `aspal_dueno` | `NOLOGIN NOSUPERUSER NOBYPASSRLS`                                          | dueño de los esquemas `app`, `public` y `drizzle` y de todos los objetos |
+| `aspal_app`   | `LOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT`, **no** miembro de `aspal_dueno` | la aplicación en ejecución                                               |
 
-Un test comprueba que el rol con que corre la aplicación no es superusuario ni
-tiene `BYPASSRLS` (CA-4).
+El script, además:
 
-### 2.1 ASPAL vive en el dominio principal (decisión del 15 de octubre de 2026)
+- pone contraseña a `aspal_app` (solo local, desde la variable de entorno; nunca en git);
+- ejecuta `REVOKE ALL ON DATABASE ... FROM PUBLIC` + `GRANT CONNECT` a `aspal_app`, en las
+  bases `aspal` y `aspal_prueba`;
+- ejecuta `REVOKE ALL ON SCHEMA public FROM PUBLIC`.
 
-El sitio actual es de ASPAL. Internamente usará el mismo sistema que las demás
-asociaciones, pero **ASPAL es la asociación principal y se sirve en el dominio
-principal, sin subdominio**. Las demás usan `<subdominio>.<DOMINIO_BASE>`.
+### 2. Migraciones como `aspal_dueno`
 
-Consecuencias para este corte:
+En `src/migrar.ts`: un `pg.Client` dedicado (no el pool) ejecuta `SET ROLE aspal_dueno`
+y luego `migrate(drizzle(client))`.
 
-- ASPAL es una fila más de `asociacion`, aislada por RLS como cualquier otra.
-  «Principal» solo cambia **cómo se llega a ella**, no qué puede ver.
-- ASPAL conserva un `subdominio` (`aspal`) como identificador estable. No se
-  hace opcional: así no hay un caso especial de `NULL` en el esquema, y su
-  dirección por subdominio queda reservada para ella.
-- Una columna `principal` marca a ASPAL. PostgreSQL garantiza que **como mucho
-  una** asociación sea principal (índice único parcial).
-- `DOMINIO_BASE` y `www.DOMINIO_BASE` resuelven la asociación principal.
-  `aspal.DOMINIO_BASE` también la resuelve; que redirija al dominio principal
-  es cosa del renderizado público (corte 4).
-- ASPAL operador sigue siendo un ámbito distinto de ASPAL asociación (§3 de la
-  guía): compartir dominio no da al operador acceso a los datos de la
-  asociación ni al revés.
+- **`0001_aislamiento`** (SQL propio):
+  - esquema `app`;
+  - `ALTER DEFAULT PRIVILEGES FOR ROLE aspal_dueno REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC`;
+  - la función de contexto:
+    ```sql
+    CREATE FUNCTION app.asociacion_actual() RETURNS uuid LANGUAGE sql STABLE PARALLEL SAFE
+      AS $$ SELECT NULLIF(pg_catalog.current_setting('app.asociacion_id', true), '')::uuid $$;
+    ```
+  - `app.aplicar_aislamiento(regclass)`, que ejecuta `ENABLE` + `FORCE RLS`, `ALTER COLUMN
+asociacion_id SET DEFAULT (SELECT app.asociacion_actual())` y crea dos políticas:
+    - `aislamiento AS RESTRICTIVE FOR ALL TO PUBLIC USING (asociacion_id = (SELECT
+app.asociacion_actual())) WITH CHECK (...)`;
+    - `base AS PERMISSIVE FOR ALL TO PUBLIC USING (true) WITH CHECK (true)`.
 
-## 3. Especificación (criterios de aceptación)
+    Como `aislamiento` es restrictiva, ninguna política permisiva futura puede ampliar
+    el acceso.
 
-- **CA-1 · Tabla `asociacion`.** Clave `uuid`; `subdominio` único, en
-  minúsculas, con formato de etiqueta DNS y fuera de la lista de reservados;
-  `nombre` obligatorio y acotado; `zona_horaria` obligatoria; `principal`
-  obligatoria, y como mucho una asociación principal. PostgreSQL garantiza
-  todo esto: una fila inválida no entra aunque el código falle.
-- **CA-2 · Roles.** Las migraciones corren como `aspal` y la aplicación como
-  `aspal_app`. `aspal_app` solo puede leer `asociacion`: no puede crear,
-  cambiar ni borrar asociaciones.
-- **CA-3 · Contexto por transacción.** `conAsociacion(pool, asociacionId, fn)`
-  abre una transacción, fija el contexto con `SET LOCAL` y lo pierde al
-  terminar. Una conexión devuelta al pool no conserva el contexto de la
-  petición anterior. Si `fn` lanza, la transacción se revierte.
-- **CA-4 · Test de cruce.** Sobre una tabla de asociación con la política
-  estándar, con el contexto de la organización de prueba:
-  - no se ven las filas de ASPAL (`SELECT` devuelve 0 filas);
-  - no se pueden cambiar ni borrar (`UPDATE` y `DELETE` afectan 0 filas);
-  - no se pueden insertar a nombre de ASPAL (error de política);
-  - no se puede mover una fila propia a ASPAL cambiando su `asociacion_id`.
+  - `GRANT USAGE` del esquema `app` y `GRANT EXECUTE` de `asociacion_actual` a
+    `aspal_app`; nada más.
+- **`0002_asociacion`**: la genera Drizzle desde `src/esquema.ts`, más SQL propio al final.
+  - Columnas: `id uuid` (PK, `gen_random_uuid()`), `nombre` (`CHECK` 2–120),
+    `subdominio` (`UNIQUE`, `CHECK` de formato DNS en minúsculas y `CHECK` de no
+    reservado), `zona_horaria`, `creado_en` y `actualizado_en` (`timestamptz`).
+  - `ENABLE RLS` **sin `FORCE`**, y política `FOR SELECT TO aspal_app USING (id = (SELECT
+app.asociacion_actual()))`: la aplicación solo ve su propia asociación.
+  - Resolución acotada: `app.resolver_asociacion(p text) RETURNS TABLE(id, nombre,
+subdominio, zona_horaria) STABLE SECURITY DEFINER SET search_path = ''`, que busca
+    por igualdad exacta (`resolver_asociacion('%')` devuelve 0 filas).
+  - `GRANT EXECUTE` de `resolver_asociacion` y `GRANT SELECT` sobre `asociacion` a
+    `aspal_app`. La política anterior filtra ese `SELECT`.
+  - Reservados: `www app api admin comunidad correo mail soporte ayuda estado static
+assets cdn staging dev`.
 
-  Y lo mismo en sentido contrario. **Sin contexto** no se ve ni se escribe
-  nada. El rol de la aplicación no es superusuario ni tiene `BYPASSRLS`.
+### 3. Separar migrador y aplicación
 
-- **CA-5 · Guardián.** Un test recorre el catálogo de PostgreSQL y falla si
-  alguna tabla con columna `asociacion_id` no tiene RLS activado, RLS forzado y
-  la política `aislamiento`. Así una tabla futura no puede olvidarse el patrón.
-- **CA-6 · Resolución por `Host`.** `DOMINIO_BASE` vale `localhost` en local y
-  será `asociacionesprofesionales.org` en la nube. Se ignoran el puerto y las
-  mayúsculas.
-  - `DOMINIO_BASE` y `www.DOMINIO_BASE` resuelven la asociación principal
-    (ASPAL).
-  - `<subdominio>.<DOMINIO_BASE>` resuelve la asociación de ese subdominio,
-    incluido `aspal`.
-  - Un subdominio reservado (salvo `www`), uno desconocido o un host de otro
-    dominio no resuelven ninguna asociación. Sin asociación principal en la
-    base, el dominio principal tampoco resuelve ninguna.
-  - `/health` no depende del `Host`.
-- **CA-7 · `GET /asociaciones/actual`.** Si el `Host` resuelve una asociación
-  responde 200 `{ success: true, data: { nombre, subdominio, zonaHoraria,
-principal } }`; si no, 404 `RECURSO_NO_ENCONTRADO`. No expone el `id`
-  interno. Se documenta antes en `docs/api/plataforma.md`.
-- **CA-8 · Semillas locales.** `npm run db:sembrar` crea ASPAL (`aspal`,
-  principal) y la organización de prueba (`prueba`). Es idempotente y no corre nunca contra una
-  base que no sea local: las semillas no son migraciones.
-- **CA-9 · Sin regresiones.** El sitio sigue con su build idéntico byte a byte,
-  la CI en verde (con el job de la plataforma ampliado) y la documentación al
-  día.
+- **`compose.yaml`:** servicio `migrador` de una sola ejecución (`preparar` + `migrar`, con
+  credenciales de administrador). `plataforma` arranca con `depends_on: migrador:
+service_completed_successfully` y recibe **solo** la URL de `aspal_app`. Nuevas variables
+  `DOMINIO_BASE=localhost` y `DATABASE_URL_ADMIN` (esta solo en `migrador`).
+- **`Dockerfile`:** `CMD` arranca solo `servidor.js`. El migrador usa la misma imagen con
+  otro comando.
+- **`src/servidor.ts`, comprobación al arrancar:** si `rolsuper`, `rolbypassrls` o
+  `pg_has_role(current_user,'aspal_dueno','MEMBER')` es verdadero, ejecuta
+  `process.exit(1)`.
+- **`src/configuracion.ts`:** la aplicación lee `DATABASE_URL` y `DOMINIO_BASE`, rechaza
+  una URL con `options=` (no puede traer un contexto por defecto) y no lee la URL de
+  administrador.
 
-## 4. Propuesta de esquema (`database-design.md`, §6)
+### 4. Contexto por transacción en la aplicación (`src/base-de-datos.ts`)
 
-### 4.1 Necesidad
+`conAsociacion(db, asociacionId, fn)`:
 
-La plataforma sirve a varias asociaciones. `asociacion` es el **cliente de la
-plataforma**: su dueño es ASPAL como operador, vive mientras dure la relación
-comercial y solo la cambia el operador (corte 4). Es la raíz del aislamiento:
-todas las tablas de ámbito asociación la referencian.
+- valida el UUID con Zod;
+- usa `db.transaction(tx => ...)` cuya **primera** sentencia es ``tx.execute(sql`SELECT
+set_config('app.asociacion_id', ${id}, true)`)``, con un parámetro enlazado y nunca
+  interpolado;
+- `fn` recibe solo `tx`;
+- prohíbe anidar llamadas (marca en `AsyncLocalStorage`);
+- si `COMMIT` o `ROLLBACK` no terminan limpios, **destruye** la conexión
+  (`release(err)`).
 
-### 4.2 Inspección
+El pool no se exporta fuera de `base-de-datos.ts`.
 
-- Esquema actual: vacío. Solo existe la migración `0000_inicio`, sin tablas, y
-  la tabla de control de Drizzle (`drizzle.__drizzle_migrations`).
-- El sitio no tiene base de datos.
-- `asociacion` no existe con otro nombre. ASPAL como operador (contratos,
-  comisiones) y ASPAL como asociación cliente son cosas distintas (§3 de la
-  guía): este corte solo crea la segunda, una fila más de `asociacion`.
+### 5. Subdominio y endpoint
 
-### 4.3 Modelo propuesto
+- `src/asociaciones/host.ts`: función pura `subdominioDesdeHost(host, dominioBase)`.
+  - Debe acabar en `'.' + base`: `aspal.evillocalhost` no resuelve.
+  - Quita el puerto y el punto final, pasa a minúsculas y rechaza varios niveles, hosts
+    vacíos y reservados.
+  - Ignora `X-Forwarded-Host`.
+- `src/asociaciones/rutas.ts`: un hook resuelve la asociación con
+  `app.resolver_asociacion`.
+- `GET /asociaciones/actual`:
+  - con una asociación conocida, 200 `{ success, data: { nombre, subdominio, zonaHoraria } }`,
+    sin `id`;
+  - si no, 404 `RECURSO_NO_ENCONTRADO`;
+  - siempre con `Cache-Control: private, no-store`.
+- El contrato va antes en `docs/api/plataforma.md`.
+- `/health` sigue sin depender del subdominio.
 
-**`asociacion`** (ámbito plataforma, sin RLS: es la tabla que define el ámbito)
+### 6. Semillas locales
 
-| Columna          | Tipo          | Restricciones                                                                                                  |
-| ---------------- | ------------- | -------------------------------------------------------------------------------------------------------------- |
-| `id`             | `uuid`        | PK, `DEFAULT gen_random_uuid()`                                                                                |
-| `nombre`         | `text`        | `NOT NULL`, `CHECK (char_length(btrim(nombre)) BETWEEN 2 AND 120)`                                             |
-| `subdominio`     | `text`        | `NOT NULL`, `UNIQUE`, `CHECK` de formato `^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$`, `CHECK` contra los reservados |
-| `zona_horaria`   | `text`        | `NOT NULL`. Nombre IANA (`America/Merida`), validado en la aplicación                                          |
-| `principal`      | `boolean`     | `NOT NULL DEFAULT false`. Índice único parcial `ON asociacion ((true)) WHERE principal`: como mucho una        |
-| `creado_en`      | `timestamptz` | `NOT NULL DEFAULT now()`                                                                                       |
-| `actualizado_en` | `timestamptz` | `NOT NULL DEFAULT now()`                                                                                       |
+`npm run db:sembrar` (como `aspal_dueno`): ASPAL (`aspal`, `America/Merida`) y Organización de
+Prueba (`prueba`), con `ON CONFLICT (subdominio) DO NOTHING`. Solo corre si el host de la
+URL es `localhost` o `db`. Valida la zona horaria con `Intl`.
 
-Subdominios reservados: `www`, `app`, `api`, `admin`, `comunidad`, `correo`,
-`mail`, `soporte`, `ayuda`, `estado`, `static`, `assets`, `cdn`, `staging`,
-`dev`. Son los que el dominio ya usa o usará la plataforma (D2). `www` está
-reservado como subdominio de asociación, pero en la resolución equivale al
-dominio principal (§2.1).
+## Verificación (lo que demuestra el aislamiento)
 
-**Infraestructura de aislamiento** (esquema `app`, del dueño):
+**Tabla de tests:** `t`, con su hija `t_hija` (FK compuesta `(asociacion_id, t_id)`). Se crea **solo
+en la base de tests**, como `aspal_dueno`, con `app.aplicar_aislamiento`. Hay filas de A
+(aspal) y de B (prueba). Archivo `src/aislamiento.integracion.test.ts`.
 
-- `app.asociacion_actual() RETURNS uuid`: lee
-  `current_setting('app.asociacion_id', true)`. Sin contexto devuelve `NULL`, y
-  `asociacion_id = NULL` nunca es verdadero, así que sin contexto no pasa
-  ninguna fila.
-- `app.aplicar_aislamiento(tabla regclass)`: activa y fuerza RLS y crea la
-  política `aislamiento` con
-  `USING (asociacion_id = app.asociacion_actual())` y el mismo `WITH CHECK`.
-  Cada migración futura de una tabla de asociación la llama en una línea:
-  `SELECT app.aplicar_aislamiento('afiliacion');`.
+**Matriz de cruce** (rol `aspal_app`, en los dos sentidos A↔B):
 
-### 4.4 Integridad
+- Contexto A sobre filas de B:
+  - `SELECT`, `SELECT` por id, `count`, `FOR UPDATE`, `UPDATE` y `DELETE` → 0 filas;
+  - `INSERT` con `asociacion_id = B` → 42501;
+  - mover una fila propia a B → **42501**;
+  - `ON CONFLICT` y `MERGE` no tocan B;
+  - `t_hija` con FK a un id de B → 23503;
+  - `COPY TO` solo da filas de A, y `COPY FROM` da error.
+- Sin contexto, en una conexión nueva **y** en una reutilizada: 0 filas sin error, e
+  `INSERT` → 42501. Con un UUID inexistente: 0 filas.
+- `TRUNCATE`, `DISABLE RLS`, `DROP POLICY` y `SET ROLE aspal_dueno` → 42501.
+- **Testigos:** `aspal_dueno` (con `SET ROLE`) recibe los mismos resultados, lo que prueba
+  que `FORCE` funciona. Superusuario sin contexto ve A y B, lo que demuestra que la batería
+  **detectaría** un rol que se salta RLS (sin falso verde).
+- `asociacion`: sin contexto, `count` = 0; con contexto A, 1; `resolver_asociacion('%')` = 0 filas.
 
-- La clave `uuid`, no un serial, para que un identificador no revele cuántas
-  asociaciones hay ni permita adivinar el de otra.
-- `subdominio`: `UNIQUE`, y los `CHECK` de formato y de reservados dentro de
-  PostgreSQL, no solo en el código.
-- `principal`: el índice único parcial impide una segunda asociación principal.
-  No se exige que exista una: la base vacía es válida y el dominio principal
-  simplemente no resuelve. Cambiar la principal es tarea del operador (corte
-  4), en una transacción que desmarca una y marca la otra.
-- Las tablas de asociación futuras: `asociacion_id uuid NOT NULL REFERENCES
-asociacion(id) ON DELETE RESTRICT`. Una asociación con datos no se borra:
-  se desactiva su contrato (cortes 4 y 5). Las relaciones entre dos tablas de
-  asociación usarán una clave foránea compuesta `(asociacion_id, id)`, que
-  impide referencias cruzadas entre asociaciones. El patrón se documenta aquí;
-  la primera relación llega en el corte 3.
-- Privilegios: `aspal_app` recibe `USAGE` en el esquema `app`, `EXECUTE` en
-  `app.asociacion_actual()` y `SELECT` en `asociacion`. Nada más.
-- `zona_horaria` no tiene `CHECK` porque PostgreSQL no puede validar un nombre
-  IANA en una restricción inmutable. La valida la aplicación con `Intl`, y un
-  test cubre las semillas.
-- Historial: sin tabla de historial en este corte, porque nadie puede editar
-  una asociación hasta el corte 4. Los cambios quedarán en `auditoria` (corte
-  5).
+**Pool** (`max: 1` y `max: 2`):
 
-### 4.5 Cambio
+- tras un `fn` que lanza, no queda ninguna transacción abierta y el GUC está vacío;
+- si se termina la conexión desde PostgreSQL, el pool no reutiliza una rota;
+- anidar `conAsociacion` lanza un error;
+- **concurrencia:** 200 peticiones `inject` intercaladas `aspal`/`prueba`, con `pg_sleep`
+  aleatorio; cada respuesta corresponde a su `Host`.
 
-- **Migración `0001_aislamiento`** (SQL propio): crea el rol `aspal_app` si no
-  existe (`NOLOGIN`, `NOSUPERUSER`, `NOBYPASSRLS`, sin contraseña), el esquema
-  `app` y las dos funciones.
-- **Migración `0002_asociacion`**: la genera Drizzle Kit desde `esquema.ts`,
-  añadiendo al final el `GRANT SELECT` a `aspal_app`.
-- **La contraseña y el `LOGIN` de `aspal_app` no van en ninguna migración.** En
-  local los fija `npm run db:levantar` con una contraseña solo local. En la nube
-  los pondrá la infraestructura, desde Secrets Manager.
-- **Configuración:**
-  - `DATABASE_URL` pasa a ser la de `aspal_app`;
-  - nueva `DATABASE_URL_MIGRACIONES`, del dueño, que usan `db:migrar` y
-    `db:sembrar`;
-  - nueva `DOMINIO_BASE`;
-  - en los tests, `DATABASE_URL_PRUEBA` (dueño) y `DATABASE_URL_PRUEBA_APP`
-    (aplicación).
-- **Datos actuales:** ninguno. La base local está vacía y el volumen existente
-  sirve: no hay que borrarlo.
-- **Vuelta atrás:** sin datos que perder. Basta con revertir el commit y
-  recrear la base local.
-- **Verificación:** CA-1 a CA-9 con tests de integración contra PostgreSQL 17
-  real, en local y en la CI.
+**Guardianes:**
 
-### 4.6 Alternativas descartadas
+1. **Catálogo:** toda tabla de `public` (incluidas las particiones) salvo `asociacion` tiene
+   `asociacion_id uuid NOT NULL`, `relrowsecurity`, `relforcerowsecurity` y la política
+   `aislamiento`. La política debe ser RESTRICTIVE, para todos los comandos y para PUBLIC,
+   con la expresión canónica (`pg_get_expr`).
+   - Ninguna vista materializada accesible a la app.
+   - Toda vista con `security_invoker`.
+   - Las funciones `SECURITY DEFINER` solo de una lista blanca y con `search_path` fijo.
+   - El guardián tiene **su propio test**: crea tablas defectuosas en una transacción y
+     comprueba que las detecta.
+2. **Propiedad:** todos los objetos de `app`, `public` y `drizzle` pertenecen a `aspal_dueno`.
+3. **Claves:** todo `UNIQUE` y toda FK de una tabla de asociación incluye `asociacion_id`.
+4. **Privilegios:** instantánea exacta de los permisos de `aspal_app`
+   (`has_table/function/database/schema_privilege`). `TRUNCATE`, `TRIGGER`, `TEMP` y
+   `CREATE` siempre a falso. `pg_db_role_setting` vacío para `aspal_app`.
+5. **Código** (test que recorre `src/`): `app.asociacion_id`, `set_config` y `SET ` en SQL solo
+   aparecen en `base-de-datos.ts`. Solo `base-de-datos.ts` y `servidor.ts` importan `pg`.
+6. **Arranque:** la comprobación rechaza la URL del superusuario y acepta la de `aspal_app`.
 
-- **Un esquema de PostgreSQL por asociación.** Aísla bien, pero multiplica las
-  migraciones por el número de clientes y complica los informes del operador.
-  El plan ya eligió esquema compartido con RLS (D8).
-- **Filtrar por `asociacion_id` solo en el código.** Una consulta que olvide el
-  `WHERE` expone datos de otra asociación. Con RLS, el olvido devuelve 0 filas.
-- **Conectar la aplicación como el dueño, con `FORCE ROW LEVEL SECURITY`.**
-  Funciona con un dueño normal, pero en local el dueño es superusuario y se
-  salta RLS igualmente. Además, la aplicación podría cambiar el esquema.
+**Unitarios:**
 
-### 4.7 Preguntas de negocio
+- `subdominioDesdeHost`: un caso por cada regla de la §5;
+- configuración: `options=` rechazado y la URL de administrador ignorada.
 
-1. ~~**Subdominio de ASPAL**~~ — resuelta el 15 de octubre de 2026: ASPAL es
-   la asociación principal y vive en el dominio principal (§2.1). Conserva
-   `aspal` como identificador.
-2. **Zona horaria de ASPAL:** ¿`America/Merida`?
-3. **Subdominios reservados:** ¿añadirías o quitarías alguno de la lista de la
-   §4.3?
+**Batería final:**
 
-Si no hay respuesta se usan las propuestas, que son reversibles mientras
-no haya datos reales.
+- tests unitarios y de integración de la plataforma, en local y en la CI;
+- el job de la CI ejecuta `db:preparar` contra el servicio de PostgreSQL y luego los tests;
+- con la plataforma en marcha, `curl` contra `aspal.localhost`, `prueba.localhost`,
+  `localhost` y `nada.localhost`;
+- la base detenida → `/health` responde 503;
+- el sitio, con el build idéntico byte a byte, la cobertura y el lint;
+- al final, una revisión adversarial independiente del código ya escrito, con un agente
+  de seguridad, antes de cerrar.
 
-## 5. Plan de implementación
+## Archivos
 
-Una rama, `feat/plataforma-asociaciones`, con commits pequeños y tests primero:
+Se modifican:
 
-1. `docs`: este plan aprobado y el contrato de `GET /asociaciones/actual` en
-   `docs/api/plataforma.md`.
-2. `feat`: roles y aislamiento.
-   - Migración `0001`, configuración con dos URL y `db:levantar` fijando el
-     `LOGIN` local de `aspal_app`.
-   - Tests: el rol de la aplicación sin privilegios (CA-2, CA-4).
-3. `feat`: tabla `asociacion`.
-   - `esquema.ts`, migración `0002` y `db:sembrar`.
-   - Tests de restricciones: subdominio duplicado, mal formado, reservado y
-     nombre vacío, y segunda asociación principal (CA-1, CA-8).
-4. `feat`: `conAsociacion` y el test de cruce.
-   - La tabla de pruebas con la política estándar se crea **solo en la base de
-     tests**, nunca en una migración.
-   - Tests: CA-3, CA-4 y el guardián del catálogo (CA-5).
-5. `feat`: resolución por `Host` y `GET /asociaciones/actual`.
-   - Tests unitarios del análisis del `Host` y de integración del endpoint
-     (CA-6, CA-7).
-6. `docs`: `apps/plataforma/CLAUDE.md` (el patrón de aislamiento como regla
-   obligatoria), el plan de la Etapa 0 y `CLAUDE.md` raíz.
+- `apps/plataforma/src/{base-de-datos,migrar,servidor,configuracion,esquema,app}.ts`
+- `apps/plataforma/Dockerfile`
+- `compose.yaml`
+- `apps/plataforma/docker/crear-base-prueba.sql`
+- `.github/workflows/ci.yml`
+- `package.json` (scripts `db:preparar` y `db:sembrar`)
 
-**Verificación final:**
+Se crean:
 
-- Tests unitarios y de integración de la plataforma.
-- Batería completa del sitio, con su build comparado byte a byte.
-- `curl` contra `localhost` y `www.localhost` (ASPAL), `aspal.localhost`
-  (ASPAL), `prueba.localhost` (prueba), `api.localhost` (reservado) y un
-  subdominio desconocido.
-- La base detenida, para comprobar que `/health` sigue respondiendo 503.
+- `src/preparar-base.ts`
+- `src/sembrar.ts`
+- `src/asociaciones/{host,rutas}.ts`
+- `migraciones/0001_*` y `0002_*`
+- los tests `*.test.ts` y `*.integracion.test.ts` de la sección de verificación
 
-**Riesgo principal:** que el patrón quede bien en los tests y mal en la
-práctica, por ejemplo con una consulta fuera de `conAsociacion` que use un rol
-con más privilegios. Lo mitigan la aplicación sin privilegios para saltarse
-RLS (CA-2), el contexto que se pierde al cerrar cada transacción (CA-3) y el
-guardián (CA-5).
+Se reutilizan:
+
+- `crearPool` y `comprobarBaseDeDatos` de `src/base-de-datos.ts`
+- `cuerpoError` y `registrarZod` de `src/zod-fastify.ts`
+- `construirApp(dependencias)` de `src/app.ts`
+
+**Documentación:**
+
+- este plan;
+- `docs/api/plataforma.md`;
+- `apps/plataforma/CLAUDE.md` y `docs/database-design.md`: el patrón de aislamiento y las reglas
+  para cortes posteriores;
+- el plan de la Etapa 0 (§8) y `CLAUDE.md` raíz.
+
+**Reglas para cortes posteriores** (quedan escritas en esta documentación):
+
+- **Sesiones (corte 3):** la sesión debe coincidir con la asociación del `Host`; cookies
+  `__Host-` sin `Domain`.
+- **Trabajos (pg-boss y outbox):** cada trabajo lleva su `asociacion_id` y corre dentro de
+  `conAsociacion`.
+- **Operador (corte 4):** usa un rol y un pool separados, y queda auditado.
+- **PgBouncer:** solo `set_config` local.
+- **Datos:**
+  - nada de `COPY FROM`, objetos grandes ni contadores globales expuestos;
+  - los errores nunca devuelven `error.detail` de PostgreSQL.
+
+## Orden de commits (rama `feat/plataforma-asociaciones`, tests primero)
+
+1. `docs`: el plan reescrito y el contrato de `GET /asociaciones/actual`.
+2. `feat`: roles, `db:preparar`, migrador separado en `compose.yaml`/`Dockerfile` y la
+   comprobación de arranque. Tests: guardianes de propiedad, de privilegios y de arranque.
+3. `feat`: `0001_aislamiento` y `conAsociacion`. Tests: matriz de cruce, pool y guardianes de
+   catálogo, de claves y de código.
+4. `feat`: `asociacion` (`0002`), `resolver_asociacion` y `db:sembrar`. Tests: restricciones y
+   RLS de `asociacion`.
+5. `feat`: subdominio y `GET /asociaciones/actual`. Tests: unitarios del `Host`, endpoint y
+   concurrencia.
+6. `docs`: las reglas obligatorias y la documentación al día.
+7. Revisión adversarial independiente y corrección de lo que encuentre.
+
+**Valores por defecto** (se pueden cambiar al aprobar):
+
+- subdominio de ASPAL: `aspal`;
+- zona horaria: `America/Merida`;
+- la lista de reservados de la §2.
+
+**Requisito local:** la base de desarrollo está vacía; `db:preparar` adapta el volumen existente
+sin borrarlo.
