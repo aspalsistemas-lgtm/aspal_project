@@ -1,0 +1,90 @@
+{
+  "id": "25160dff-731a-4ff4-8565-2c543aee01b1",
+  "prevId": "69c0469a-5224-4ab9-9b84-b194e6f0d404",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.asociacion": {
+      "name": "asociacion",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subdominio": {
+          "name": "subdominio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "zona_horaria": {
+          "name": "zona_horaria",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "asociacion_subdominio_unico": {
+          "name": "asociacion_subdominio_unico",
+          "columns": ["subdominio"],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "asociacion_nombre_longitud": {
+          "name": "asociacion_nombre_longitud",
+          "value": "char_length(btrim(\"asociacion\".\"nombre\")) BETWEEN 2 AND 120"
+        },
+        "asociacion_subdominio_formato": {
+          "name": "asociacion_subdominio_formato",
+          "value": "\"asociacion\".\"subdominio\" ~ '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'"
+        },
+        "asociacion_subdominio_no_reservado": {
+          "name": "asociacion_subdominio_no_reservado",
+          "value": "\"asociacion\".\"subdominio\" NOT IN ('www', 'app', 'api', 'admin', 'comunidad', 'correo', 'mail', 'soporte', 'ayuda', 'estado', 'static', 'assets', 'cdn', 'staging', 'dev')"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

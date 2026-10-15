@@ -62,10 +62,16 @@ beforeAll(async () => {
   const dueno = await admin.connect();
   try {
     await dueno.query("SET ROLE aspal_dueno");
+    // Dos asociaciones propias del test: las tablas las referencian (regla 1).
+    await dueno.query(
+      `INSERT INTO public.asociacion (id, nombre, subdominio, zona_horaria)
+       VALUES ($1, 'Asociación A', 'prueba-a', 'UTC'), ($2, 'Asociación B', 'prueba-b', 'UTC')`,
+      [A, B],
+    );
     await dueno.query(`
       CREATE TABLE public.t (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        asociacion_id uuid NOT NULL,
+        asociacion_id uuid NOT NULL REFERENCES public.asociacion (id) ON DELETE RESTRICT,
         clave text NOT NULL,
         valor text,
         UNIQUE (asociacion_id, id),
@@ -74,7 +80,7 @@ beforeAll(async () => {
     await dueno.query(`
       CREATE TABLE public.t_hija (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        asociacion_id uuid NOT NULL,
+        asociacion_id uuid NOT NULL REFERENCES public.asociacion (id) ON DELETE RESTRICT,
         t_id uuid NOT NULL,
         UNIQUE (asociacion_id, id),
         FOREIGN KEY (asociacion_id, t_id) REFERENCES public.t (asociacion_id, id)
@@ -98,6 +104,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await admin.query("DROP TABLE IF EXISTS public.t_hija, public.t");
+  await admin.query("DELETE FROM public.asociacion WHERE id = ANY ($1)", [[A, B]]);
   await Promise.all([admin.end(), app.end()]);
 });
 
@@ -498,22 +505,49 @@ describe("guardián del catálogo (guardianes 1 y 3)", () => {
       await cliente.query(
         "CREATE FUNCTION app.puerta_trasera() RETURNS int LANGUAGE sql SECURITY DEFINER AS 'SELECT 1'",
       );
+      // Auditoría, hallazgo 4: lo que el guardián anterior dejaba pasar.
+      await cliente.query("CREATE SCHEMA otro");
+      await cliente.query(
+        "CREATE TABLE otro.fuera_de_public (asociacion_id uuid NOT NULL)",
+      );
+      await cliente.query("CREATE VIEW otro.vista_fuera AS SELECT * FROM public.t");
+      await cliente.query(`
+        CREATE TABLE public.pk_global (
+          correo text PRIMARY KEY,
+          asociacion_id uuid NOT NULL REFERENCES public.asociacion (id))`);
+      await cliente.query("SELECT app.aplicar_aislamiento('public.pk_global')");
+      await cliente.query(`
+        CREATE TABLE public.fk_cruzada (
+          id uuid PRIMARY KEY,
+          asociacion_id uuid NOT NULL REFERENCES public.asociacion (id),
+          t_id uuid NOT NULL,
+          FOREIGN KEY (asociacion_id, t_id) REFERENCES public.t (id, asociacion_id))`);
+      await cliente.query("SELECT app.aplicar_aislamiento('public.fk_cruzada')");
+      await cliente.query(
+        "CREATE POLICY abierta ON public.asociacion FOR SELECT USING (true)",
+      );
       const problemas = await buscarProblemasDeAislamiento(cliente);
       expect(problemas).toEqual(
         expect.arrayContaining([
-          "sin_columna: falta asociacion_id uuid NOT NULL",
-          "sin_columna: RLS no activado",
-          "sin_columna: falta la política aislamiento",
-          "sin_rls: RLS no activado",
-          "sin_rls: RLS no forzado",
-          "sin_rls: falta la política aislamiento",
-          "clave_global: clave_global_correo_key no incluye asociacion_id",
-          "politica_permisiva: aislamiento no es RESTRICTIVE",
-          "politica_permisiva: aislamiento no tiene la expresión canónica",
+          "public.sin_columna: falta asociacion_id uuid NOT NULL",
+          "public.sin_columna: RLS no activado",
+          "public.sin_columna: falta la política aislamiento",
+          "public.sin_rls: asociacion_id sin FK a public.asociacion(id)",
+          "public.sin_rls: RLS no activado",
+          "public.sin_rls: RLS no forzado",
+          "public.sin_rls: falta la política aislamiento",
+          "public.clave_global: clave_global_correo_key no incluye asociacion_id",
+          "public.politica_permisiva: aislamiento no es RESTRICTIVE",
+          "public.politica_permisiva: aislamiento no tiene la expresión canónica",
           "public.vista_dueno: vista sin security_invoker",
           "public.copia: vista materializada (sin RLS)",
           "app.puerta_trasera: SECURITY DEFINER no permitida",
           "app.puerta_trasera: SECURITY DEFINER sin search_path fijo",
+          "otro.fuera_de_public: RLS no activado",
+          "otro.vista_fuera: vista sin security_invoker",
+          "public.pk_global: pk_global_pkey no incluye asociacion_id",
+          "public.fk_cruzada: fk_cruzada_asociacion_id_t_id_fkey no empareja asociacion_id con la tabla referenciada",
+          "política de plataforma no revisada: public.asociacion · abierta · permisiva · r · {PUBLIC} · true · -",
         ]),
       );
     } finally {

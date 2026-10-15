@@ -42,7 +42,11 @@ export function registrarAsociaciones(
   app.decorateRequest("asociacion", null);
 
   app.addHook("onRequest", async (peticion) => {
-    if (RUTAS_GLOBALES.includes(peticion.routeOptions.url ?? "")) return;
+    // Sin ruta (un 404) o ruta global: no hay nada que atender en nombre de una
+    // asociación, y consultar la base por cada dirección inventada sería una
+    // amplificación gratuita (auditoría, hallazgo 12).
+    const ruta = peticion.routeOptions.url;
+    if (!ruta || RUTAS_GLOBALES.includes(ruta)) return;
     // headers.host y no X-Forwarded-Host: ese lo pone quien quiera.
     const subdominio = subdominioDesdeHost(peticion.headers.host, dominioBase);
     peticion.asociacion = subdominio ? await resolverAsociacion(subdominio) : null;

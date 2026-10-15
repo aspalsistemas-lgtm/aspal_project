@@ -153,20 +153,32 @@ describe("app.resolver_asociacion (CA-6)", () => {
 });
 
 describe("instantánea de privilegios de aspal_app (guardián 4)", () => {
+  // Todos los esquemas propios, no solo public/app/drizzle (auditoría 4).
+  const ESQUEMAS_PROPIOS =
+    "n.nspname <> 'information_schema' AND n.nspname NOT LIKE 'pg\\_%'";
+
   it("es exactamente la esperada: nada más que lo concedido a propósito", async () => {
     const { rows: tablas } = await admin.query(`
       SELECT n.nspname || '.' || c.relname AS objeto,
-             array_remove(ARRAY[
-               CASE WHEN has_table_privilege('aspal_app', c.oid, 'SELECT') THEN 'SELECT' END,
-               CASE WHEN has_table_privilege('aspal_app', c.oid, 'INSERT') THEN 'INSERT' END,
-               CASE WHEN has_table_privilege('aspal_app', c.oid, 'UPDATE') THEN 'UPDATE' END,
-               CASE WHEN has_table_privilege('aspal_app', c.oid, 'DELETE') THEN 'DELETE' END,
-               CASE WHEN has_table_privilege('aspal_app', c.oid, 'TRUNCATE') THEN 'TRUNCATE' END,
-               CASE WHEN has_table_privilege('aspal_app', c.oid, 'REFERENCES') THEN 'REFERENCES' END,
-               CASE WHEN has_table_privilege('aspal_app', c.oid, 'TRIGGER') THEN 'TRIGGER' END
-             ], NULL) AS privilegios
+             CASE WHEN c.relkind = 'S' THEN
+               array_remove(ARRAY[
+                 CASE WHEN has_sequence_privilege('aspal_app', c.oid, 'USAGE') THEN 'USAGE' END,
+                 CASE WHEN has_sequence_privilege('aspal_app', c.oid, 'SELECT') THEN 'SELECT' END,
+                 CASE WHEN has_sequence_privilege('aspal_app', c.oid, 'UPDATE') THEN 'UPDATE' END
+               ], NULL)
+             ELSE
+               array_remove(ARRAY[
+                 CASE WHEN has_table_privilege('aspal_app', c.oid, 'SELECT') THEN 'SELECT' END,
+                 CASE WHEN has_table_privilege('aspal_app', c.oid, 'INSERT') THEN 'INSERT' END,
+                 CASE WHEN has_table_privilege('aspal_app', c.oid, 'UPDATE') THEN 'UPDATE' END,
+                 CASE WHEN has_table_privilege('aspal_app', c.oid, 'DELETE') THEN 'DELETE' END,
+                 CASE WHEN has_table_privilege('aspal_app', c.oid, 'TRUNCATE') THEN 'TRUNCATE' END,
+                 CASE WHEN has_table_privilege('aspal_app', c.oid, 'REFERENCES') THEN 'REFERENCES' END,
+                 CASE WHEN has_table_privilege('aspal_app', c.oid, 'TRIGGER') THEN 'TRIGGER' END
+               ], NULL)
+             END AS privilegios
         FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-       WHERE n.nspname IN ('public', 'app', 'drizzle')
+       WHERE ${ESQUEMAS_PROPIOS}
          AND c.relkind IN ('r', 'p', 'v', 'm', 'S', 'f')
          AND c.relname NOT IN ('t', 't_hija')
        ORDER BY 1`);
@@ -174,13 +186,13 @@ describe("instantánea de privilegios de aspal_app (guardián 4)", () => {
       SELECT n.nspname || '.' || p.proname AS objeto,
              has_function_privilege('aspal_app', p.oid, 'EXECUTE') AS ejecutar
         FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
-       WHERE n.nspname IN ('public', 'app', 'drizzle')
+       WHERE ${ESQUEMAS_PROPIOS}
        ORDER BY 1`);
     const { rows: esquemas } = await admin.query(`
-      SELECT nspname AS objeto,
-             has_schema_privilege('aspal_app', oid, 'USAGE') AS usar,
-             has_schema_privilege('aspal_app', oid, 'CREATE') AS crear
-        FROM pg_namespace WHERE nspname IN ('public', 'app', 'drizzle') ORDER BY 1`);
+      SELECT n.nspname AS objeto,
+             has_schema_privilege('aspal_app', n.oid, 'USAGE') AS usar,
+             has_schema_privilege('aspal_app', n.oid, 'CREATE') AS crear
+        FROM pg_namespace n WHERE ${ESQUEMAS_PROPIOS} ORDER BY 1`);
 
     expect(tablas).toEqual([
       { objeto: "drizzle.__drizzle_migrations", privilegios: [] },
@@ -196,6 +208,42 @@ describe("instantánea de privilegios de aspal_app (guardián 4)", () => {
       { objeto: "app", usar: true, crear: false },
       { objeto: "drizzle", usar: false, crear: false },
       { objeto: "public", usar: true, crear: false },
+    ]);
+  });
+
+  it("las funciones propias son exactamente las revisadas (cuerpo, volatilidad, definer)", async () => {
+    // Un CREATE OR REPLACE o una sobrecarga nueva cambia esta lista: cualquier
+    // cambio en estas funciones se revisa a mano y se actualiza aquí (auditoría 4).
+    const { rows } = await admin.query(`
+      SELECT n.nspname || '.' || p.proname
+               || '(' || pg_get_function_identity_arguments(p.oid) || ')' AS firma,
+             p.provolatile AS volatilidad, p.prosecdef AS definer,
+             coalesce(array_to_string(p.proconfig, ','), '-') AS configuracion,
+             md5(p.prosrc) AS huella
+        FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+       WHERE ${ESQUEMAS_PROPIOS} ORDER BY 1`);
+    expect(rows).toEqual([
+      {
+        firma: "app.aplicar_aislamiento(tabla regclass)",
+        volatilidad: "v",
+        definer: false,
+        configuracion: "-",
+        huella: "603e066800adedde217e26ddde9ff5dd",
+      },
+      {
+        firma: "app.asociacion_actual()",
+        volatilidad: "s",
+        definer: false,
+        configuracion: "-",
+        huella: "b618939beb7c37eef08f23672afac600",
+      },
+      {
+        firma: "app.resolver_asociacion(p_subdominio text)",
+        volatilidad: "s",
+        definer: true,
+        configuracion: 'search_path=""',
+        huella: "6d28df46115fa2d409cd9ce3524e6ff6",
+      },
     ]);
   });
 });

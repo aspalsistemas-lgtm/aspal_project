@@ -108,6 +108,19 @@ describe("GET /asociaciones/actual (CA-7)", () => {
   });
 });
 
+describe("rutas inexistentes (auditoría 12)", () => {
+  it("responden 404 sin consultar la base para resolver ninguna asociación", async () => {
+    const resolverAsociacion = vi.fn(async () => ASPAL);
+    const respuesta = await construir({ resolverAsociacion }).inject({
+      method: "GET",
+      url: "/no-existe",
+      headers: { host: "aspal.localhost" },
+    });
+    expect(respuesta.statusCode).toBe(404);
+    expect(resolverAsociacion).not.toHaveBeenCalled();
+  });
+});
+
 describe("/health no depende del subdominio", () => {
   it("no resuelve ninguna asociación", async () => {
     const resolverAsociacion = vi.fn(async () => ASPAL);

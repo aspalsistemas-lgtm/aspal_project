@@ -2,9 +2,9 @@ import { existsSync } from "node:fs";
 import { defineConfig } from "vitest/config";
 
 // Tests contra PostgreSQL real. En la CI las variables vienen del job; en local,
-// de local.env (credenciales solo locales).
-if (!process.env.DATABASE_URL_PRUEBA_ADMIN && existsSync("local.env")) {
-  process.loadEnvFile("local.env");
+// de local.admin.env (credenciales solo locales).
+if (!process.env.DATABASE_URL_PRUEBA_ADMIN && existsSync("local.admin.env")) {
+  process.loadEnvFile("local.admin.env");
 }
 
 export default defineConfig({

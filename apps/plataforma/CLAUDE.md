@@ -52,7 +52,7 @@ npm run check:plataforma     # tsc
 npm run plataforma:levantar  # base + migrador + plataforma en contenedores
 ```
 
-`local.env` tiene las credenciales **solo locales** (las mismas de `compose.yaml`).
+Dos archivos de entorno con credenciales **solo locales** (las mismas de `compose.yaml`): `local.env` (la aplicación: solo la URL de `aspal_app`) y `local.admin.env` (preparar, migrar, sembrar y tests de integración). El servidor de desarrollo nunca carga el de administración.
 En local: `http://aspal.localhost:5010/asociaciones/actual` y
 `http://prueba.localhost:5010/asociaciones/actual`.
 
@@ -95,7 +95,11 @@ vistas materializadas o funciones `SECURITY DEFINER` fuera de la lista blanca.
 
 - Los datos de una asociación se leen y escriben **solo** dentro de
   `conAsociacion(pool, id, fn)`, con la base que recibe `fn`. Fuera de ella no
-  hay contexto y no se ve nada.
+  hay contexto y no se ve nada. `fn` recibe un cliente **vigilado**: rechaza toda
+  consulta que llegue después de que `conAsociacion` termine (una rama de
+  `Promise.all`, un `insert` sin `await`) y las sentencias que tocan la
+  transacción o la sesión (`BEGIN`, `COMMIT`, `SET`, `set_config`, `DISCARD`…).
+  Todo `await` dentro de `fn` debe resolverse antes de devolver.
 - El `id` sale de la asociación resuelta del `Host` (`peticion.asociacion`),
   **nunca** de un parámetro, cuerpo o cabecera de la petición.
 - Solo `base-de-datos.ts` fija el contexto (`set_config`) y solo los archivos de
@@ -117,10 +121,21 @@ vistas materializadas o funciones `SECURITY DEFINER` fuera de la lista blanca.
 - **Datos:** nada de `COPY FROM` (falla con RLS: importar con
   `INSERT … SELECT FROM unnest`), objetos grandes (`lo_*`, sin RLS) ni
   contadores globales expuestos (los folios por asociación, en una tabla con RLS).
+- **Claves primarias:** el `id` de una fila lo genera siempre el servidor; nunca
+  se acepta uno del cliente. Con un `id` elegido por quien llama, un
+  `INSERT … ON CONFLICT (id)` delataría si existe en otra asociación.
+- **Sin SQL en bruto:** nada de `sql.raw` ni de construir SQL con datos de la
+  petición (el guardián de código lo impide). Una inyección SQL equivale a
+  acceso entre asociaciones: el contexto es un parámetro de sesión que cualquier
+  SQL puede cambiar, y la barrera es el código, no la base.
 - **Pendiente conocido:** `aspal_app` puede conectarse a la base de
   mantenimiento `postgres` y crear tablas temporales allí (privilegio por
   defecto de PUBLIC). No contiene datos de asociaciones; se cierra al preparar
-  la base en la nube.
+  la base en la nube, donde conviene revocar también CONNECT/TEMP de PUBLIC en
+  `postgres` y `template1`. Siguen abiertos para PUBLIC `LISTEN`/`NOTIFY` en
+  cualquier canal (los payloads de pg-boss y del outbox no llevan datos, solo
+  ids) y `pg_stat_activity`, que muestra el texto de las consultas de otras
+  sesiones del mismo rol (siempre con parámetros enlazados).
 
 ## 4. Otras reglas
 
@@ -144,4 +159,4 @@ vistas materializadas o funciones `SECURITY DEFINER` fuera de la lista blanca.
 
 ---
 
-_ASPAL Plataforma CLAUDE.md v0.2 — octubre de 2026_
+_ASPAL Plataforma CLAUDE.md v0.3 — octubre de 2026_

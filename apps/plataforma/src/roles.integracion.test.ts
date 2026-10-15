@@ -10,6 +10,7 @@ import pg from "pg";
 import { crearPool, verificarRolDeAplicacion } from "./base-de-datos.js";
 import { prepararBase } from "./preparar-base.js";
 import { urlsDePrueba } from "./pruebas/preparar-integracion.js";
+import { FILTRO_ESQUEMAS_PROPIOS } from "./pruebas/guardianes.js";
 
 const urls = urlsDePrueba();
 let admin: pg.Pool;
@@ -153,18 +154,18 @@ describe("comprobación de arranque (guardián 6)", () => {
 });
 
 describe("propiedad de los objetos (guardián 2)", () => {
-  it("todo esquema, tabla, secuencia, vista y función de app, public y drizzle es de aspal_dueno", async () => {
+  it("todo esquema, tabla, secuencia, vista y función de cualquier esquema propio es de aspal_dueno (auditoría 4)", async () => {
     const { rows } = await admin.query(`
       SELECT 'esquema' AS tipo, nspname AS nombre, pg_get_userbyid(nspowner) AS dueno
-        FROM pg_namespace WHERE nspname IN ('app', 'public', 'drizzle')
+        FROM pg_namespace n WHERE ${FILTRO_ESQUEMAS_PROPIOS}
       UNION ALL
       SELECT 'relacion', n.nspname || '.' || c.relname, pg_get_userbyid(c.relowner)
         FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-       WHERE n.nspname IN ('app', 'public', 'drizzle')
+       WHERE ${FILTRO_ESQUEMAS_PROPIOS}
       UNION ALL
       SELECT 'funcion', n.nspname || '.' || p.proname, pg_get_userbyid(p.proowner)
         FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
-       WHERE n.nspname IN ('app', 'public', 'drizzle')`);
+       WHERE ${FILTRO_ESQUEMAS_PROPIOS}`);
     expect(rows.length).toBeGreaterThan(0);
     expect(rows.filter((fila) => fila.dueno !== "aspal_dueno")).toEqual([]);
   });

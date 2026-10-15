@@ -22,6 +22,13 @@
       "when": 1792080447759,
       "tag": "0002_asociacion",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792081748803,
+      "tag": "0003_calificar-uuid",
+      "breakpoints": true
     }
   ]
 }
