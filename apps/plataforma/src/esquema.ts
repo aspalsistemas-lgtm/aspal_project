@@ -9,6 +9,7 @@
  */
 import { sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   check,
   customType,
@@ -258,5 +259,113 @@ export const limiteUso = pgTable(
     primaryKey({ columns: [t.asociacionId, t.clave] }),
     check("limite_uso_contador_no_negativo", sql`${t.contador} >= 0`),
     index("limite_uso_ventana_idx").on(t.asociacionId, t.ventanaDesde),
+  ],
+);
+
+// ---------------------------------------------------------------------------
+// Correo (Etapa 1, corte 3b; plan 2026-10-16-001, §5.3). Tokens de un solo uso: de
+// cada uno solo se guarda el SHA-256. Los correos de las tablas de este bloque son
+// datos personales de gente sin cuenta: caducan y la limpieza los borra.
+// ---------------------------------------------------------------------------
+
+/** Mismo formato de correo que `cuenta_acceso` (ASCII imprimible, minúsculas, una @). */
+const correoValido = (correo: AnyPgColumn) =>
+  sql`${correo} ~ '^[!-~]{3,254}$'
+    AND ${correo} = lower(${correo})
+    AND char_length(${correo}) - char_length(replace(${correo}, '@', '')) = 1
+    AND strpos(${correo}, '@') > 1
+    AND strpos(${correo}, '@') < char_length(${correo})`;
+
+/**
+ * Alta pendiente de confirmar el correo (registro abierto). **No es una cuenta**:
+ * hasta confirmar no existe persona ni contraseña. Hasta 3 vigentes por correo;
+ * confirmar uno marca todos los de ese correo como usados.
+ */
+export const registroPendiente = pgTable(
+  "registro_pendiente",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    asociacionId: columnaAsociacion(),
+    correo: text("correo").notNull(),
+    tokenHash: bytea("token_hash").notNull(),
+    creadoEn: timestamp("creado_en", { withTimezone: true }).notNull().defaultNow(),
+    expiraEn: timestamp("expira_en", { withTimezone: true }).notNull(),
+    usadoEn: timestamp("usado_en", { withTimezone: true }),
+  },
+  (t) => [
+    unique("registro_pendiente_token_unico").on(t.asociacionId, t.tokenHash),
+    check("registro_pendiente_correo_formato", correoValido(t.correo)),
+    check("registro_pendiente_vigencia", sql`${t.expiraEn} > ${t.creadoEn}`),
+    index("registro_pendiente_correo_idx").on(t.asociacionId, t.correo),
+    index("registro_pendiente_expira_idx").on(t.asociacionId, t.expiraEn),
+  ],
+);
+
+/**
+ * Enlace de un solo uso enviado al correo de una cuenta existente (restablecer la
+ * contraseña). `tipo` deja sitio al enlace de acceso, que queda fuera de este corte.
+ */
+export const tokenCorreo = pgTable(
+  "token_correo",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    asociacionId: columnaAsociacion(),
+    cuentaId: uuid("cuenta_id").notNull(),
+    tipo: text("tipo").notNull(),
+    tokenHash: bytea("token_hash").notNull(),
+    creadoEn: timestamp("creado_en", { withTimezone: true }).notNull().defaultNow(),
+    expiraEn: timestamp("expira_en", { withTimezone: true }).notNull(),
+    usadoEn: timestamp("usado_en", { withTimezone: true }),
+  },
+  (t) => [
+    unique("token_correo_token_unico").on(t.asociacionId, t.tokenHash),
+    foreignKey({
+      name: "token_correo_cuenta_fk",
+      columns: [t.asociacionId, t.cuentaId],
+      foreignColumns: [cuentaAcceso.asociacionId, cuentaAcceso.id],
+    }).onDelete("restrict"),
+    check("token_correo_tipo_valido", sql`${t.tipo} IN ('recuperar_contrasena')`),
+    check("token_correo_vigencia", sql`${t.expiraEn} > ${t.creadoEn}`),
+    index("token_correo_cuenta_idx").on(t.asociacionId, t.cuentaId),
+    index("token_correo_expira_idx").on(t.asociacionId, t.expiraEn),
+  ],
+);
+
+/**
+ * Invitación de un administrador a un correo con un rol. Aceptarla revalida que
+ * quien invitó sigue siendo administrador activo. Una pendiente por (correo, rol).
+ */
+export const invitacion = pgTable(
+  "invitacion",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    asociacionId: columnaAsociacion(),
+    correo: text("correo").notNull(),
+    rol: text("rol").notNull(),
+    tokenHash: bytea("token_hash").notNull(),
+    invitadaPor: uuid("invitada_por").notNull(),
+    creadoEn: timestamp("creado_en", { withTimezone: true }).notNull().defaultNow(),
+    expiraEn: timestamp("expira_en", { withTimezone: true }).notNull(),
+    aceptadaEn: timestamp("aceptada_en", { withTimezone: true }),
+    revocadaEn: timestamp("revocada_en", { withTimezone: true }),
+  },
+  (t) => [
+    unique("invitacion_token_unico").on(t.asociacionId, t.tokenHash),
+    foreignKey({
+      name: "invitacion_invitada_por_fk",
+      columns: [t.asociacionId, t.invitadaPor],
+      foreignColumns: [persona.asociacionId, persona.id],
+    }).onDelete("restrict"),
+    check("invitacion_correo_formato", correoValido(t.correo)),
+    check(
+      "invitacion_rol_valido",
+      sql`${t.rol} IN ('administrador', 'gestor', 'representante', 'miembro')`,
+    ),
+    check("invitacion_vigencia", sql`${t.expiraEn} > ${t.creadoEn}`),
+    uniqueIndex("invitacion_pendiente")
+      .on(t.asociacionId, t.correo, t.rol)
+      .where(sql`${t.aceptadaEn} IS NULL AND ${t.revocadaEn} IS NULL`),
+    index("invitacion_invitadora_idx").on(t.asociacionId, t.invitadaPor),
+    index("invitacion_expira_idx").on(t.asociacionId, t.expiraEn),
   ],
 );

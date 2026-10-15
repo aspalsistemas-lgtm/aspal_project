@@ -264,9 +264,15 @@ describe("instantánea de privilegios de aspal_app (guardián 4)", () => {
       { objeto: "public.asignacion_rol", privilegios: ["SELECT", "INSERT"] },
       { objeto: "public.asociacion", privilegios: ["SELECT"] },
       { objeto: "public.cuenta_acceso", privilegios: ["SELECT", "INSERT"] },
+      { objeto: "public.invitacion", privilegios: ["SELECT", "INSERT", "DELETE"] },
       { objeto: "public.limite_uso", privilegios: ["SELECT", "INSERT", "DELETE"] },
       { objeto: "public.persona", privilegios: ["SELECT", "INSERT"] },
+      {
+        objeto: "public.registro_pendiente",
+        privilegios: ["SELECT", "INSERT", "DELETE"],
+      },
       { objeto: "public.sesion", privilegios: ["SELECT", "INSERT", "DELETE"] },
+      { objeto: "public.token_correo", privilegios: ["SELECT", "INSERT", "DELETE"] },
     ]);
     expect(columnasActualizables).toEqual([
       { objeto: "public.asignacion_rol", columnas: ["revocado_en", "revocado_por"] },
@@ -274,15 +280,18 @@ describe("instantánea de privilegios de aspal_app (guardián 4)", () => {
         objeto: "public.cuenta_acceso",
         columnas: ["hash_contrasena", "credencial_version", "actualizado_en"],
       },
+      { objeto: "public.invitacion", columnas: ["aceptada_en", "revocada_en"] },
       {
         objeto: "public.limite_uso",
         columnas: ["contador", "ventana_desde", "bloqueado_hasta"],
       },
       { objeto: "public.persona", columnas: ["nombre", "estado"] },
+      { objeto: "public.registro_pendiente", columnas: ["usado_en"] },
       {
         objeto: "public.sesion",
         columnas: ["reautenticada_en", "ultimo_uso_en", "revocada_en"],
       },
+      { objeto: "public.token_correo", columnas: ["usado_en"] },
     ]);
     expect(columnasPeligrosas).toEqual([]);
     expect(funciones).toEqual([

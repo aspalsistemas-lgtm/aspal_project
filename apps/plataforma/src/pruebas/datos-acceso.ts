@@ -81,6 +81,9 @@ export async function borrarAsociacionesDePrueba(
   asociaciones: string[],
 ): Promise<void> {
   for (const tabla of [
+    "invitacion",
+    "registro_pendiente",
+    "token_correo",
     "sesion",
     "limite_uso",
     "asignacion_rol",

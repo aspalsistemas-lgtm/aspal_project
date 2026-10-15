@@ -43,6 +43,13 @@
       "when": 1792088069217,
       "tag": "0005_acceso",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792092180878,
+      "tag": "0006_correo",
+      "breakpoints": true
     }
   ]
 }

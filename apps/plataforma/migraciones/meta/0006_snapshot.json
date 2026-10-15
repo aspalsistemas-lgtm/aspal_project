@@ -1,0 +1,1115 @@
+{
+  "id": "4337384b-08a6-4685-a839-75d54c3b0fba",
+  "prevId": "a1072a9d-5257-4f6c-81bc-8d391e5ef3f4",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.asignacion_rol": {
+      "name": "asignacion_rol",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "asociacion_id": {
+          "name": "asociacion_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "persona_id": {
+          "name": "persona_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rol": {
+          "name": "rol",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "asignado_en": {
+          "name": "asignado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "asignado_por": {
+          "name": "asignado_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revocado_en": {
+          "name": "revocado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revocado_por": {
+          "name": "revocado_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "asignacion_rol_vigente": {
+          "name": "asignacion_rol_vigente",
+          "columns": [
+            {
+              "expression": "asociacion_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "persona_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "rol",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"asignacion_rol\".\"revocado_en\" IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "asignacion_rol_asociacion_id_asociacion_id_fk": {
+          "name": "asignacion_rol_asociacion_id_asociacion_id_fk",
+          "tableFrom": "asignacion_rol",
+          "tableTo": "asociacion",
+          "columnsFrom": ["asociacion_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "asignacion_rol_persona_fk": {
+          "name": "asignacion_rol_persona_fk",
+          "tableFrom": "asignacion_rol",
+          "tableTo": "persona",
+          "columnsFrom": ["asociacion_id", "persona_id"],
+          "columnsTo": ["asociacion_id", "id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "asignacion_rol_asignado_por_fk": {
+          "name": "asignacion_rol_asignado_por_fk",
+          "tableFrom": "asignacion_rol",
+          "tableTo": "persona",
+          "columnsFrom": ["asociacion_id", "asignado_por"],
+          "columnsTo": ["asociacion_id", "id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "asignacion_rol_revocado_por_fk": {
+          "name": "asignacion_rol_revocado_por_fk",
+          "tableFrom": "asignacion_rol",
+          "tableTo": "persona",
+          "columnsFrom": ["asociacion_id", "revocado_por"],
+          "columnsTo": ["asociacion_id", "id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "asignacion_rol_rol_valido": {
+          "name": "asignacion_rol_rol_valido",
+          "value": "\"asignacion_rol\".\"rol\" IN ('administrador', 'gestor', 'representante', 'miembro')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.asociacion": {
+      "name": "asociacion",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subdominio": {
+          "name": "subdominio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "zona_horaria": {
+          "name": "zona_horaria",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "registro_abierto": {
+          "name": "registro_abierto",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "asociacion_subdominio_unico": {
+          "name": "asociacion_subdominio_unico",
+          "nullsNotDistinct": false,
+          "columns": ["subdominio"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "asociacion_nombre_longitud": {
+          "name": "asociacion_nombre_longitud",
+          "value": "char_length(btrim(\"asociacion\".\"nombre\")) BETWEEN 2 AND 120"
+        },
+        "asociacion_subdominio_formato": {
+          "name": "asociacion_subdominio_formato",
+          "value": "\"asociacion\".\"subdominio\" ~ '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'"
+        },
+        "asociacion_subdominio_no_reservado": {
+          "name": "asociacion_subdominio_no_reservado",
+          "value": "\"asociacion\".\"subdominio\" NOT IN ('www', 'app', 'api', 'admin', 'comunidad', 'correo', 'mail', 'soporte', 'ayuda', 'estado', 'static', 'assets', 'cdn', 'staging', 'dev', 'auth', 'login', 'oauth', 'sso', 'id', 'cuenta', 'accounts', 'signin')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.cuenta_acceso": {
+      "name": "cuenta_acceso",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "asociacion_id": {
+          "name": "asociacion_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "persona_id": {
+          "name": "persona_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "correo": {
+          "name": "correo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "correo_verificado_en": {
+          "name": "correo_verificado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hash_contrasena": {
+          "name": "hash_contrasena",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "credencial_version": {
+          "name": "credencial_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "terminos_version": {
+          "name": "terminos_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "terminos_aceptados_en": {
+          "name": "terminos_aceptados_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cuenta_acceso_asociacion_id_asociacion_id_fk": {
+          "name": "cuenta_acceso_asociacion_id_asociacion_id_fk",
+          "tableFrom": "cuenta_acceso",
+          "tableTo": "asociacion",
+          "columnsFrom": ["asociacion_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "cuenta_acceso_persona_fk": {
+          "name": "cuenta_acceso_persona_fk",
+          "tableFrom": "cuenta_acceso",
+          "tableTo": "persona",
+          "columnsFrom": ["asociacion_id", "persona_id"],
+          "columnsTo": ["asociacion_id", "id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "cuenta_acceso_asociacion_id_unico": {
+          "name": "cuenta_acceso_asociacion_id_unico",
+          "nullsNotDistinct": false,
+          "columns": ["asociacion_id", "id"]
+        },
+        "cuenta_acceso_persona_unica": {
+          "name": "cuenta_acceso_persona_unica",
+          "nullsNotDistinct": false,
+          "columns": ["asociacion_id", "persona_id"]
+        },
+        "cuenta_acceso_correo_unico": {
+          "name": "cuenta_acceso_correo_unico",
+          "nullsNotDistinct": false,
+          "columns": ["asociacion_id", "correo"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "cuenta_acceso_correo_formato": {
+          "name": "cuenta_acceso_correo_formato",
+          "value": "\"cuenta_acceso\".\"correo\" ~ '^[!-~]{3,254}$'\n        AND \"cuenta_acceso\".\"correo\" = lower(\"cuenta_acceso\".\"correo\")\n        AND char_length(\"cuenta_acceso\".\"correo\") - char_length(replace(\"cuenta_acceso\".\"correo\", '@', '')) = 1\n        AND strpos(\"cuenta_acceso\".\"correo\", '@') > 1\n        AND strpos(\"cuenta_acceso\".\"correo\", '@') < char_length(\"cuenta_acceso\".\"correo\")"
+        },
+        "cuenta_acceso_version_positiva": {
+          "name": "cuenta_acceso_version_positiva",
+          "value": "\"cuenta_acceso\".\"credencial_version\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.invitacion": {
+      "name": "invitacion",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "asociacion_id": {
+          "name": "asociacion_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "correo": {
+          "name": "correo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rol": {
+          "name": "rol",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invitada_por": {
+          "name": "invitada_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expira_en": {
+          "name": "expira_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "aceptada_en": {
+          "name": "aceptada_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revocada_en": {
+          "name": "revocada_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "invitacion_pendiente": {
+          "name": "invitacion_pendiente",
+          "columns": [
+            {
+              "expression": "asociacion_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "correo",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "rol",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"invitacion\".\"aceptada_en\" IS NULL AND \"invitacion\".\"revocada_en\" IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "invitacion_invitadora_idx": {
+          "name": "invitacion_invitadora_idx",
+          "columns": [
+            {
+              "expression": "asociacion_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "invitada_por",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "invitacion_expira_idx": {
+          "name": "invitacion_expira_idx",
+          "columns": [
+            {
+              "expression": "asociacion_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "expira_en",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "invitacion_asociacion_id_asociacion_id_fk": {
+          "name": "invitacion_asociacion_id_asociacion_id_fk",
+          "tableFrom": "invitacion",
+          "tableTo": "asociacion",
+          "columnsFrom": ["asociacion_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "invitacion_invitada_por_fk": {
+          "name": "invitacion_invitada_por_fk",
+          "tableFrom": "invitacion",
+          "tableTo": "persona",
+          "columnsFrom": ["asociacion_id", "invitada_por"],
+          "columnsTo": ["asociacion_id", "id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "invitacion_token_unico": {
+          "name": "invitacion_token_unico",
+          "nullsNotDistinct": false,
+          "columns": ["asociacion_id", "token_hash"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "invitacion_correo_formato": {
+          "name": "invitacion_correo_formato",
+          "value": "\"invitacion\".\"correo\" ~ '^[!-~]{3,254}$'\n    AND \"invitacion\".\"correo\" = lower(\"invitacion\".\"correo\")\n    AND char_length(\"invitacion\".\"correo\") - char_length(replace(\"invitacion\".\"correo\", '@', '')) = 1\n    AND strpos(\"invitacion\".\"correo\", '@') > 1\n    AND strpos(\"invitacion\".\"correo\", '@') < char_length(\"invitacion\".\"correo\")"
+        },
+        "invitacion_rol_valido": {
+          "name": "invitacion_rol_valido",
+          "value": "\"invitacion\".\"rol\" IN ('administrador', 'gestor', 'representante', 'miembro')"
+        },
+        "invitacion_vigencia": {
+          "name": "invitacion_vigencia",
+          "value": "\"invitacion\".\"expira_en\" > \"invitacion\".\"creado_en\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.limite_uso": {
+      "name": "limite_uso",
+      "schema": "",
+      "columns": {
+        "asociacion_id": {
+          "name": "asociacion_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "clave": {
+          "name": "clave",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contador": {
+          "name": "contador",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "ventana_desde": {
+          "name": "ventana_desde",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "bloqueado_hasta": {
+          "name": "bloqueado_hasta",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "limite_uso_ventana_idx": {
+          "name": "limite_uso_ventana_idx",
+          "columns": [
+            {
+              "expression": "asociacion_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "ventana_desde",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "limite_uso_asociacion_id_asociacion_id_fk": {
+          "name": "limite_uso_asociacion_id_asociacion_id_fk",
+          "tableFrom": "limite_uso",
+          "tableTo": "asociacion",
+          "columnsFrom": ["asociacion_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "limite_uso_asociacion_id_clave_pk": {
+          "name": "limite_uso_asociacion_id_clave_pk",
+          "columns": ["asociacion_id", "clave"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "limite_uso_contador_no_negativo": {
+          "name": "limite_uso_contador_no_negativo",
+          "value": "\"limite_uso\".\"contador\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.persona": {
+      "name": "persona",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "asociacion_id": {
+          "name": "asociacion_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'activa'"
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "persona_asociacion_id_asociacion_id_fk": {
+          "name": "persona_asociacion_id_asociacion_id_fk",
+          "tableFrom": "persona",
+          "tableTo": "asociacion",
+          "columnsFrom": ["asociacion_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "persona_asociacion_id_unico": {
+          "name": "persona_asociacion_id_unico",
+          "nullsNotDistinct": false,
+          "columns": ["asociacion_id", "id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "persona_nombre_longitud": {
+          "name": "persona_nombre_longitud",
+          "value": "char_length(btrim(\"persona\".\"nombre\")) BETWEEN 2 AND 120"
+        },
+        "persona_estado_valido": {
+          "name": "persona_estado_valido",
+          "value": "\"persona\".\"estado\" IN ('activa', 'suspendida', 'baja')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.registro_pendiente": {
+      "name": "registro_pendiente",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "asociacion_id": {
+          "name": "asociacion_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "correo": {
+          "name": "correo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expira_en": {
+          "name": "expira_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usado_en": {
+          "name": "usado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "registro_pendiente_correo_idx": {
+          "name": "registro_pendiente_correo_idx",
+          "columns": [
+            {
+              "expression": "asociacion_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "correo",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "registro_pendiente_expira_idx": {
+          "name": "registro_pendiente_expira_idx",
+          "columns": [
+            {
+              "expression": "asociacion_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "expira_en",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "registro_pendiente_asociacion_id_asociacion_id_fk": {
+          "name": "registro_pendiente_asociacion_id_asociacion_id_fk",
+          "tableFrom": "registro_pendiente",
+          "tableTo": "asociacion",
+          "columnsFrom": ["asociacion_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "registro_pendiente_token_unico": {
+          "name": "registro_pendiente_token_unico",
+          "nullsNotDistinct": false,
+          "columns": ["asociacion_id", "token_hash"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "registro_pendiente_correo_formato": {
+          "name": "registro_pendiente_correo_formato",
+          "value": "\"registro_pendiente\".\"correo\" ~ '^[!-~]{3,254}$'\n    AND \"registro_pendiente\".\"correo\" = lower(\"registro_pendiente\".\"correo\")\n    AND char_length(\"registro_pendiente\".\"correo\") - char_length(replace(\"registro_pendiente\".\"correo\", '@', '')) = 1\n    AND strpos(\"registro_pendiente\".\"correo\", '@') > 1\n    AND strpos(\"registro_pendiente\".\"correo\", '@') < char_length(\"registro_pendiente\".\"correo\")"
+        },
+        "registro_pendiente_vigencia": {
+          "name": "registro_pendiente_vigencia",
+          "value": "\"registro_pendiente\".\"expira_en\" > \"registro_pendiente\".\"creado_en\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.sesion": {
+      "name": "sesion",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "asociacion_id": {
+          "name": "asociacion_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cuenta_id": {
+          "name": "cuenta_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nivel_autenticacion": {
+          "name": "nivel_autenticacion",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "reautenticada_en": {
+          "name": "reautenticada_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creada_en": {
+          "name": "creada_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "ultimo_uso_en": {
+          "name": "ultimo_uso_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expira_en": {
+          "name": "expira_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revocada_en": {
+          "name": "revocada_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "sesion_expira_idx": {
+          "name": "sesion_expira_idx",
+          "columns": [
+            {
+              "expression": "asociacion_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "expira_en",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "sesion_cuenta_idx": {
+          "name": "sesion_cuenta_idx",
+          "columns": [
+            {
+              "expression": "asociacion_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "cuenta_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "sesion_asociacion_id_asociacion_id_fk": {
+          "name": "sesion_asociacion_id_asociacion_id_fk",
+          "tableFrom": "sesion",
+          "tableTo": "asociacion",
+          "columnsFrom": ["asociacion_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "sesion_cuenta_fk": {
+          "name": "sesion_cuenta_fk",
+          "tableFrom": "sesion",
+          "tableTo": "cuenta_acceso",
+          "columnsFrom": ["asociacion_id", "cuenta_id"],
+          "columnsTo": ["asociacion_id", "id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sesion_token_unico": {
+          "name": "sesion_token_unico",
+          "nullsNotDistinct": false,
+          "columns": ["asociacion_id", "token_hash"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "sesion_nivel_valido": {
+          "name": "sesion_nivel_valido",
+          "value": "\"sesion\".\"nivel_autenticacion\" IN (1, 2)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.token_correo": {
+      "name": "token_correo",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "asociacion_id": {
+          "name": "asociacion_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cuenta_id": {
+          "name": "cuenta_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expira_en": {
+          "name": "expira_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usado_en": {
+          "name": "usado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "token_correo_cuenta_idx": {
+          "name": "token_correo_cuenta_idx",
+          "columns": [
+            {
+              "expression": "asociacion_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "cuenta_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "token_correo_expira_idx": {
+          "name": "token_correo_expira_idx",
+          "columns": [
+            {
+              "expression": "asociacion_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "expira_en",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "token_correo_asociacion_id_asociacion_id_fk": {
+          "name": "token_correo_asociacion_id_asociacion_id_fk",
+          "tableFrom": "token_correo",
+          "tableTo": "asociacion",
+          "columnsFrom": ["asociacion_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "token_correo_cuenta_fk": {
+          "name": "token_correo_cuenta_fk",
+          "tableFrom": "token_correo",
+          "tableTo": "cuenta_acceso",
+          "columnsFrom": ["asociacion_id", "cuenta_id"],
+          "columnsTo": ["asociacion_id", "id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "token_correo_token_unico": {
+          "name": "token_correo_token_unico",
+          "nullsNotDistinct": false,
+          "columns": ["asociacion_id", "token_hash"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "token_correo_tipo_valido": {
+          "name": "token_correo_tipo_valido",
+          "value": "\"token_correo\".\"tipo\" IN ('recuperar_contrasena')"
+        },
+        "token_correo_vigencia": {
+          "name": "token_correo_vigencia",
+          "value": "\"token_correo\".\"expira_en\" > \"token_correo\".\"creado_en\""
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
