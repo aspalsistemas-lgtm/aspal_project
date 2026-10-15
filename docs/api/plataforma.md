@@ -256,3 +256,164 @@ Notas:
   activo: si lo perdió mientras esperaba, `403 PROHIBIDO`.
 - Misma regla del último administrador y mismo bloqueo por asociación que en los
   roles.
+
+## Correo: registro, recuperación e invitaciones (Etapa 1, corte 3b)
+
+Plan: `docs/plans/2026-10-16-001-feat-plataforma-corte-3-acceso-plan.md`
+(CA-22 a CA-26). El **enlace mágico queda fuera** de este corte (decisión del
+2026-10-17).
+
+### Convenciones de este grupo
+
+- **Tokens de un solo uso.** 32 bytes aleatorios en base64url (43 caracteres); en la
+  base solo se guarda su SHA-256. Viajan en el **fragmento** del enlace
+  (`https://<subdominio>.<dominio>/<ruta>#<token>`), nunca en la query, y el
+  cliente los manda en el **cuerpo** de un `POST`. Las rutas de los enlaces las
+  consumirá la interfaz (aún no existe): `/registro`, `/recuperar-contrasena` y
+  `/invitacion`.
+- **Los enlaces se construyen** solo con `ESQUEMA_PUBLICO`, `DOMINIO_BASE`, el
+  puerto público y el subdominio ya resuelto; nunca con cabeceras de la petición.
+- **Caducidad:** registro 24 h · recuperación 1 h · invitación 7 días.
+- **Respuesta uniforme de las solicitudes.** `POST /registros` y
+  `POST /solicitudes-recuperacion` responden siempre `202 { "success": true,
+"data": {} }`, exista o no la cuenta, esté o no abierto el registro, se envíe o
+  no el correo. Nunca revelan nada. El envío no bloquea la respuesta.
+- **Enlace inválido.** Un token desconocido, caducado, usado o de otra asociación
+  responde siempre el mismo `400 ENLACE_INVALIDO`. El token se valida **antes** de
+  hashear la contraseña: tokens inventados cuestan cero scrypt.
+- **Presupuestos de envío** (por asociación, separados por tipo; agotar uno no
+  afecta a los demás): registro y recuperación, por destinatario (correo
+  normalizado) y por origen, más un tope diario; avisos aparte; invitaciones por
+  administrador. Una solicitud nueva **no invalida** los enlaces vigentes (hasta 3
+  por correo): el límite solo frena el envío.
+- **Plantillas fijas:** solo llevan el nombre de la asociación, el enlace y texto
+  fijo; ningún campo libre de quien solicita.
+
+**Errores nuevos:**
+
+| Código                   | Status | Cuándo                                                       |
+| ------------------------ | ------ | ------------------------------------------------------------ |
+| `ENLACE_INVALIDO`        | 400    | Token desconocido, caducado, usado, revocado o de otra asoc. |
+| `CONTRASENA_NO_ADMITIDA` | 400    | Incumple la política (12–200, no común, no igual al correo)  |
+| `TERMINOS_NO_ACEPTADOS`  | 400    | Falta `aceptaTerminos: true`                                 |
+| `CUENTA_EXISTENTE`       | 409    | Invitar a un correo que ya tiene cuenta en la asociación     |
+| `INVITACION_DUPLICADA`   | 409    | Ya hay una invitación pendiente para ese correo y ese rol    |
+| `DEMASIADOS_INTENTOS`    | 429    | Tope de invitaciones del día (lleva `Retry-After`)           |
+
+### POST /registros
+
+```
+Categoría:  pública de asociación
+Cuerpo:     { "correo": string }
+Respuestas: 202 { "success": true, "data": {} }
+            400 VALIDACION_FALLIDA · 403 ORIGEN_NO_PERMITIDO
+            415 TIPO_NO_ADMITIDO · 404 (el Host no es de ninguna asociación)
+```
+
+- **No crea ninguna cuenta.** Si la asociación tiene `registro_abierto`, el correo
+  es válido y hay presupuesto, guarda un registro pendiente y envía el enlace.
+- Si el correo **ya tiene cuenta** (también si su persona está suspendida o de
+  baja), envía un aviso en lugar del enlace.
+
+### POST /registros/confirmar
+
+```
+Categoría:  pública de asociación
+Cuerpo:     { "token": string, "nombre": string (2–120),
+              "contrasena": string, "aceptaTerminos": true }
+Respuestas: 200 { "success": true,
+                  "data": { "persona": { "nombre": "…" }, "roles": ["miembro"],
+                            "expiraEn": "…" } }
+                + Set-Cookie de sesión
+            400 ENLACE_INVALIDO · CONTRASENA_NO_ADMITIDA · TERMINOS_NO_ACEPTADOS
+                · VALIDACION_FALLIDA
+```
+
+- Crea la persona (rol `miembro`) y la cuenta con el **correo verificado** y la
+  versión de los términos aceptados, y abre sesión.
+- Es **una sola sentencia atómica**: 20 confirmaciones simultáneas con el mismo
+  token dan exactamente 1 cuenta y 19 `ENLACE_INVALIDO` idénticos. Consumir marca
+  **todos** los pendientes de ese correo.
+- La política de contraseña se comprueba antes de consumir el token: una
+  contraseña rechazada no lo gasta.
+
+### POST /solicitudes-recuperacion
+
+```
+Categoría:  pública de asociación
+Cuerpo:     { "correo": string }
+Respuestas: 202 { "success": true, "data": {} }  · 400 · 403 · 415 · 404
+```
+
+Envía el enlace solo si existe la cuenta, su persona está **activa** y hay
+presupuesto. En cualquier otro caso no envía nada y responde igual.
+
+### POST /restablecimientos-contrasena
+
+```
+Categoría:  pública de asociación
+Cuerpo:     { "token": string, "contrasena": string }
+Respuestas: 200 { "success": true, "data": {} }
+            400 ENLACE_INVALIDO · CONTRASENA_NO_ADMITIDA · VALIDACION_FALLIDA
+```
+
+- Token de un solo uso (1 h). Cambia la contraseña, **sube la versión de
+  credencial, revoca todas las sesiones** y avisa por correo del cambio. No abre
+  sesión: la persona entra después con `POST /sesiones`.
+- Una cuenta sin contraseña fija una con el buzón verificado.
+- Si la persona no está activa, responde `ENLACE_INVALIDO`.
+
+### POST /invitaciones
+
+```
+Categoría:  autenticada · acción invitaciones:gestionar (solo administrador)
+Cuerpo:     { "correo": string, "rol": "administrador"|"gestor"|"representante"|"miembro" }
+Respuestas: 201 { "success": true,
+                  "data": { "id": "…", "correo": "…", "rol": "…", "expiraEn": "…" } }
+            403 PROHIBIDO · 400 VALIDACION_FALLIDA
+            409 CUENTA_EXISTENTE · INVITACION_DUPLICADA
+            429 DEMASIADOS_INTENTOS
+```
+
+- Envía la plantilla fija. Tope diario por administrador (20).
+- `CUENTA_EXISTENTE`: el correo ya tiene cuenta (también si su persona está de
+  baja, porque la baja conserva el correo); se asigna el rol a esa persona con
+  `PUT /personas/:personaId/roles`.
+
+### GET /invitaciones
+
+```
+Categoría:  autenticada · acción invitaciones:gestionar
+Respuestas: 200 { "success": true,
+                  "data": { "invitaciones": [ { "id", "correo", "rol", "expiraEn" } ] } }
+```
+
+Solo las pendientes (ni aceptadas, ni revocadas, ni caducadas).
+
+### DELETE /invitaciones/:invitacionId
+
+```
+Categoría:  autenticada · acción invitaciones:gestionar
+Respuestas: 200 { "success": true, "data": {} }
+            404 RECURSO_NO_ENCONTRADO (no existe, no es de esta asociación o ya no está pendiente)
+```
+
+### POST /invitaciones/aceptar
+
+```
+Categoría:  pública de asociación
+Cuerpo:     { "token": string, "nombre": string (2–120),
+              "contrasena": string, "aceptaTerminos": true }
+Respuestas: 200 { "success": true,
+                  "data": { "persona": { "nombre": "…" }, "roles": ["…"], "expiraEn": "…" } }
+                + Set-Cookie de sesión
+            400 ENLACE_INVALIDO · CONTRASENA_NO_ADMITIDA · TERMINOS_NO_ACEPTADOS
+                · VALIDACION_FALLIDA
+```
+
+- **Revalida al aceptar** que quien invitó sigue siendo administrador activo; si
+  no, `ENLACE_INVALIDO`. Perder el rol de administrador, ser suspendido o dado de
+  baja invalida también sus invitaciones pendientes.
+- Crea persona y cuenta (correo verificado) con el rol invitado. Una invitación de
+  una asociación no se acepta en otra. Si entretanto el correo ya tiene cuenta,
+  `ENLACE_INVALIDO`.
