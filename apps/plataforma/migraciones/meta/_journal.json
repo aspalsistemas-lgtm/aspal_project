@@ -29,6 +29,20 @@
       "when": 1792081748803,
       "tag": "0003_calificar-uuid",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792087869235,
+      "tag": "0004_registro-abierto-y-reservados",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792088069217,
+      "tag": "0005_acceso",
+      "breakpoints": true
     }
   ]
 }

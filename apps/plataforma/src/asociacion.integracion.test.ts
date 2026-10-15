@@ -82,14 +82,27 @@ describe("restricciones de asociacion (CA-1)", () => {
     },
   );
 
-  it.each(["www", "app", "api", "admin", "comunidad", "staging"])(
-    "rechaza el subdominio reservado %s (23514)",
-    async (subdominio) => {
-      expect(
-        await codigoAlInsertar(["Nombre válido", subdominio, "America/Merida"]),
-      ).toBe("23514");
-    },
-  );
+  it.each([
+    "www",
+    "app",
+    "api",
+    "admin",
+    "comunidad",
+    "staging",
+    // Añadidos en el corte 3: lugares naturales para el acceso y el retorno de Google.
+    "auth",
+    "login",
+    "oauth",
+    "sso",
+    "id",
+    "cuenta",
+    "accounts",
+    "signin",
+  ])("rechaza el subdominio reservado %s (23514)", async (subdominio) => {
+    expect(await codigoAlInsertar(["Nombre válido", subdominio, "America/Merida"])).toBe(
+      "23514",
+    );
+  });
 
   it("rechaza un nombre vacío o de un carácter (23514)", async () => {
     expect(await codigoAlInsertar(["   ", "vacio", "America/Merida"])).toBe("23514");
@@ -98,6 +111,35 @@ describe("restricciones de asociacion (CA-1)", () => {
 
   it("exige zona horaria (23502)", async () => {
     expect(await codigoAlInsertar(["Sin zona", "sin-zona", null])).toBe("23502");
+  });
+});
+
+describe("registro_abierto (plan del corte 3, CA-23)", () => {
+  it("es una columna booleana obligatoria y desactivada por defecto", async () => {
+    const { rows } = await admin.query(`
+      SELECT data_type, is_nullable, column_default
+        FROM information_schema.columns
+       WHERE table_schema = 'public' AND table_name = 'asociacion'
+         AND column_name = 'registro_abierto'`);
+    expect(rows).toEqual([
+      { data_type: "boolean", is_nullable: "NO", column_default: "false" },
+    ]);
+  });
+
+  it("las asociaciones sembradas empiezan con el registro cerrado", async () => {
+    const { rows } = await admin.query(
+      "SELECT subdominio, registro_abierto FROM public.asociacion WHERE subdominio IN ('aspal', 'prueba') ORDER BY 1",
+    );
+    expect(rows).toEqual([
+      { subdominio: "aspal", registro_abierto: false },
+      { subdominio: "prueba", registro_abierto: false },
+    ]);
+  });
+
+  it("la aplicación no puede cambiarlo (solo el operador, en el corte 4)", async () => {
+    await expect(
+      app.query("UPDATE public.asociacion SET registro_abierto = true"),
+    ).rejects.toMatchObject({ code: "42501" });
   });
 });
 
@@ -194,11 +236,55 @@ describe("instantánea de privilegios de aspal_app (guardián 4)", () => {
              has_schema_privilege('aspal_app', n.oid, 'CREATE') AS crear
         FROM pg_namespace n WHERE ${ESQUEMAS_PROPIOS} ORDER BY 1`);
 
+    // Columnas con UPDATE concedido (a nivel de columna, no de tabla): CA-21.
+    const { rows: columnasActualizables } = await admin.query(`
+      SELECT n.nspname || '.' || c.relname AS objeto,
+             array_agg(a.attname::text ORDER BY a.attnum) AS columnas
+        FROM pg_attribute a
+        JOIN pg_class c ON c.oid = a.attrelid
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+       WHERE ${ESQUEMAS_PROPIOS} AND c.relkind IN ('r', 'p')
+         AND c.relname NOT IN ('t', 't_hija')
+         AND a.attnum > 0 AND NOT a.attisdropped
+         AND has_column_privilege('aspal_app', c.oid, a.attnum, 'UPDATE')
+       GROUP BY 1 ORDER BY 1`);
+    // Y las que alcanzan REFERENCES o TRIGGER: ninguna, nunca.
+    const { rows: columnasPeligrosas } = await admin.query(`
+      SELECT n.nspname || '.' || c.relname AS objeto, a.attname AS columna
+        FROM pg_attribute a
+        JOIN pg_class c ON c.oid = a.attrelid
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+       WHERE ${ESQUEMAS_PROPIOS} AND c.relkind IN ('r', 'p')
+         AND a.attnum > 0 AND NOT a.attisdropped
+         AND has_column_privilege('aspal_app', c.oid, a.attnum, 'REFERENCES')`);
+
     expect(tablas).toEqual([
       { objeto: "drizzle.__drizzle_migrations", privilegios: [] },
       { objeto: "drizzle.__drizzle_migrations_id_seq", privilegios: [] },
+      { objeto: "public.asignacion_rol", privilegios: ["SELECT", "INSERT"] },
       { objeto: "public.asociacion", privilegios: ["SELECT"] },
+      { objeto: "public.cuenta_acceso", privilegios: ["SELECT", "INSERT"] },
+      { objeto: "public.limite_uso", privilegios: ["SELECT", "INSERT", "DELETE"] },
+      { objeto: "public.persona", privilegios: ["SELECT", "INSERT"] },
+      { objeto: "public.sesion", privilegios: ["SELECT", "INSERT", "DELETE"] },
     ]);
+    expect(columnasActualizables).toEqual([
+      { objeto: "public.asignacion_rol", columnas: ["revocado_en", "revocado_por"] },
+      {
+        objeto: "public.cuenta_acceso",
+        columnas: ["hash_contrasena", "credencial_version", "actualizado_en"],
+      },
+      {
+        objeto: "public.limite_uso",
+        columnas: ["contador", "ventana_desde", "bloqueado_hasta"],
+      },
+      { objeto: "public.persona", columnas: ["nombre", "estado"] },
+      {
+        objeto: "public.sesion",
+        columnas: ["reautenticada_en", "ultimo_uso_en", "revocada_en"],
+      },
+    ]);
+    expect(columnasPeligrosas).toEqual([]);
     expect(funciones).toEqual([
       { objeto: "app.aplicar_aislamiento", ejecutar: false },
       { objeto: "app.asociacion_actual", ejecutar: true },

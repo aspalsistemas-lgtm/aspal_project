@@ -19,6 +19,16 @@ export const SUBDOMINIOS_RESERVADOS = [
   "cdn",
   "staging",
   "dev",
+  // Corte 3: donde vivirían el acceso y el retorno de Google; una asociación no
+  // puede reclamarlos.
+  "auth",
+  "login",
+  "oauth",
+  "sso",
+  "id",
+  "cuenta",
+  "accounts",
+  "signin",
 ] as const;
 
 /** Una etiqueta DNS en minúsculas: letras, dígitos y guiones, sin guion en los extremos. */
