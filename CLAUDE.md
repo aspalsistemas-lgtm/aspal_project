@@ -21,6 +21,13 @@
 | `docs/plan-plataforma-por-etapas.md`                      | Antes de tocar cualquier cosa de la plataforma SaaS (decisiones de negocio)      |
 | `docs/sprints/deuda-tecnica.md`                           | Antes de alinear código con estas convenciones; al cerrar un punto               |
 | `docs/adr/0006-desarrollo-guiado-por-especificaciones.md` | Antes de construir cualquier funcionalidad o módulo nuevo                        |
+| `docs/guia/`                                              | Al cerrar un corte o tomar una decisión de negocio; revisión semanal obligatoria |
+
+> **Revisión semanal de `docs/guia/`.** La guía explica la plataforma SaaS a
+> directivos y clientes. Se revisa una vez por semana siguiendo los pasos de
+> `docs/guia/README.md` («Mantenimiento semanal»). Al iniciar una sesión, si la
+> «Última revisión» de `docs/guia/README.md` tiene más de 7 días, avisar al
+> humano antes de empezar la tarea.
 
 > Claude Code carga los CLAUDE.md del directorio activo hacia arriba automáticamente.
 > En caso de conflicto entre documentos, `design.md` prevalece para todo lo visual,
