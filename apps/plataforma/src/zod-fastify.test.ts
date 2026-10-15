@@ -17,6 +17,7 @@ function appConRutaDePrueba(respuesta: unknown) {
   app.post(
     "/prueba",
     {
+      config: { categoria: "global" },
       schema: {
         body: z.object({ nombre: z.string().min(1), edad: z.number().int() }),
         response: {

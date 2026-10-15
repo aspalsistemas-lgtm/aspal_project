@@ -17,11 +17,38 @@ import { ROL_APP } from "./roles.js";
 /** Tiempo máximo para dar la base por viva: más que esto, se considera caída. */
 export const TIEMPO_MAXIMO_COMPROBACION_MS = 2000;
 
-export function crearPool(url: string, opciones: { max?: number } = {}): pg.Pool {
+/**
+ * Tiempos máximos de la base de datos (plan del corte 3, CA-18). Se fijan **al abrir
+ * la conexión** y no con `SET`: el cliente vigilado de `conAsociacion` no deja
+ * fijarlos dentro de la transacción, y `ALTER ROLE … RESET ALL` borraría un ajuste
+ * por rol. Sin ellos, un bloqueo colgado retiene una conexión del pool y detiene
+ * todos los cambios de roles de una asociación.
+ *
+ * Con PgBouncer en modo transacción, los parámetros de arranque no valen: habría
+ * que fijarlos en el servidor de conexiones.
+ */
+export const TIEMPOS_POR_DEFECTO = {
+  sentenciaMs: 5000,
+  bloqueoMs: 3000,
+  ociosaEnTransaccionMs: 10_000,
+};
+
+export interface OpcionesPool {
+  max?: number;
+  tiempos?: Partial<typeof TIEMPOS_POR_DEFECTO>;
+}
+
+export function crearPool(url: string, opciones: OpcionesPool = {}): pg.Pool {
+  const tiempos = { ...TIEMPOS_POR_DEFECTO, ...opciones.tiempos };
   const pool = new pg.Pool({
     connectionString: url,
     connectionTimeoutMillis: TIEMPO_MAXIMO_COMPROBACION_MS,
     max: opciones.max,
+    statement_timeout: tiempos.sentenciaMs,
+    lock_timeout: tiempos.bloqueoMs,
+    idle_in_transaction_session_timeout: tiempos.ociosaEnTransaccionMs,
+    // Por si la base no responde: el cliente también corta, un poco después.
+    query_timeout: tiempos.sentenciaMs + 2000,
   });
   // Si la base cierra una conexión inactiva (reinicio, corte de red), el pool
   // emite «error». Sin oyente, Node mata el proceso; con él, el pool descarta esa
@@ -42,7 +69,9 @@ export function crearPool(url: string, opciones: { max?: number } = {}): pg.Pool
  * - que no pertenezca a **ningún** rol: aun con NOINHERIT, la pertenencia
  *   permite `SET ROLE` a uno con más privilegios;
  * - que no sea dueño de ningún objeto: el dueño se salta RLS si no está forzada;
- * - que la sesión no traiga contexto de asociación por configuración.
+ * - que la sesión no traiga contexto de asociación por configuración;
+ * - que traiga los tres tiempos máximos (`statement_timeout`, `lock_timeout` e
+ *   `idle_in_transaction_session_timeout`), plan del corte 3, CA-18.
  *
  * `servidor.ts` la llama antes de escuchar.
  */
@@ -57,8 +86,14 @@ export async function verificarRolDeAplicacion(
     pertenece: boolean;
     es_duena: boolean;
     contexto: string | null;
+    sentencia: string;
+    bloqueo: string;
+    ociosa: string;
   }>(`
     SELECT current_user AS rol, r.rolsuper, r.rolbypassrls,
+           current_setting('statement_timeout') AS sentencia,
+           current_setting('lock_timeout') AS bloqueo,
+           current_setting('idle_in_transaction_session_timeout') AS ociosa,
            EXISTS (SELECT 1 FROM pg_auth_members m WHERE m.member = r.oid) AS pertenece,
            EXISTS (SELECT 1 FROM pg_class c WHERE c.relowner = r.oid)
              OR EXISTS (SELECT 1 FROM pg_proc p WHERE p.proowner = r.oid)
@@ -75,6 +110,10 @@ export async function verificarRolDeAplicacion(
         rol.pertenece && "pertenece a otros roles",
         rol.es_duena && "es dueño de objetos",
         rol.contexto && "trae un contexto de asociación de sesión",
+        // PostgreSQL informa «0» cuando el tiempo está desactivado.
+        rol.sentencia === "0" && "sin statement_timeout",
+        rol.bloqueo === "0" && "sin lock_timeout",
+        rol.ociosa === "0" && "sin idle_in_transaction_session_timeout",
       ].filter(Boolean)
     : ["rol desconocido"];
   if (problemas.length > 0) {

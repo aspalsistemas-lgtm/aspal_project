@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 import { cargarConfiguracion, cargarConfiguracionAdmin } from "./configuracion.js";
 
 const URL_VALIDA = "postgres://aspal_app:clave@localhost:5433/aspal";
-const BASE = { DATABASE_URL: URL_VALIDA, DOMINIO_BASE: "localhost" };
+const SECRETO = "secreto-de-prueba-con-mas-de-32-caracteres";
+const BASE = {
+  DATABASE_URL: URL_VALIDA,
+  DOMINIO_BASE: "localhost",
+  SECRETO_CLAVES: SECRETO,
+};
 
 describe("cargarConfiguracion (CA-1)", () => {
   it("lee la URL de la base, el dominio base y usa el puerto 3000 por defecto", () => {
@@ -10,6 +15,11 @@ describe("cargarConfiguracion (CA-1)", () => {
       urlBaseDeDatos: URL_VALIDA,
       dominioBase: "localhost",
       puerto: 3000,
+      secretoClaves: SECRETO,
+      trustProxy: 0,
+      esquemaPublico: "https",
+      puertoPublico: undefined,
+      produccion: false,
     });
   });
 
@@ -18,15 +28,15 @@ describe("cargarConfiguracion (CA-1)", () => {
   });
 
   it("no arranca sin DATABASE_URL y dice qué falta", () => {
-    expect(() => cargarConfiguracion({ DOMINIO_BASE: "localhost" })).toThrow(
-      /DATABASE_URL/,
-    );
+    expect(() =>
+      cargarConfiguracion({ DOMINIO_BASE: "localhost", SECRETO_CLAVES: SECRETO }),
+    ).toThrow(/DATABASE_URL/);
   });
 
   it("no arranca sin DOMINIO_BASE: sin él no se puede resolver la asociación", () => {
-    expect(() => cargarConfiguracion({ DATABASE_URL: URL_VALIDA })).toThrow(
-      /DOMINIO_BASE/,
-    );
+    expect(() =>
+      cargarConfiguracion({ DATABASE_URL: URL_VALIDA, SECRETO_CLAVES: SECRETO }),
+    ).toThrow(/DOMINIO_BASE/);
   });
 
   it("rechaza un DOMINIO_BASE con esquema, puerto, ruta o mayúsculas", () => {
@@ -130,5 +140,114 @@ describe("cargarConfiguracionAdmin", () => {
         DATABASE_PASSWORD_APP: "corta",
       }),
     ).toThrow(/DATABASE_PASSWORD_APP/);
+  });
+});
+
+describe("configuración del acceso (plan del corte 3, CA-4, CA-12 y CA-10)", () => {
+  it("exige SECRETO_CLAVES de al menos 32 caracteres y no lo repite en el error", () => {
+    const { SECRETO_CLAVES: _quitado, ...sinSecreto } = BASE;
+    expect(() => cargarConfiguracion(sinSecreto)).toThrow(/SECRETO_CLAVES/);
+    try {
+      cargarConfiguracion({ ...BASE, SECRETO_CLAVES: "corto-y-secreto" });
+      expect.unreachable();
+    } catch (error) {
+      expect(String(error)).toMatch(/SECRETO_CLAVES/);
+      expect(String(error)).not.toContain("corto-y-secreto");
+    }
+  });
+
+  describe("TRUST_PROXY", () => {
+    it("por defecto no confía en ningún proxy", () => {
+      expect(cargarConfiguracion(BASE).trustProxy).toBe(0);
+      expect(cargarConfiguracion({ ...BASE, TRUST_PROXY: "0" }).trustProxy).toBe(0);
+    });
+
+    it.each(["1", "2", "10"])(
+      "rechaza un número de saltos (%s): quien llegue directo podría falsificar la cabecera",
+      (TRUST_PROXY) => {
+        // Fastify falla cerrado con un número; contar saltos no valida al par inmediato.
+        expect(() => cargarConfiguracion({ ...BASE, TRUST_PROXY })).toThrow(
+          /TRUST_PROXY/,
+        );
+      },
+    );
+
+    it("acepta una lista de IP o CIDR del balanceador", () => {
+      expect(
+        cargarConfiguracion({ ...BASE, TRUST_PROXY: "10.0.0.0/8, 192.168.1.5" })
+          .trustProxy,
+      ).toEqual(["10.0.0.0/8", "192.168.1.5"]);
+    });
+
+    it.each(["true", "false", "*", "-1", "1.5", "todo", "10.0.0.0/8,loquesea", ""])(
+      "rechaza %j: confiar a ciegas permitiría falsificar el origen",
+      (TRUST_PROXY) => {
+        expect(() => cargarConfiguracion({ ...BASE, TRUST_PROXY })).toThrow(
+          /TRUST_PROXY/,
+        );
+      },
+    );
+
+    it("en producción es obligatorio declararlo (CA-12)", () => {
+      expect(() => cargarConfiguracion({ ...BASE, NODE_ENV: "production" })).toThrow(
+        /TRUST_PROXY/,
+      );
+      const produccion = cargarConfiguracion({
+        ...BASE,
+        NODE_ENV: "production",
+        TRUST_PROXY: "0",
+      });
+      expect(produccion.produccion).toBe(true);
+      expect(produccion.trustProxy).toBe(0);
+    });
+  });
+
+  describe("ESQUEMA_PUBLICO y PUERTO_PUBLICO", () => {
+    it("https por defecto", () => {
+      expect(cargarConfiguracion(BASE).esquemaPublico).toBe("https");
+    });
+
+    it("http solo con un DOMINIO_BASE de desarrollo (.localhost), nunca en otro dominio", () => {
+      // Con http la cookie pierde Secure y el prefijo __Host-: no puede llegar a producción.
+      expect(
+        cargarConfiguracion({ ...BASE, ESQUEMA_PUBLICO: "http" }).esquemaPublico,
+      ).toBe("http");
+      expect(
+        cargarConfiguracion({
+          ...BASE,
+          DOMINIO_BASE: "dev.localhost",
+          ESQUEMA_PUBLICO: "http",
+        }).esquemaPublico,
+      ).toBe("http");
+      for (const DOMINIO_BASE of [
+        "asociacionesprofesionales.org",
+        "evillocalhost",
+        "localhost.evil.com",
+      ]) {
+        expect(
+          () => cargarConfiguracion({ ...BASE, DOMINIO_BASE, ESQUEMA_PUBLICO: "http" }),
+          DOMINIO_BASE,
+        ).toThrow(/ESQUEMA_PUBLICO/);
+      }
+    });
+
+    it("rechaza un esquema que no es http ni https", () => {
+      expect(() => cargarConfiguracion({ ...BASE, ESQUEMA_PUBLICO: "ftp" })).toThrow(
+        /ESQUEMA_PUBLICO/,
+      );
+    });
+
+    it("el puerto público es opcional y numérico (solo para el Origin en local)", () => {
+      expect(cargarConfiguracion(BASE).puertoPublico).toBeUndefined();
+      expect(cargarConfiguracion({ ...BASE, PUERTO_PUBLICO: "5010" }).puertoPublico).toBe(
+        5010,
+      );
+      for (const PUERTO_PUBLICO of ["0", "70000", "abc"]) {
+        expect(
+          () => cargarConfiguracion({ ...BASE, PUERTO_PUBLICO }),
+          PUERTO_PUBLICO,
+        ).toThrow(/PUERTO_PUBLICO/);
+      }
+    });
   });
 });

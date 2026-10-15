@@ -53,6 +53,12 @@ services:
       DATABASE_URL: postgres://aspal_app:aspal_app_local@db:5432/aspal
       DOMINIO_BASE: localhost
       PORT: "3000"
+      # Acceso (plan del corte 3). Credenciales y secretos solo locales.
+      SECRETO_CLAVES: secreto-local-de-desarrollo-no-usar-en-la-nube-0001
+      ESQUEMA_PUBLICO: http
+      PUERTO_PUBLICO: "5010"
+      # Obligatorio en producción (la imagen usa NODE_ENV=production): 0 = sin proxy.
+      TRUST_PROXY: "0"
     ports:
       - "5010:3000"
     depends_on:

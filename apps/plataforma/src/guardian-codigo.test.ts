@@ -63,6 +63,22 @@ describe("guardián de código (CA-3)", () => {
     expect(infractores).toEqual([]);
   });
 
+  it("los enlaces no se construyen con request.hostname ni request.protocol (CA-12)", () => {
+    // Con trustProxy activo leerían X-Forwarded-Host/Proto, que pone quien quiera.
+    // Los enlaces salen de DOMINIO_BASE, ESQUEMA_PUBLICO y el subdominio ya resuelto.
+    const infractores = archivos
+      .filter((a) => /\b(peticion|request|req)\.(hostname|protocol)\b/.test(a.codigo))
+      .map((a) => a.ruta);
+    expect(infractores).toEqual([]);
+  });
+
+  it("nadie lee X-Forwarded-Host: la asociación sale solo del Host", () => {
+    const infractores = archivos
+      .filter((a) => /x-forwarded-host/i.test(a.codigo))
+      .map((a) => a.ruta);
+    expect(infractores).toEqual([]);
+  });
+
   it("ningún archivo importa un programa (en el bundle se ejecutaría también)", () => {
     // Pasó con migrar.ts → preparar-base.ts: dist/migrar.js ejecutaba también
     // la preparación de la base.

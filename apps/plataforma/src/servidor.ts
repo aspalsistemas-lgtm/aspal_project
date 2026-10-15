@@ -11,6 +11,7 @@ import {
   verificarRolDeAplicacion,
 } from "./base-de-datos.js";
 import { cargarConfiguracion } from "./configuracion.js";
+import { LIMITE_GRUESO_POR_DEFECTO } from "./http/proteccion.js";
 
 const configuracion = cargarConfiguracion(process.env);
 const pool = crearPool(configuracion.urlBaseDeDatos);
@@ -29,6 +30,10 @@ const app = construirApp(
   {
     comprobarBaseDeDatos: () => comprobarBaseDeDatos(pool),
     dominioBase: configuracion.dominioBase,
+    esquemaPublico: configuracion.esquemaPublico,
+    puertoPublico: configuracion.puertoPublico,
+    trustProxy: configuracion.trustProxy,
+    limiteGrueso: LIMITE_GRUESO_POR_DEFECTO,
     resolverAsociacion: (subdominio) => resolverAsociacion(pool, subdominio),
     enAsociacion: (asociacionId, fn) => conAsociacion(pool, asociacionId, fn),
   },

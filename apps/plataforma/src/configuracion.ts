@@ -9,6 +9,7 @@
  * aplicación, que solo conoce la URL del rol `aspal_app`, y la de administración
  * (preparar la base, migrar, sembrar), que nunca se carga en el servidor.
  */
+import { isIP } from "node:net";
 import { z } from "zod";
 
 const URL_POSTGRES = z
@@ -30,6 +31,33 @@ function llevaOpciones(url: string): boolean {
   }
 }
 
+/** ¿Es un dominio de desarrollo (`localhost` o `*.localhost`)? */
+function esDominioLocal(dominio: string): boolean {
+  return dominio === "localhost" || dominio.endsWith(".localhost");
+}
+
+/**
+ * `TRUST_PROXY`: `0` (ningún proxy) o la lista exacta de IP/CIDR del balanceador.
+ * Nunca `true` ni un número de saltos: contar saltos no valida al par inmediato, y
+ * quien llegara directo podría falsificar `X-Forwarded-For` y esquivar el límite por
+ * origen (auditoría del corte 3, A4). Fastify, de hecho, falla cerrado con un número.
+ */
+function esIpOCidr(texto: string): boolean {
+  const [direccion = "", prefijo, resto] = texto.split("/");
+  if (resto !== undefined) return false;
+  const version = isIP(direccion);
+  if (version === 0) return false;
+  if (prefijo === undefined) return true;
+  if (!/^\d{1,3}$/.test(prefijo)) return false;
+  return Number(prefijo) <= (version === 4 ? 32 : 128);
+}
+
+function interpretarTrustProxy(valor: string): 0 | string[] | undefined {
+  if (valor === "0") return 0;
+  const lista = valor.split(",").map((elemento) => elemento.trim());
+  return lista.every(esIpOCidr) ? lista : undefined;
+}
+
 const ESQUEMA_APLICACION = z.object({
   DATABASE_URL: URL_POSTGRES.refine((url) => !llevaOpciones(url), {
     error: "no puede llevar options= (fijaría un contexto por defecto)",
@@ -48,6 +76,23 @@ const ESQUEMA_APLICACION = z.object({
     .min(1, { error: "fuera de rango (1-65535)" })
     .max(65535, { error: "fuera de rango (1-65535)" })
     .default(3000),
+  // Secreto del servidor para las claves HMAC de los límites de uso: sin él, una
+  // base robada permitiría reconstruir qué correos y orígenes se limitaron.
+  SECRETO_CLAVES: z
+    .string({ error: "falta" })
+    .min(32, { error: "debe tener al menos 32 caracteres" }),
+  TRUST_PROXY: z.string().optional(),
+  ESQUEMA_PUBLICO: z
+    .enum(["http", "https"], { error: "debe ser http o https" })
+    .default("https"),
+  // Solo para que el Origin esperado coincida en local (http://aspal.localhost:5010).
+  PUERTO_PUBLICO: z.coerce
+    .number({ error: "debe ser un número" })
+    .int({ error: "debe ser un entero" })
+    .min(1, { error: "fuera de rango (1-65535)" })
+    .max(65535, { error: "fuera de rango (1-65535)" })
+    .optional(),
+  NODE_ENV: z.string().optional(),
 });
 
 const ESQUEMA_ADMIN = z.object({
@@ -63,6 +108,12 @@ export interface Configuracion {
   urlBaseDeDatos: string;
   dominioBase: string;
   puerto: number;
+  secretoClaves: string;
+  /** `0` (ningún proxy) o las IP/CIDR exactas del balanceador. */
+  trustProxy: 0 | string[];
+  esquemaPublico: "http" | "https";
+  puertoPublico: number | undefined;
+  produccion: boolean;
 }
 
 export interface ConfiguracionAdmin {
@@ -84,10 +135,47 @@ export function cargarConfiguracion(entorno: Entorno): Configuracion {
   if (!resultado.success) {
     throw new Error(`Configuración inválida: ${describirProblemas(resultado.error)}`);
   }
+  const datos = resultado.data;
+  const problemas: string[] = [];
+
+  // Con http la cookie pierde Secure y el prefijo __Host-: solo en desarrollo.
+  if (datos.ESQUEMA_PUBLICO === "http" && !esDominioLocal(datos.DOMINIO_BASE)) {
+    problemas.push(
+      "ESQUEMA_PUBLICO: http solo se permite con un DOMINIO_BASE .localhost",
+    );
+  }
+
+  const produccion = datos.NODE_ENV === "production";
+  let trustProxy: 0 | string[] = 0;
+  if (datos.TRUST_PROXY !== undefined) {
+    const interpretado = interpretarTrustProxy(datos.TRUST_PROXY);
+    if (interpretado === undefined) {
+      problemas.push(
+        "TRUST_PROXY: debe ser 0 o la lista de IP/CIDR del balanceador (nunca true ni un número de saltos)",
+      );
+    } else {
+      trustProxy = interpretado;
+    }
+  } else if (produccion) {
+    // Sin declararlo, detrás de un balanceador todos los clientes comparten origen.
+    problemas.push(
+      "TRUST_PROXY: es obligatorio declararlo en producción (0 si no hay proxy)",
+    );
+  }
+
+  if (problemas.length > 0) {
+    throw new Error(`Configuración inválida: ${problemas.join("; ")}`);
+  }
+
   return {
-    urlBaseDeDatos: resultado.data.DATABASE_URL,
-    dominioBase: resultado.data.DOMINIO_BASE,
-    puerto: resultado.data.PORT,
+    urlBaseDeDatos: datos.DATABASE_URL,
+    dominioBase: datos.DOMINIO_BASE,
+    puerto: datos.PORT,
+    secretoClaves: datos.SECRETO_CLAVES,
+    trustProxy,
+    esquemaPublico: datos.ESQUEMA_PUBLICO,
+    puertoPublico: datos.PUERTO_PUBLICO,
+    produccion,
   };
 }
 

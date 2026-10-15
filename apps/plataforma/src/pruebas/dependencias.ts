@@ -1,6 +1,7 @@
 /**
  * Dependencias falsas para los tests unitarios de la aplicación: sin red ni base.
- * Cada test sustituye solo la que le importa.
+ * Cada test sustituye solo la que le importa. Los límites son holgados para que no
+ * interfieran con los tests que no hablan de ellos.
  */
 import type { Dependencias } from "../app.js";
 
@@ -10,6 +11,10 @@ export function dependenciasDePrueba(
   return {
     comprobarBaseDeDatos: async () => true,
     dominioBase: "localhost",
+    esquemaPublico: "http",
+    puertoPublico: undefined,
+    trustProxy: 0,
+    limiteGrueso: { publica: 100_000, autenticada: 100_000, ventanaMs: 60_000 },
     resolverAsociacion: async () => null,
     enAsociacion: async () => {
       throw new Error("enAsociacion no configurada en este test");

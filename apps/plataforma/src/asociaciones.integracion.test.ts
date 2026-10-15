@@ -29,6 +29,11 @@ beforeAll(async () => {
   app = construirApp({
     comprobarBaseDeDatos: () => comprobarBaseDeDatos(pool),
     dominioBase: "localhost",
+    esquemaPublico: "http",
+    puertoPublico: undefined,
+    trustProxy: 0,
+    // Holgado: la prueba de concurrencia manda 200 peticiones desde un mismo origen.
+    limiteGrueso: { publica: 100_000, autenticada: 100_000, ventanaMs: 60_000 },
     resolverAsociacion: (subdominio) => resolverAsociacion(pool, subdominio),
     enAsociacion: (id, fn) => conAsociacion(pool, id, fn),
   });

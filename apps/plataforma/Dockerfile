@@ -12,6 +12,9 @@ RUN npm run build -w @aspal/plataforma
 
 FROM node:22-alpine
 ENV NODE_ENV=production
+# scrypt (128 MiB por hash) usa el pool de hilos de libuv, que comparten dns, fs y
+# zlib: con el tamaño por defecto (4), unos pocos logins lo saturarían (CA-11).
+ENV UV_THREADPOOL_SIZE=8
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY apps/sitio/package.json apps/sitio/

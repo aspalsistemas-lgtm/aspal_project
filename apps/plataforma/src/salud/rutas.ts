@@ -24,7 +24,10 @@ export function registrarSalud(
 ): void {
   app.get(
     "/health",
-    { schema: { response: { 200: RESPUESTA_OK, 503: RESPUESTA_ERROR } } },
+    {
+      config: { categoria: "global" },
+      schema: { response: { 200: RESPUESTA_OK, 503: RESPUESTA_ERROR } },
+    },
     async (peticion, respuesta) => {
       let responde = false;
       try {
