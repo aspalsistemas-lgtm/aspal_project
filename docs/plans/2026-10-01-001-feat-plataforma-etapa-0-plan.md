@@ -231,7 +231,12 @@ va en la aplicación y en PostgreSQL (D8). **Consecuencia:** las operaciones de
 soporte de ASPAL sobre datos de una asociación requieren autorización
 explícita, alcance acotado y auditoría (`database-design.md`, sección 3).
 
-### D8 · Aislamiento entre asociaciones — cerrada (principio) + propuesta (mecanismo)
+### D8 · Aislamiento entre asociaciones — cerrada (15 oct 2026)
+
+**Mecanismo implementado y probado en el corte 2** (plan
+`2026-10-15-001`): el de abajo, endurecido tras una revisión adversarial con
+tres roles, política RESTRICTIVE, migraciones como dueño sin privilegios y
+guardianes del catálogo, de los privilegios y del código.
 
 **Cerrada por el plan:** aislamiento en servidor y en PostgreSQL, no solo
 visual.
@@ -492,6 +497,12 @@ alcance que aprobó el responsable ese día:
 
 Cinco cortes. Por la decisión del 14 de octubre (D2), cada uno se cierra en el
 entorno local de Docker; el despliegue en la nube se hará después.
+
+**Corte 2, hecho el 2026-10-15 en local:** tabla `asociacion`, aislamiento con
+RLS (roles `aspal_dueno` y `aspal_app`, `conAsociacion`, política RESTRICTIVE),
+resolución por subdominio y `GET /asociaciones/actual`. Matriz de cruce entre
+ASPAL y la organización de prueba contra PostgreSQL real, con pruebas de
+mutación. La página pública con marca queda para cuando se decida D13.
 
 **Corte 1, hecho el 2026-10-14 en local:** `apps/plataforma` (Fastify 5, Zod 4,
 Drizzle sobre `pg`), `GET /health` (`docs/api/plataforma.md`), migraciones con

@@ -319,13 +319,12 @@ Runtime:          Node 22.22.0 local · npm 11.20.0 · engines 22.x
 Migraciones:      No aplica. El sitio no tiene BD. La plataforma aún no tiene
                   esquema ni código.
 
-En curso:         Plataforma SaaS, Etapa 1, corte 1 (esqueleto): apps/plataforma
-                  con Fastify + Zod + Drizzle, GET /health y migraciones, todo en
-                  local con Docker (la nube, más adelante). Etapa 0 cerrada:
-                  monorepo e inventario editorial (audio en Captivate). D4
-                  cerrada (Drizzle). Siguiente: corte 2 (asociacion y RLS), con
-                  propuesta de esquema. Faltan del responsable: Stripe, DNS,
-                  miembros y pagos.
+En curso:         Plataforma SaaS, Etapa 1, todo en local con Docker (la nube,
+                  más adelante). Cortes 1 (esqueleto) y 2 (asociaciones y
+                  aislamiento con RLS, D8 cerrada) hechos: reglas obligatorias
+                  de aislamiento en apps/plataforma/CLAUDE.md §3. Siguiente:
+                  corte 3 (acceso: cuenta, persona, sesiones, Google). Faltan
+                  del responsable: Stripe, DNS, miembros y pagos.
 
 Archivos NO:      vercel.json, variables de Vercel y .env*; dependencias solo con
                   autorización explícita. El WXR de WordPress no se versiona.

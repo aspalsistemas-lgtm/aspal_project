@@ -27,6 +27,7 @@
 - Diseña claves únicas e índices en el ámbito correcto, por ejemplo, por asociación cuando la misma clave de negocio puede repetirse en otra. No confíes solo en un filtro de interfaz o subdominio.
 - Evita referencias cruzadas entre asociaciones por error. Cuando sea necesario, usa restricciones que comprueben el mismo ámbito en ambos extremos de la relación, además de validaciones de aplicación.
 - Si se adopta Row Level Security, define cómo se establece y limpia el contexto de asociación en cada transacción y cómo se prueban accesos negados. RLS complementa las verificaciones de autorización; no reemplaza las reglas de roles y permisos.
+- **Implementación vigente (plataforma, corte 2):** esquema compartido; roles `aspal_dueno` (dueño, sin privilegios para saltarse RLS) y `aspal_app` (la aplicación); contexto con `set_config('app.asociacion_id', …, true)` dentro de `conAsociacion`; política `aislamiento` RESTRICTIVE creada por `app.aplicar_aislamiento`; claves únicas y foráneas que incluyen `asociacion_id`. Reglas obligatorias para cada tabla nueva en `apps/plataforma/CLAUDE.md` (§3); guardianes y matriz de cruce en sus tests de integración.
 - Las operaciones de soporte ASPAL y exportación de datos requieren autorización explícita, alcance acotado y auditoría.
 
 ## 4. Restricciones, índices e historial

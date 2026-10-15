@@ -2,8 +2,9 @@
 
 > Complementa el CLAUDE.md raíz. Se aplica a todo archivo bajo `apps/plataforma/`.
 > Decisiones de fondo: `docs/plans/2026-10-01-001-feat-plataforma-etapa-0-plan.md`
-> (D1–D15). Datos: `docs/database-design.md`. Contratos: `docs/api/plataforma.md`.
-> Última actualización: octubre de 2026 (Etapa 1, corte 1)
+> (D1–D15). Aislamiento: `docs/plans/2026-10-15-001-feat-plataforma-corte-2-asociaciones-plan.md`.
+> Datos: `docs/database-design.md`. Contratos: `docs/api/plataforma.md`.
+> Última actualización: octubre de 2026 (Etapa 1, corte 2)
 
 ---
 
@@ -16,45 +17,112 @@ otro servidor) más adelante (decisión del 2026-10-14).
 ```
 Servidor:   Fastify 5 (D3) · validación de entrada y salida con Zod 4
 Datos:      PostgreSQL 17 · Drizzle ORM sobre pg (D4) · migraciones con Drizzle Kit
+Aislamiento: esquema compartido + RLS restrictiva por asociacion_id (D8)
 Tests:      Vitest: unitarios (sin red ni base) e integración (PostgreSQL real)
 Contenedor: Dockerfile multietapa (node:22-alpine) · compose.yaml en la raíz
 ```
 
 ```
 src/
-├── servidor.ts        ← punto de entrada: configuración, pool, listen (solo wiring)
+├── servidor.ts        ← entrada: configuración, pool, comprobación del rol, listen
 ├── app.ts             ← construirApp(dependencias): sin arrancar, para inject en tests
-├── configuracion.ts   ← variables de entorno validadas con Zod al arrancar
+├── configuracion.ts   ← entorno validado con Zod (aplicación y administración, aparte)
 ├── zod-fastify.ts     ← puente Zod ↔ Fastify, sobre único de error, 404
-├── base-de-datos.ts   ← crearPool, comprobarBaseDeDatos
-├── migrar.ts          ← aplicarMigraciones (también como programa)
-├── esquema.ts         ← esquema de Drizzle (vacío hasta el corte 2)
-└── <modulo>/rutas.ts  ← un módulo por carpeta (salud/ es el primero)
+├── base-de-datos.ts   ← pool, conAsociacion, resolverAsociacion, verificarRolDeAplicacion
+├── preparar-base.ts   ← roles y privilegios (db:preparar, como administrador)
+├── migrar.ts          ← aplicarMigraciones con SET ROLE aspal_dueno
+├── sembrar.ts         ← semillas solo locales (ASPAL y la organización de prueba)
+├── esquema.ts         ← esquema de Drizzle
+├── asociaciones/      ← subdominios, análisis del Host, GET /asociaciones/actual
+├── salud/             ← GET /health
+└── pruebas/           ← preparación de integración, guardianes, dependencias falsas
 migraciones/           ← SQL versionado de Drizzle Kit; nunca se edita uno aplicado
 ```
 
 ## 2. Comandos (desde la raíz)
 
 ```bash
-npm run db:levantar          # PostgreSQL 17 en Docker (puerto 5433)
-npm run db:migrar            # aplica migraciones (DATABASE_URL)
-npm run dev:plataforma       # tsx watch; necesita DATABASE_URL
+npm run db:levantar          # PostgreSQL 17 en Docker (puerto 5433) + db:preparar
+npm run db:migrar            # migraciones, como aspal_dueno
+npm run db:sembrar           # ASPAL (aspal) y Organización de Prueba (prueba), solo local
+npm run dev:plataforma       # tsx watch con local.env (puerto 5010)
 npm run test:plataforma      # unitarios
-npm run test:integracion     # contra la base aspal_prueba (DATABASE_URL_PRUEBA)
+npm run test:integracion     # recrea aspal_prueba, la prepara, migra y prueba
 npm run check:plataforma     # tsc
-npm run plataforma:levantar  # base + plataforma en contenedor (puerto 5010)
+npm run plataforma:levantar  # base + migrador + plataforma en contenedores
 ```
 
-URLs locales: `DATABASE_URL=postgres://aspal:aspal_local@localhost:5433/aspal` y
-`DATABASE_URL_PRUEBA=postgres://aspal:aspal_local@localhost:5433/aspal_prueba`.
-Son credenciales solo locales. Puertos 5433 y 5010 porque el 5432 y el 5000-5001
-los usa otro proyecto de la máquina.
+`local.env` tiene las credenciales **solo locales** (las mismas de `compose.yaml`).
+En local: `http://aspal.localhost:5010/asociaciones/actual` y
+`http://prueba.localhost:5010/asociaciones/actual`.
 
-**Avast en esta máquina:** su escudo web intercepta HTTPS, y dentro de Docker
-`npm ci` falla al verificar el certificado. La imagen se construye en la CI.
-En local, hace falta resolverlo antes de `plataforma:levantar`.
+**Avast en esta máquina:** su escudo web intercepta HTTPS y `npm ci` falla dentro
+de `docker build`. La imagen la construye la CI; en local, hay que excluir Docker
+del escudo de Avast antes de `plataforma:levantar`.
 
-## 3. Reglas
+## 3. Aislamiento entre asociaciones — reglas obligatorias
+
+Ninguna asociación puede ver ni tocar datos de otra. Está **probado** contra
+PostgreSQL real (`*.integracion.test.ts`) y con pruebas de mutación: si una
+de estas reglas se rompe, un test falla.
+
+**Roles** (los crea `db:preparar`, nunca una migración):
+
+| Rol           | Qué es                                                                   |
+| ------------- | ------------------------------------------------------------------------ |
+| `aspal`       | administrador: solo `db:preparar` y migrar/sembrar con `SET ROLE`        |
+| `aspal_dueno` | dueño de todo; sin login, sin superusuario ni BYPASSRLS                  |
+| `aspal_app`   | la aplicación; sin BYPASSRLS, sin herencia, sin pertenecer a aspal_dueno |
+
+**Toda tabla nueva de una asociación:**
+
+1. `asociacion_id uuid NOT NULL REFERENCES asociacion (id) ON DELETE RESTRICT`.
+2. `UNIQUE (asociacion_id, id)`, y **toda** otra clave única incluye
+   `asociacion_id`: una clave global delata si un dato existe en otra asociación.
+3. Las FK hacia otra tabla de asociación son compuestas:
+   `(asociacion_id, x_id) REFERENCES x (asociacion_id, id)`.
+4. La migración termina con `SELECT app.aplicar_aislamiento('public.<tabla>');`
+   (RLS activada y forzada, política `aislamiento` RESTRICTIVE y `asociacion_id`
+   por defecto = el contexto) y los `GRANT` explícitos a `aspal_app`. Nunca
+   `TRUNCATE`, `TRIGGER` ni `REFERENCES`.
+5. Se añade a la instantánea de privilegios de `asociacion.integracion.test.ts`.
+
+El guardián del catálogo (`pruebas/guardianes.ts`) falla si falta cualquiera de
+1–4, si una política no es la canónica, si hay vistas sin `security_invoker`,
+vistas materializadas o funciones `SECURITY DEFINER` fuera de la lista blanca.
+
+**En el código:**
+
+- Los datos de una asociación se leen y escriben **solo** dentro de
+  `conAsociacion(pool, id, fn)`, con la base que recibe `fn`. Fuera de ella no
+  hay contexto y no se ve nada.
+- El `id` sale de la asociación resuelta del `Host` (`peticion.asociacion`),
+  **nunca** de un parámetro, cuerpo o cabecera de la petición.
+- Solo `base-de-datos.ts` fija el contexto (`set_config`) y solo los archivos de
+  infraestructura importan `pg` (guardián de código).
+- Los errores nunca devuelven `error.detail` de PostgreSQL ni la causa interna.
+- Respuestas que dependen de la asociación: `Cache-Control: private, no-store`.
+
+**Reglas para los cortes siguientes** (decididas en la revisión del corte 2):
+
+- **Sesiones (corte 3):** la sesión guarda su asociación y en cada petición debe
+  coincidir con la del `Host`; si no, 401. Cookies `__Host-` sin `Domain`.
+- **Trabajos (pg-boss, outbox):** cada trabajo lleva `asociacion_id` y corre
+  dentro de `conAsociacion`. La tabla outbox lleva RLS. Un proceso que lea
+  todas las asociaciones usa un rol propio y auditado, nunca `aspal_app`.
+- **Operador (corte 4):** rol y pool separados (`aspal_operador`), con
+  auditoría; nunca dar BYPASSRLS a `aspal_app`.
+- **PgBouncer o RDS Proxy:** solo `set_config` local (ya es así); nunca `SET`
+  de sesión.
+- **Datos:** nada de `COPY FROM` (falla con RLS: importar con
+  `INSERT … SELECT FROM unnest`), objetos grandes (`lo_*`, sin RLS) ni
+  contadores globales expuestos (los folios por asociación, en una tabla con RLS).
+- **Pendiente conocido:** `aspal_app` puede conectarse a la base de
+  mantenimiento `postgres` y crear tablas temporales allí (privilegio por
+  defecto de PUBLIC). No contiene datos de asociaciones; se cierra al preparar
+  la base en la nube.
+
+## 4. Otras reglas
 
 - **Contrato primero:** un endpoint nuevo se documenta en `docs/api/plataforma.md`
   antes de implementarse. Sobre único: `{ success, data, meta? }` o
@@ -63,13 +131,12 @@ En local, hace falta resolverlo antes de `plataforma:levantar`.
   esquema: lo que no declara no sale, y si no cumple es un 500 sin detalles.
 - **Nada de detalles internos en respuestas ni logs:** ni la URL de la base ni
   el error de PostgreSQL ni datos personales.
-- **Dependencias externas por parámetro** (`construirApp({ comprobarBaseDeDatos })`):
-  los tests unitarios no tocan red ni base.
+- **Dependencias externas por parámetro** (`construirApp(dependencias)`): los
+  tests unitarios no tocan red ni base (`pruebas/dependencias.ts`).
 - **Esquema y migraciones:** ningún cambio sin la propuesta de la sección 6 de
   `docs/database-design.md`. Se generan con `npm run db:generar`; nunca `push`.
-  Toda tabla de una asociación lleva `asociacion_id` y RLS (D8).
-- **Tests de integración:** fallan si falta `DATABASE_URL_PRUEBA`; nunca se
-  saltan en silencio. Usan la base `aspal_prueba`, jamás la de desarrollo.
+- **Tests de integración:** fallan si faltan sus variables; nunca se saltan en
+  silencio. Usan `aspal_prueba`, que recrean en cada pasada; jamás la de desarrollo.
 - Los imports relativos llevan extensión `.js`.
 - Nomenclatura: la del CLAUDE.md raíz (español sin tildes en identificadores).
   `/health` es la única ruta en inglés: es el nombre que esperan los
@@ -77,4 +144,4 @@ En local, hace falta resolverlo antes de `plataforma:levantar`.
 
 ---
 
-_ASPAL Plataforma CLAUDE.md v0.1 — octubre de 2026_
+_ASPAL Plataforma CLAUDE.md v0.2 — octubre de 2026_
