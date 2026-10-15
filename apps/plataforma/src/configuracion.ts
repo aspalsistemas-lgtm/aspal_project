@@ -15,10 +15,27 @@ const URL_POSTGRES = z
   .string({ error: "falta" })
   .regex(/^postgres(ql)?:\/\//, { error: "debe ser una URL postgres://" });
 
+/**
+ * ¿Trae la URL el parámetro `options` (aunque venga codificado, `%6Fptions`)?
+ * Con `options=-c app.asociacion_id=…` cada conexión nacería dentro de una
+ * asociación (auditoría, hallazgo 5).
+ */
+function llevaOpciones(url: string): boolean {
+  try {
+    return [...new URL(url).searchParams.keys()].some(
+      (clave) => clave.toLowerCase() === "options",
+    );
+  } catch {
+    return true;
+  }
+}
+
 const ESQUEMA_APLICACION = z.object({
-  DATABASE_URL: URL_POSTGRES.refine((url) => !/[?&]options=/i.test(url), {
+  DATABASE_URL: URL_POSTGRES.refine((url) => !llevaOpciones(url), {
     error: "no puede llevar options= (fijaría un contexto por defecto)",
   }),
+  // pg lee PGOPTIONS del entorno: el mismo riesgo que options= en la URL.
+  PGOPTIONS: z.never({ error: "no se permite: fijaría opciones de sesión" }).optional(),
   // Solo el nombre del dominio: el subdominio de cada asociación cuelga de él.
   DOMINIO_BASE: z
     .string({ error: "falta" })

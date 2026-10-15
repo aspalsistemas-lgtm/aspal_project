@@ -19,9 +19,7 @@ import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import pg from "pg";
 import { cargarConfiguracionAdmin } from "./configuracion.js";
-
-export const ROL_DUENO = "aspal_dueno";
-export const ROL_APP = "aspal_app";
+import { ROL_APP, ROL_DUENO } from "./roles.js";
 
 export async function prepararBase(
   cliente: pg.Client,
@@ -50,11 +48,26 @@ export async function prepararBase(
   // que «sin contexto» significara «dentro de una asociación».
   await cliente.query(`ALTER ROLE ${ROL_APP} RESET ALL`);
   await cliente.query(`
-    DO $$ BEGIN
+    DO $$ DECLARE pertenencia record; BEGIN
       EXECUTE format('ALTER ROLE ${ROL_APP} IN DATABASE %I RESET ALL', current_database());
-      IF pg_has_role('${ROL_APP}', '${ROL_DUENO}', 'MEMBER') THEN
-        REVOKE ${ROL_DUENO} FROM ${ROL_APP};
-      END IF;
+      -- Tampoco un contexto fijado para la base o para todos los roles
+      -- (auditoría, hallazgo 5). Solo ese parámetro: el resto de ajustes de la
+      -- base no son de este script.
+      EXECUTE format('ALTER DATABASE %I RESET "app.asociacion_id"', current_database());
+      EXECUTE format('ALTER ROLE ALL IN DATABASE %I RESET "app.asociacion_id"', current_database());
+      ALTER ROLE ALL RESET "app.asociacion_id";
+      -- La aplicación no pertenece a ningún rol: con la pertenencia podría hacer
+      -- SET ROLE a uno con más privilegios aunque sea NOINHERIT (hallazgo 3).
+      FOR pertenencia IN
+        SELECT g.rolname AS grupo, o.rolname AS otorgante
+          FROM pg_auth_members m
+          JOIN pg_roles g ON g.oid = m.roleid
+          JOIN pg_roles o ON o.oid = m.grantor
+         WHERE m.member = '${ROL_APP}'::regrole
+      LOOP
+        EXECUTE format('REVOKE %I FROM ${ROL_APP} GRANTED BY %I',
+                       pertenencia.grupo, pertenencia.otorgante);
+      END LOOP;
       -- Un administrador que no es superusuario (el maestro de la nube) necesita
       -- poder hacer SET ROLE ${ROL_DUENO} para migrar.
       IF NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user) THEN

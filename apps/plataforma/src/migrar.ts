@@ -17,7 +17,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import pg from "pg";
 import { cargarConfiguracionAdmin } from "./configuracion.js";
-import { ROL_DUENO } from "./preparar-base.js";
+import { ROL_DUENO } from "./roles.js";
 
 // Junto a src/ en desarrollo y junto a dist/ en el contenedor: en ambos casos,
 // un nivel por encima de este archivo.

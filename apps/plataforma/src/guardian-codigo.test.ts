@@ -37,11 +37,49 @@ describe("guardián de código (CA-3)", () => {
 
   it("solo base-de-datos.ts fija el contexto de asociación", () => {
     const infractores = archivos
-      .filter((a) =>
-        /set_config|app\.asociacion_id|\bSET\s+(LOCAL\s+)?app\./i.test(a.codigo),
-      )
+      .filter((a) => /set_config|\bSET\s+(LOCAL\s+|SESSION\s+)?"?app\./i.test(a.codigo))
       .map((a) => a.ruta);
     expect(infractores).toEqual(["base-de-datos.ts"]);
+  });
+
+  it("app.asociacion_id solo aparece donde se fija y donde se borra", () => {
+    // preparar-base.ts lo nombra únicamente para RESET (auditoría 5).
+    const infractores = archivos
+      .filter((a) => /app\.asociacion_id/.test(a.codigo))
+      .map((a) => a.ruta)
+      .filter((ruta) => !["base-de-datos.ts", "preparar-base.ts"].includes(ruta));
+    expect(infractores).toEqual([]);
+  });
+
+  it("nadie usa sql.raw ni el cliente crudo ($client) fuera de base-de-datos.ts (auditoría 2)", () => {
+    // sql.raw salta los parámetros enlazados (inyección = acceso entre
+    // asociaciones); $client salta el cliente vigilado de conAsociacion.
+    const infractores = archivos
+      .filter((a) => /\bsql\.raw\s*\(|\$client\b/.test(a.codigo))
+      .map((a) => a.ruta)
+      // esquema.ts: sql.raw solo con constantes del código para los CHECK de la
+      // tabla (Drizzle Kit los vuelca a la migración); nunca con datos de entrada.
+      .filter((ruta) => !["base-de-datos.ts", "esquema.ts"].includes(ruta));
+    expect(infractores).toEqual([]);
+  });
+
+  it("ningún archivo importa un programa (en el bundle se ejecutaría también)", () => {
+    // Pasó con migrar.ts → preparar-base.ts: dist/migrar.js ejecutaba también
+    // la preparación de la base.
+    const programas = archivos
+      .filter((a) => /process\.argv\[1\]/.test(a.codigo))
+      .map((a) => a.ruta.replace(/\.ts$/, ".js").split("/").pop()!);
+    const infractores = archivos.filter((a) =>
+      programas.some((programa) =>
+        new RegExp(`from\\s+["'][./]+[^"']*${programa.replace(".", "\\.")}["']`).test(
+          a.codigo,
+        ),
+      ),
+    );
+    expect(programas).toEqual(
+      expect.arrayContaining(["migrar.js", "preparar-base.js", "sembrar.js"]),
+    );
+    expect(infractores.map((a) => a.ruta)).toEqual([]);
   });
 
   it("solo los archivos de infraestructura importan pg directamente", () => {

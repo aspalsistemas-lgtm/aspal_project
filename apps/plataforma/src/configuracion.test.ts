@@ -58,6 +58,19 @@ describe("cargarConfiguracion (CA-1)", () => {
     );
   });
 
+  it("rechaza options= aunque venga codificado (auditoría 5)", () => {
+    const codificada = `${URL_VALIDA}?%6Fptions=-c%20app.asociacion_id%3Dx`;
+    expect(() => cargarConfiguracion({ ...BASE, DATABASE_URL: codificada })).toThrow(
+      /DATABASE_URL/,
+    );
+  });
+
+  it("rechaza PGOPTIONS en el entorno: pg la aplicaría a cada conexión (auditoría 5)", () => {
+    expect(() =>
+      cargarConfiguracion({ ...BASE, PGOPTIONS: "-c app.asociacion_id=x" }),
+    ).toThrow(/PGOPTIONS/);
+  });
+
   it("rechaza un puerto fuera de rango o no numérico", () => {
     for (const PORT of ["0", "70000", "abc", "30.5"]) {
       expect(() => cargarConfiguracion({ ...BASE, PORT }), PORT).toThrow(/PORT/);

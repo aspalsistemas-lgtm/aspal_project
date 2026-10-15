@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import pg from "pg";
 import { cargarConfiguracionAdmin } from "./configuracion.js";
-import { ROL_DUENO } from "./preparar-base.js";
+import { ROL_DUENO } from "./roles.js";
 
 export const ASOCIACIONES_LOCALES = [
   { nombre: "ASPAL", subdominio: "aspal", zonaHoraria: "America/Merida" },

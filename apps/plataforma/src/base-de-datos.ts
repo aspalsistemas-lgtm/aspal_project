@@ -12,6 +12,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import { z } from "zod";
+import { ROL_APP } from "./roles.js";
 
 /** Tiempo máximo para dar la base por viva: más que esto, se considera caída. */
 export const TIEMPO_MAXIMO_COMPROBACION_MS = 2000;
@@ -34,31 +35,51 @@ export function crearPool(url: string, opciones: { max?: number } = {}): pg.Pool
 
 /**
  * Se niega a seguir si la aplicación se conecta con un rol que se saltaría el
- * aislamiento: superusuario, con BYPASSRLS o miembro del dueño de las tablas
- * (plan del corte 2, §3). Con cualquiera de esos, las políticas RLS existirían
- * pero no filtrarían nada. `servidor.ts` la llama antes de escuchar.
+ * aislamiento (plan del corte 2, §3; auditoría, hallazgos 3 y 5). Exige:
+ *
+ * - que sea exactamente el rol esperado (`aspal_app`);
+ * - que no sea superusuario ni tenga BYPASSRLS;
+ * - que no pertenezca a **ningún** rol: aun con NOINHERIT, la pertenencia
+ *   permite `SET ROLE` a uno con más privilegios;
+ * - que no sea dueño de ningún objeto: el dueño se salta RLS si no está forzada;
+ * - que la sesión no traiga contexto de asociación por configuración.
+ *
+ * `servidor.ts` la llama antes de escuchar.
  */
-export async function verificarRolDeAplicacion(pool: pg.Pool): Promise<void> {
+export async function verificarRolDeAplicacion(
+  pool: pg.Pool,
+  rolEsperado: string = ROL_APP,
+): Promise<void> {
   const { rows } = await pool.query<{
+    rol: string;
     rolsuper: boolean;
     rolbypassrls: boolean;
-    miembro_del_dueno: boolean;
+    pertenece: boolean;
+    es_duena: boolean;
+    contexto: string | null;
   }>(`
-    SELECT r.rolsuper, r.rolbypassrls,
-           CASE WHEN EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'aspal_dueno')
-                THEN pg_has_role(current_user, 'aspal_dueno', 'MEMBER')
-                ELSE false END AS miembro_del_dueno
+    SELECT current_user AS rol, r.rolsuper, r.rolbypassrls,
+           EXISTS (SELECT 1 FROM pg_auth_members m WHERE m.member = r.oid) AS pertenece,
+           EXISTS (SELECT 1 FROM pg_class c WHERE c.relowner = r.oid)
+             OR EXISTS (SELECT 1 FROM pg_proc p WHERE p.proowner = r.oid)
+             OR EXISTS (SELECT 1 FROM pg_namespace n WHERE n.nspowner = r.oid) AS es_duena,
+           current_setting('app.asociacion_id', true) AS contexto
       FROM pg_roles r
      WHERE r.rolname = current_user`);
   const rol = rows[0];
-  const problemas = [
-    rol?.rolsuper && "es superusuario",
-    rol?.rolbypassrls && "tiene BYPASSRLS",
-    rol?.miembro_del_dueno && "pertenece a aspal_dueno",
-  ].filter(Boolean);
-  if (!rol || problemas.length > 0) {
+  const problemas = rol
+    ? [
+        rol.rol !== rolEsperado && `no es ${rolEsperado}`,
+        rol.rolsuper && "es superusuario",
+        rol.rolbypassrls && "tiene BYPASSRLS",
+        rol.pertenece && "pertenece a otros roles",
+        rol.es_duena && "es dueño de objetos",
+        rol.contexto && "trae un contexto de asociación de sesión",
+      ].filter(Boolean)
+    : ["rol desconocido"];
+  if (problemas.length > 0) {
     throw new Error(
-      `El rol de la base de datos de la aplicación se saltaría el aislamiento entre asociaciones (${problemas.join(", ") || "rol desconocido"}). Usa el rol aspal_app.`,
+      `El rol de la base de datos de la aplicación se saltaría el aislamiento entre asociaciones (${problemas.join(", ")}). Usa el rol ${rolEsperado}.`,
     );
   }
 }
@@ -196,6 +217,13 @@ export async function conAsociacion<T>(
     const cliente = await pool.connect();
     let cerrada = false;
     let destruir: Error | undefined;
+    // Mientras está prestada, el pool no escucha los errores de la conexión: si
+    // PostgreSQL la corta a mitad, el «error» sin oyente tumbaría el proceso.
+    const alPerderLaConexion = (error: Error) => {
+      destruir ??= error;
+      console.error(`conexión perdida dentro de conAsociacion: ${error.message}`);
+    };
+    cliente.on("error", alPerderLaConexion);
     try {
       const { rows } = await cliente.query<{ contexto: string | null }>(
         "SELECT current_setting('app.asociacion_id', true) AS contexto",
@@ -227,6 +255,7 @@ export async function conAsociacion<T>(
       throw error;
     } finally {
       cerrada = true;
+      cliente.removeListener("error", alPerderLaConexion);
       // Con error, la conexión no vuelve al pool: se destruye.
       cliente.release(destruir);
     }
