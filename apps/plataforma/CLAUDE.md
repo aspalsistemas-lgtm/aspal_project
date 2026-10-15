@@ -4,7 +4,7 @@
 > Decisiones de fondo: `docs/plans/2026-10-01-001-feat-plataforma-etapa-0-plan.md`
 > (D1–D15). Aislamiento: `docs/plans/2026-10-15-001-feat-plataforma-corte-2-asociaciones-plan.md`.
 > Datos: `docs/database-design.md`. Contratos: `docs/api/plataforma.md`.
-> Última actualización: octubre de 2026 (Etapa 1, corte 2)
+> Última actualización: octubre de 2026 (Etapa 1, corte 3a)
 
 ---
 
@@ -31,9 +31,11 @@ src/
 ├── base-de-datos.ts   ← pool, conAsociacion, resolverAsociacion, verificarRolDeAplicacion
 ├── preparar-base.ts   ← roles y privilegios (db:preparar, como administrador)
 ├── migrar.ts          ← aplicarMigraciones con SET ROLE aspal_dueno
-├── sembrar.ts         ← semillas solo locales (ASPAL y la organización de prueba)
+├── sembrar.ts         ← semillas solo locales (asociaciones y usuarios de desarrollo)
 ├── esquema.ts         ← esquema de Drizzle
 ├── asociaciones/      ← subdominios, análisis del Host, GET /asociaciones/actual
+├── acceso/            ← sesiones, contraseñas, límites, permisos, gestión de personas
+├── http/              ← protección común: Host, Origin, límite grueso, categorías
 ├── salud/             ← GET /health
 └── pruebas/           ← preparación de integración, guardianes, dependencias falsas
 migraciones/           ← SQL versionado de Drizzle Kit; nunca se edita uno aplicado
@@ -45,6 +47,7 @@ migraciones/           ← SQL versionado de Drizzle Kit; nunca se edita uno apl
 npm run db:levantar          # PostgreSQL 17 en Docker (puerto 5433) + db:preparar
 npm run db:migrar            # migraciones, como aspal_dueno
 npm run db:sembrar           # ASPAL (aspal) y Organización de Prueba (prueba), solo local
+                             # con SEMILLA_CLAVE (≥12 car.) crea también usuarios de desarrollo
 npm run dev:plataforma       # tsx watch con local.env (puerto 5010)
 npm run test:plataforma      # unitarios
 npm run test:integracion     # recrea aspal_prueba, la prepara, migra y prueba
@@ -109,10 +112,56 @@ vistas materializadas o funciones `SECURITY DEFINER` fuera de la lista blanca.
 - Los errores nunca devuelven `error.detail` de PostgreSQL ni la causa interna.
 - Respuestas que dependen de la asociación: `Cache-Control: private, no-store`.
 
+## 3 bis. Acceso: sesiones, contraseñas y roles (corte 3) — reglas obligatorias
+
+Plan: `docs/plans/2026-10-16-001-feat-plataforma-corte-3-acceso-plan.md`. Las
+**cuentas son independientes por asociación**: el mismo correo en dos
+asociaciones son dos cuentas, sin tablas globales de acceso.
+
+- **Categorías de ruta.** Toda ruta declara `global`, `publica` o `autenticada`;
+  una `autenticada` solo se registra con `rutaAutenticada` (`acceso/con-sesion.ts`),
+  que abre **una sola** transacción por petición, resuelve la sesión y entrega
+  `contexto.base`. Sin cookie válida en forma, 401 antes de validar el cuerpo.
+- **Un solo repositorio.** Solo `acceso/` (y `esquema.ts`/`sembrar.ts`) nombra
+  `hash_contrasena` o `token_hash` (guardián de código). Las respuestas no llevan
+  hashes, tokens ni ids de cuenta o sesión.
+- **Login en tres pasos** (`acceso/rutas-sesion.ts`): contar el intento en una
+  transacción corta, **un único scrypt fuera de transacción** (también con
+  cuenta inexistente) y crear la sesión revalidando la versión de credencial y el
+  estado de la persona. Todo rechazo es el mismo `401 CREDENCIALES_INVALIDAS`.
+- **Límites.** `reservarIntento` cuenta antes de verificar (atómico). Claves HMAC
+  del correo **enviado**, nunca de la cuenta. El éxito reinicia solo su clave
+  (correo, origen). El límite por correo solo avisa, no bloquea.
+- **scrypt acotado.** Semáforo (2 en vuelo, cola de 8, 2 por asociación); cola
+  llena = 503 sin hashear. Los parámetros mínimos y máximos de lectura de un hash
+  guardado están en `contrasenas.ts`.
+- **Sesión.** Token de 32 bytes; en la base solo su SHA-256. Cookie `__Host-`
+  (en local http, `aspal_sesion`) sin `Domain`. Caducidad por inactividad y
+  absoluta, más corta para administrador y gestor, evaluada con los **roles
+  actuales**. Máximo 10 sesiones vivas por cuenta.
+- **Permisos.** `puede(roles, accion)` en `acceso/permisos.ts` deniega por
+  defecto; los roles se leen de la base en la misma petición, nunca de la cookie.
+- **Último administrador.** Cambiar roles o estado toma un bloqueo por
+  asociación, **revalida al actor y recuenta tras el bloqueo**: dos
+  administradores concurrentes dejan siempre exactamente uno. Nadie cambia lo
+  propio. Una persona ajena responde 404, nunca 403.
+- **Errores de negocio** dentro de una transacción se lanzan como
+  `RespuestaDeError` (revierte pero devuelve la conexión limpia al pool); un
+  error desconocido destruye la conexión.
+- **Riesgos aceptados** (plan §2.2): una inyección SQL permitiría fijar el
+  contexto de otra asociación (la defensa es no tener SQL en bruto); la fuerza
+  bruta distribuida contra una cuenta no se bloquea hasta tener doble factor; el
+  correo es la llave de la cuenta; una web ajena puede gastar el cupo grueso en
+  memoria (60 por minuto) del origen de una víctima con POST cross-site, que se
+  rechazan con 403 pero cuentan (molestia de un minuto, no toca `limite_uso`).
+- **Contadores.** El del origen cuenta **fallos**: un acierto lo descuenta y, con
+  un bloqueo vigente, los reintentos no cuentan. Un origen bloqueado no crea filas
+  por correo. Solo el correo canónico (sin alias) reinicia su contador.
+- **Crear sesión** bloquea la cuenta y la persona (`FOR NO KEY UPDATE`/`FOR SHARE`):
+  sin ello un login concurrente a una revocación sobreviviría a ella.
+
 **Reglas para los cortes siguientes** (decididas en la revisión del corte 2):
 
-- **Sesiones (corte 3):** la sesión guarda su asociación y en cada petición debe
-  coincidir con la del `Host`; si no, 401. Cookies `__Host-` sin `Domain`.
 - **Trabajos (pg-boss, outbox):** cada trabajo lleva `asociacion_id` y corre
   dentro de `conAsociacion`. La tabla outbox lleva RLS. Un proceso que lea
   todas las asociaciones usa un rol propio y auditado, nunca `aspal_app`.

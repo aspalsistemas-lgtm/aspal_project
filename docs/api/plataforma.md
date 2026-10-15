@@ -120,10 +120,15 @@ nombre es `aspal_sesion` y no lleva `Secure`. El valor es un secreto aleatorio d
 32 bytes; en la base solo se guarda su SHA-256.
 
 **Peticiones con efecto** (`POST`, `PUT`, `PATCH`, `DELETE`): exigen
-`Content-Type: application/json` y un `Origin` **idéntico** (esquema, host y
-puerto) al de la asociación resuelta por el `Host`; si llega `Sec-Fetch-Site`,
-debe ser `same-origin`. Sin `Origin`, `403 ORIGEN_NO_PERMITIDO`; sin JSON,
-`415 TIPO_NO_ADMITIDO`.
+un `Origin` **idéntico** (esquema, host y puerto) al de la asociación resuelta
+por el `Host`; si llega `Sec-Fetch-Site`, debe ser `same-origin`. Sin `Origin`,
+`403 ORIGEN_NO_PERMITIDO`. Las que llevan cuerpo (`POST`, `PUT`, `PATCH`)
+exigen además `Content-Type: application/json`, o `415 TIPO_NO_ADMITIDO`;
+`DELETE` no lleva cuerpo y no lo exige.
+
+**Rutas autenticadas sin cookie.** Responden `401 NO_AUTENTICADO` antes de
+validar el cuerpo: quien no ha entrado no recibe un `400` distinto según lo que
+mande.
 
 **Cabeceras de toda respuesta** (salvo `/health`):
 `Cache-Control: private, no-store` y `Vary: Host, Cookie`.
@@ -233,7 +238,7 @@ Respuestas:
   200 { "success": true, "data": { "estado": "suspendida" } }
   403 PROHIBIDO · CAMBIO_PROPIO_NO_PERMITIDO
   404 RECURSO_NO_ENCONTRADO
-  409 ULTIMO_ADMINISTRADOR
+  409 ULTIMO_ADMINISTRADOR · PERSONA_NO_ACTIVA (la persona está de baja)
   400 VALIDACION_FALLIDA
 ```
 
@@ -244,6 +249,10 @@ Notas:
 - **Baja:** se retiran todos sus roles, se conserva el correo (la persona no
   puede volver a registrarse) y se anonimiza el nombre. En este corte la baja es
   **definitiva**: reactivar a una persona de baja no existe todavía.
-- `suspendida` → `activa` sí se permite.
+- `suspendida` → `activa` sí se permite. Desde `baja` a cualquier otro estado
+  responde `409 PERSONA_NO_ACTIVA`; pedir el estado que ya tiene es una
+  operación sin efecto (`200`).
+- Tras el bloqueo se revalida que quien actúa sigue siendo administrador
+  activo: si lo perdió mientras esperaba, `403 PROHIBIDO`.
 - Misma regla del último administrador y mismo bloqueo por asociación que en los
   roles.
