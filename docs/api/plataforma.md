@@ -369,13 +369,17 @@ Respuestas: 200 { "success": true, "data": {} }
 Categoría:  autenticada · acción invitaciones:gestionar (solo administrador)
 Cuerpo:     { "correo": string, "rol": "administrador"|"gestor"|"representante"|"miembro" }
 Respuestas: 201 { "success": true,
-                  "data": { "id": "…", "correo": "…", "rol": "…", "expiraEn": "…" } }
+                  "data": { "id": "…", "correo": "…", "rol": "…", "expiraEn": "…",
+                            "enviada": true } }
             403 PROHIBIDO · 400 VALIDACION_FALLIDA
             409 CUENTA_EXISTENTE · INVITACION_DUPLICADA
             429 DEMASIADOS_INTENTOS
 ```
 
-- Envía la plantilla fija. Tope diario por administrador (20).
+- Envía la plantilla fija. Tope diario por administrador (20). `enviada` dice si el
+  correo entró en la cola de envío; con `false` se puede revocar y repetir.
+- El correo debe ser una dirección corriente (`usuario@dominio.tld` en minúsculas,
+  sin comentarios, grupos, comas ni puntos finales): lo demás es `400`.
 - `CUENTA_EXISTENTE`: el correo ya tiene cuenta (también si su persona está de
   baja, porque la baja conserva el correo); se asigna el rol a esa persona con
   `PUT /personas/:personaId/roles`.

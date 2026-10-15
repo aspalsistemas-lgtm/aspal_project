@@ -187,6 +187,24 @@ asociaciones son dos cuentas, sin tablas globales de acceso.
 - **Invitaciones.** Aceptar revalida **dentro de la sentencia que reclama el token** que
   el invitador sigue siendo administrador activo; perder el rol o el estado revoca sus
   pendientes. Una pendiente por (correo, rol).
+- **Direcciones.** `correo/direccion.ts` es una lista **cerrada**: nodemailer entrega
+  `victima(1)@…` o `x:victima@…` al buzón de `victima@…`, lo que esquivaría el cupo
+  por destinatario. `gmail.com` y `googlemail.com` cuentan como el mismo destinatario.
+- **Cupo diario de envío** solo se gasta cuando va a salir un correo (con correos
+  inventados no se agota); la solicitud (origen y destinatario) se cuenta en una
+  transacción propia. El aviso de «ya tienes cuenta» y el de «contraseña cambiada»
+  son tipos distintos.
+- **Aceptar una invitación** toma el bloqueo de gestión y revalida al invitador al
+  crear la cuenta (hubo un scrypt desde que se reclamó). Un fallo transitorio al crear
+  la cuenta **devuelve** el token. Los errores no controlados se registran sin mensaje
+  ni pila (la consulta de Drizzle trae correos y hashes).
+- **Riesgos aceptados del 3b:** tiempos algo distintos entre ramas de las solicitudes
+  (sin scrypt; canal de baja resolución); un administrador puede sondear qué correos
+  tienen cuenta (`CUENTA_EXISTENTE`) hasta el límite grueso; el tope de limpieza de
+  `limite_uso` (10 000 filas) puede reiniciar cupos ante un atacante distribuido; la
+  cola de correo y su tope por hora son por proceso, compartidos entre asociaciones;
+  un atacante con muchos correos de cuentas reales y muchos orígenes puede agotar el
+  cupo diario de recuperación (500) de una asociación.
 - **Errores de PostgreSQL**: usa `codigoPostgres(error)` (Drizzle envuelve el error de
   `pg` en `cause`); la `UNIQUE` es el árbitro final ante carreras.
 

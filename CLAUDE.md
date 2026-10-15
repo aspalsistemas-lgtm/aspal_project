@@ -329,9 +329,12 @@ Migraciones:      No aplica. El sitio no tiene BD. La plataforma aún no tiene
 En curso:         Plataforma SaaS, Etapa 1, todo en local con Docker (la nube,
                   más adelante). Cortes 1 (esqueleto) y 2 (asociaciones y
                   aislamiento con RLS, D8 cerrada) hechos: reglas obligatorias
-                  de aislamiento en apps/plataforma/CLAUDE.md §3. Siguiente:
-                  corte 3 (acceso: cuenta, persona, sesiones, Google). Faltan
-                  del responsable: Stripe, DNS, miembros y pagos.
+                  de aislamiento en apps/plataforma/CLAUDE.md §3. Corte 3 (acceso)
+                  hecho en 3a (sesiones, roles) y 3b (correo, registro,
+                  recuperación, invitaciones); el enlace mágico quedó fuera.
+                  Siguiente: 3c (Google), luego corte 4 (dashboard maestro).
+                  Faltan del responsable: Stripe, DNS, miembros y pagos,
+                  texto legal, credenciales de Google.
 
 Archivos NO:      vercel.json, variables de Vercel y .env*; dependencias solo con
                   autorización explícita. El WXR de WordPress no se versiona.
