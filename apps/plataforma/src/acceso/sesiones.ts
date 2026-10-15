@@ -130,6 +130,11 @@ export async function crearSesion(
      WHERE c.id = ${cuentaId}
        AND c.credencial_version = ${credencialVersion}
        AND p.estado = 'activa'
+    -- Bloqueos: sin ellos este SELECT no ve un cambio de credenciales o de estado aún
+    -- sin confirmar y la sesión nacería después de la revocación (auditoría, M1). Con
+    -- ellos espera, reevalúa el WHERE y devuelve 0 filas. Sobre la cuenta, además,
+    -- serializa los logins de una misma cuenta para que el tope de sesiones sea exacto.
+    FOR NO KEY UPDATE OF c FOR SHARE OF p
     RETURNING id, expira_en`);
   const fila = rows[0];
   if (!fila) return null;
@@ -282,6 +287,7 @@ export async function limpiarSesiones(
        SELECT ctid FROM public.sesion
         WHERE expira_en < now() - interval '1 day'
            OR revocada_en < now() - interval '1 day'
-        LIMIT ${lote})`);
+        LIMIT ${lote}
+        FOR UPDATE SKIP LOCKED)`);
   return resultado.rowCount ?? 0;
 }

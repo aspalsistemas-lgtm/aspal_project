@@ -156,6 +156,19 @@ describe("configuración del acceso (plan del corte 3, CA-4, CA-12 y CA-10)", ()
     }
   });
 
+  it("en producción rechaza el secreto de desarrollo del repositorio (auditoría, B7)", () => {
+    const desarrollo = "secreto-local-de-desarrollo-no-usar-en-la-nube-0001";
+    const produccion = { ...BASE, NODE_ENV: "production", TRUST_PROXY: "0" };
+    expect(() =>
+      cargarConfiguracion({ ...produccion, SECRETO_CLAVES: desarrollo }),
+    ).toThrow(/SECRETO_CLAVES/);
+    // En desarrollo sí vale, y uno propio también en producción.
+    expect(() =>
+      cargarConfiguracion({ ...BASE, SECRETO_CLAVES: desarrollo }),
+    ).not.toThrow();
+    expect(() => cargarConfiguracion(produccion)).not.toThrow();
+  });
+
   describe("TRUST_PROXY", () => {
     it("por defecto no confía en ningún proxy", () => {
       expect(cargarConfiguracion(BASE).trustProxy).toBe(0);

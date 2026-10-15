@@ -35,6 +35,7 @@ import {
   POLITICA_ORIGEN,
   LIMPIEZA_POR_DEFECTO,
   limpiarLimites,
+  liberarIntento,
   reiniciarLimite,
   reservarIntento,
 } from "./limites.js";
@@ -113,19 +114,38 @@ export function registrarSesiones(
       const claveOrigen = claveHmac(secretoClaves, "login:origen", origen);
       const claveGlobal = claveHmac(secretoClaves, "login:cuenta", correoLimite);
 
+      // Limpieza oportunista, con cualquier intento (no solo los correctos: un atacante
+      // que nunca acierta es justo quien llena las tablas). Un fallo aquí nunca estropea
+      // el login.
+      if (
+        Math.random() < (dependencias.probabilidadLimpieza ?? PROBABILIDAD_DE_LIMPIEZA)
+      ) {
+        await enAsociacion(asociacionId, async (base) => {
+          await limpiarLimites(base, LIMPIEZA_POR_DEFECTO);
+          await limpiarSesiones(base, LIMPIEZA_POR_DEFECTO.lote);
+        }).catch(() => peticion.log.warn("la limpieza oportunista falló"));
+      }
+
       // Paso 1: contar el intento y leer la cuenta, en una transacción corta que se confirma.
       const previo = await enAsociacion(asociacionId, async (base) => {
+        // Primero el origen: si ya está bloqueado no se crean filas por correo (un
+        // atacante con correos aleatorios no hace crecer la tabla). El orden fijo
+        // origen → cuenta → global también evita interbloqueos entre peticiones.
+        const porOrigen = await reservarIntento(base, claveOrigen, POLITICA_ORIGEN);
+        if (!porOrigen.permitido) {
+          return {
+            bloqueado: true as const,
+            espera: porOrigen.reintentarEnSegundos,
+            global: false,
+          };
+        }
         const porCuenta = await reservarIntento(
           base,
           claveCuenta,
           POLITICA_CUENTA_ORIGEN,
         );
-        const porOrigen = await reservarIntento(base, claveOrigen, POLITICA_ORIGEN);
         const global = await reservarIntento(base, claveGlobal, POLITICA_CUENTA_GLOBAL);
-        const espera = Math.max(
-          porCuenta.permitido ? 0 : porCuenta.reintentarEnSegundos,
-          porOrigen.permitido ? 0 : porOrigen.reintentarEnSegundos,
-        );
+        const espera = porCuenta.permitido ? 0 : porCuenta.reintentarEnSegundos;
         if (espera > 0)
           return { bloqueado: true as const, espera, global: !global.permitido };
         const cuenta = esCorreoValido(correo)
@@ -193,7 +213,11 @@ export function registrarSesiones(
           roles: cuenta.roles,
         });
         if (!creada) return null;
-        await reiniciarLimite(base, claveCuenta);
+        // Solo el correo canónico reinicia su contador: con alias (`+etiqueta`, puntos de
+        // Gmail) otra cuenta podría borrar el contador de la víctima (auditoría, B1).
+        if (correo === correoLimite) await reiniciarLimite(base, claveCuenta);
+        // El contador del origen es de fallos: un acierto no lo gasta.
+        await liberarIntento(base, claveOrigen);
         if (hashNuevo && cuenta.hashContrasena) {
           await rehashearContrasena(
             base,
@@ -203,18 +227,14 @@ export function registrarSesiones(
           );
         }
         return creada;
+      }).catch((error: unknown) => {
+        // Contención con una revocación o un cambio de credenciales (lock_timeout o
+        // interbloqueo): la sesión no nace, igual que si la versión hubiera cambiado.
+        const codigo = (error as { code?: string } | null)?.code;
+        if (codigo === "55P03" || codigo === "40P01") return null;
+        throw error;
       });
       if (!sesion) return respuesta.code(401).send(credencialesInvalidas());
-
-      // Limpieza oportunista; un fallo aquí nunca estropea un login correcto.
-      if (
-        Math.random() < (dependencias.probabilidadLimpieza ?? PROBABILIDAD_DE_LIMPIEZA)
-      ) {
-        await enAsociacion(asociacionId, async (base) => {
-          await limpiarLimites(base, LIMPIEZA_POR_DEFECTO);
-          await limpiarSesiones(base, LIMPIEZA_POR_DEFECTO.lote);
-        }).catch(() => peticion.log.warn("la limpieza oportunista falló"));
-      }
 
       respuesta.setCookie(
         nombreCookieSesion(esquemaPublico),

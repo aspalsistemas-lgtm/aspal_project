@@ -16,6 +16,7 @@ import {
   POLITICA_CUENTA_ORIGEN,
   POLITICA_ORIGEN,
   limpiarLimites,
+  liberarIntento,
   reiniciarLimite,
   reservarIntento,
   type PoliticaLimite,
@@ -155,9 +156,32 @@ describe("reservarIntento (CA-10)", () => {
     const permitidos = resultados.filter((r) => r.permitido).length;
     expect(permitidos).toBe(5);
     expect(resultados.filter((r) => !r.permitido)).toHaveLength(45);
-    // Y los contadores salieron todos distintos: ninguna reserva se perdió.
-    expect(new Set(resultados.map((r) => r.contador)).size).toBe(50);
-    expect((await fila(A, k))!.contador).toBe(50);
+    // El sexto fija el bloqueo; los demás lo encuentran y ya no cuentan (M2).
+    expect((await fila(A, k))!.contador).toBe(6);
+  });
+
+  it("los reintentos durante un bloqueo no cuentan ni alargan la espera (M2)", async () => {
+    const k = clave();
+    for (let i = 0; i < 5; i++) await reservar(A, k);
+    const primero = await reservar(A, k);
+    expect(primero).toMatchObject({ permitido: false, reintentarEnSegundos: 60 });
+    for (let i = 0; i < 10; i++) {
+      const r = await reservar(A, k);
+      expect(r.permitido).toBe(false);
+      expect(r.reintentarEnSegundos).toBeLessThanOrEqual(60);
+    }
+    expect((await fila(A, k))!.contador).toBe(6);
+  });
+
+  it("liberarIntento descuenta uno y nunca baja de cero (M2)", async () => {
+    const k = clave();
+    await reservar(A, k);
+    await reservar(A, k);
+    await conAsociacion(app, A, (base) => liberarIntento(base, k));
+    expect((await fila(A, k))!.contador).toBe(1);
+    await conAsociacion(app, A, (base) => liberarIntento(base, k));
+    await conAsociacion(app, A, (base) => liberarIntento(base, k));
+    expect((await fila(A, k))!.contador).toBe(0);
   });
 
   it("si la reserva va dentro de una transacción que falla, se pierde: por eso el login reserva en la suya", async () => {

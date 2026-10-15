@@ -59,6 +59,8 @@ export async function conSesion<T>(
     if (
       !sesion ||
       sesion.revocada ||
+      // La caducidad guardada también cuenta, además de las medidas por inactividad.
+      sesion.expiraEn.getTime() <= Date.now() ||
       sesion.estadoPersona !== "activa" ||
       // Con los roles ACTUALES: un miembro ascendido a administrador pierde su sesión larga.
       !sesionVigente(sesion, sesion.roles)

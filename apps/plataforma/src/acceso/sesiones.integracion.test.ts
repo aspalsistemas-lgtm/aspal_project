@@ -575,3 +575,92 @@ describe("limpiarSesiones: en lotes (CA-10)", () => {
     expect(await enA((base) => resolverSesion(base, vigente))).not.toBeNull();
   });
 });
+
+describe("concurrencia al crear la sesión (auditoría M1 y B2)", () => {
+  async function conTransaccionAbierta(
+    sentencia: string,
+    parametros: unknown[],
+    mientras: () => Promise<unknown>,
+  ): Promise<void> {
+    const cliente = await admin.connect();
+    try {
+      await cliente.query("BEGIN");
+      await cliente.query(sentencia, parametros);
+      const pendiente = mientras();
+      // Da tiempo a que la sentencia concurrente llegue y quede esperando el bloqueo.
+      await new Promise((resolver) => setTimeout(resolver, 300));
+      await cliente.query("COMMIT");
+      await pendiente;
+    } finally {
+      cliente.release();
+    }
+  }
+
+  it("un login que corre mientras se sube la versión de credencial no crea sesión", async () => {
+    const persona = await crearPersonaConCuenta(admin, A, "m1-credencial@ejemplo.org", {
+      roles: ["miembro"],
+      hash: "hash-m1",
+    });
+    let resultado: unknown = "sin ejecutar";
+    await conTransaccionAbierta(
+      "UPDATE public.cuenta_acceso SET credencial_version = credencial_version + 1 WHERE id = $1",
+      [persona.cuentaId],
+      async () => {
+        resultado = await enA((base) =>
+          crearSesion(base, {
+            cuentaId: persona.cuentaId,
+            credencialVersion: 1,
+            tokenHash: generarToken().hash,
+            roles: ["miembro"],
+          }),
+        );
+      },
+    );
+    expect(resultado).toBeNull();
+    expect(await sesionesVivas(persona.cuentaId)).toBe(0);
+  });
+
+  it("un login que corre mientras se suspende a la persona no crea sesión", async () => {
+    const persona = await crearPersonaConCuenta(admin, A, "m1-estado@ejemplo.org", {
+      roles: ["miembro"],
+      hash: "hash-m1",
+    });
+    let resultado: unknown = "sin ejecutar";
+    await conTransaccionAbierta(
+      "UPDATE public.persona SET estado = 'suspendida' WHERE id = $1",
+      [persona.personaId],
+      async () => {
+        resultado = await enA((base) =>
+          crearSesion(base, {
+            cuentaId: persona.cuentaId,
+            credencialVersion: 1,
+            tokenHash: generarToken().hash,
+            roles: ["miembro"],
+          }),
+        );
+      },
+    );
+    expect(resultado).toBeNull();
+    expect(await sesionesVivas(persona.cuentaId)).toBe(0);
+  });
+
+  it("15 logins simultáneos de la misma cuenta dejan exactamente 10 sesiones vivas", async () => {
+    const persona = await crearPersonaConCuenta(admin, A, "b2-tope@ejemplo.org", {
+      roles: ["miembro"],
+      hash: "hash-b2",
+    });
+    await Promise.all(
+      Array.from({ length: 15 }, () =>
+        enA((base) =>
+          crearSesion(base, {
+            cuentaId: persona.cuentaId,
+            credencialVersion: 1,
+            tokenHash: generarToken().hash,
+            roles: ["miembro"],
+          }),
+        ),
+      ),
+    );
+    expect(await sesionesVivas(persona.cuentaId)).toBe(10);
+  });
+});

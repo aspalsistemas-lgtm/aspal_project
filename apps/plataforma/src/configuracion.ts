@@ -163,6 +163,12 @@ export function cargarConfiguracion(entorno: Entorno): Configuracion {
     );
   }
 
+  // El secreto de compose.yaml es público (está en el repositorio): con él, las claves
+  // HMAC de los límites serían predecibles.
+  if (produccion && datos.SECRETO_CLAVES.includes("no-usar-en-la-nube")) {
+    problemas.push("SECRETO_CLAVES: es el valor de desarrollo; genera uno propio");
+  }
+
   if (problemas.length > 0) {
     throw new Error(`Configuración inválida: ${problemas.join("; ")}`);
   }

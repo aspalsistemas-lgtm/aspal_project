@@ -56,6 +56,20 @@ export function registrarZod(app: FastifyInstance): void {
           ),
         );
     }
+    // Un 4xx de Fastify (JSON mal formado, cuerpo demasiado grande, tipo no admitido) es
+    // culpa del cliente: no es un 500, y el mensaje original puede traer un fragmento del
+    // cuerpo (una contraseña, por ejemplo), así que ni se devuelve ni se registra.
+    const estado = error.statusCode;
+    if (estado && estado >= 400 && estado < 500) {
+      peticion.log.warn({ codigo: error.code, estado }, "petición rechazada");
+      const [codigo, mensaje] =
+        estado === 413
+          ? ["CUERPO_DEMASIADO_GRANDE", "El cuerpo de la petición es demasiado grande"]
+          : estado === 415
+            ? ["TIPO_NO_ADMITIDO", "La petición debe ser application/json"]
+            : ["VALIDACION_FALLIDA", "La petición no es válida"];
+      return respuesta.code(estado).send(cuerpoError(codigo, mensaje));
+    }
     peticion.log.error({ err: error }, "error no controlado");
     return respuesta.code(500).send(cuerpoError("ERROR_INTERNO", "Error interno"));
   });

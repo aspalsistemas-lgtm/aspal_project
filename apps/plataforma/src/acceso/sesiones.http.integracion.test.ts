@@ -39,6 +39,7 @@ let pool: pg.Pool;
 let A: string;
 let B: string;
 let C: string;
+let D: string;
 let scrypts = 0;
 let contrasenas: ServicioContrasenas;
 let app: FastifyInstance;
@@ -150,6 +151,7 @@ beforeAll(async () => {
   A = await crearAsociacionDePrueba(admin, "login-a");
   B = await crearAsociacionDePrueba(admin, "login-b");
   C = await crearAsociacionDePrueba(admin, "login-c");
+  D = await crearAsociacionDePrueba(admin, "login-d");
   contrasenas = crearServicioContrasenas({
     parametros: PARAMETROS_RAPIDOS,
     derivar: (...argumentos) => {
@@ -163,7 +165,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await app.close();
-  await borrarAsociacionesDePrueba(admin, [A, B, C]);
+  await borrarAsociacionesDePrueba(admin, [A, B, C, D]);
   await Promise.all([admin.end(), pool.end()]);
 });
 
@@ -656,5 +658,121 @@ describe("registros sin datos sensibles (CA-4, CA-12)", () => {
     } finally {
       await aplicacion.close();
     }
+  });
+});
+
+describe("correcciones de la auditoría", () => {
+  it("M2: veinticinco entradas correctas desde el mismo origen no lo bloquean", async () => {
+    const usuario = await crearUsuario(A);
+    const ip = ipNueva();
+    for (let i = 0; i < 25; i++) {
+      const respuesta = await login(usuario.correo, CLAVE, { ip });
+      expect(respuesta.statusCode, `entrada ${i + 1}`).toBe(200);
+    }
+  });
+
+  it("M3: con el origen bloqueado, correos nuevos no crean filas de límite", async () => {
+    const filas = async () =>
+      (
+        await admin.query(
+          "SELECT count(*)::int AS n FROM public.limite_uso WHERE asociacion_id = $1",
+          [D],
+        )
+      ).rows[0].n as number;
+    const ip = ipNueva();
+    for (let i = 0; i < 20; i++) {
+      await login(`aleatorio${i}@ejemplo.org`, "mala-clave-mala", { ip, sub: "login-d" });
+    }
+    const bloqueado = await login("aleatorio-x@ejemplo.org", "mala-clave-mala", {
+      ip,
+      sub: "login-d",
+    });
+    expect(bloqueado.statusCode).toBe(429);
+    const antes = await filas();
+    for (let i = 0; i < 10; i++) {
+      const r = await login(`nuevo${i}@ejemplo.org`, "mala-clave-mala", {
+        ip,
+        sub: "login-d",
+      });
+      expect(r.statusCode).toBe(429);
+    }
+    expect(await filas()).toBe(antes);
+  });
+
+  it("B1: entrar con un alias del correo no reinicia el contador de la víctima", async () => {
+    const alias = await crearUsuario(D, { correo: "ana.lopez+alias@gmail.com" });
+    const filas = async () =>
+      (
+        await admin.query(
+          "SELECT count(*)::int AS n FROM public.limite_uso WHERE asociacion_id = $1",
+          [D],
+        )
+      ).rows[0].n as number;
+    const ip = ipNueva();
+    await login(alias.correo, "mala-clave-mala", { ip, sub: "login-d" });
+    const antes = await filas();
+    expect((await login(alias.correo, CLAVE, { ip, sub: "login-d" })).statusCode).toBe(
+      200,
+    );
+    // La clave (correo canónico, origen) sigue ahí: un alias no la borra.
+    expect(await filas()).toBe(antes);
+  });
+
+  it("B3: un JSON mal formado es un 400 genérico y no deja la contraseña en el log", async () => {
+    const lineas: string[] = [];
+    const flujo = new Writable({
+      write(trozo, _codificacion, listo) {
+        lineas.push(String(trozo));
+        listo();
+      },
+    });
+    const aplicacion = construir({ logger: { stream: flujo } });
+    try {
+      const respuesta = await aplicacion.inject({
+        method: "POST",
+        url: "/sesiones",
+        remoteAddress: ipNueva(),
+        headers: {
+          host: "login-a.localhost:5010",
+          origin: origenDe("login-a"),
+          "content-type": "application/json",
+        },
+        payload: '{"correo": "x@ejemplo.org", "contrasena": "secreta-que-no-debe-salir',
+      });
+      expect(respuesta.statusCode).toBe(400);
+      expect(respuesta.json().error.codigo).toBe("VALIDACION_FALLIDA");
+      expect(respuesta.body).not.toContain("secreta-que-no-debe-salir");
+      expect(lineas.join("")).not.toContain("secreta-que-no-debe-salir");
+
+      const grande = await aplicacion.inject({
+        method: "POST",
+        url: "/sesiones",
+        remoteAddress: ipNueva(),
+        headers: {
+          host: "login-a.localhost:5010",
+          origin: origenDe("login-a"),
+          "content-type": "application/json",
+        },
+        payload: JSON.stringify({
+          correo: "x@ejemplo.org",
+          contrasena: "a".repeat(2_000_000),
+        }),
+      });
+      expect(grande.statusCode).toBe(413);
+      expect(grande.json().error.codigo).toBe("CUERPO_DEMASIADO_GRANDE");
+    } finally {
+      await aplicacion.close();
+    }
+  });
+
+  it("B4: una sesión con expira_en vencido no vale aunque no esté inactiva ni sea antigua", async () => {
+    const usuario = await crearUsuario(A);
+    const galleta = tokenDe(await login(usuario.correo, CLAVE));
+    expect((await conCookie("GET", galleta)).statusCode).toBe(200);
+    await admin.query(
+      "UPDATE public.sesion SET expira_en = now() - interval '1 minute' WHERE cuenta_id = $1",
+      [usuario.cuentaId],
+    );
+    expect((await conCookie("GET", galleta)).statusCode).toBe(401);
   });
 });

@@ -68,7 +68,11 @@ export async function reservarIntento(
       contador = CASE
         WHEN l.ventana_desde <= now() - make_interval(secs => ${politica.ventanaSegundos})
          AND (l.bloqueado_hasta IS NULL OR l.bloqueado_hasta <= now())
-        THEN 1 ELSE l.contador + 1 END,
+        THEN 1
+        -- Con un bloqueo vigente no se cuenta: los reintentos durante la espera no la
+        -- alargan (auditoría, M2); la escalada llega al terminar la espera.
+        WHEN l.bloqueado_hasta IS NOT NULL AND l.bloqueado_hasta > now() THEN l.contador
+        ELSE l.contador + 1 END,
       ventana_desde = CASE
         WHEN l.ventana_desde <= now() - make_interval(secs => ${politica.ventanaSegundos})
          AND (l.bloqueado_hasta IS NULL OR l.bloqueado_hasta <= now())
@@ -105,6 +109,20 @@ export async function reservarIntento(
        SET bloqueado_hasta = now() + make_interval(secs => ${espera})
      WHERE clave = ${clave}`);
   return { permitido: false, contador, reintentarEnSegundos: espera };
+}
+
+/**
+ * Descuenta un intento (nunca por debajo de 0). Un login correcto lo usa sobre la clave
+ * del origen: ese contador es de **fallos**, y 20 personas que entran bien desde la
+ * misma red no deben agotarlo (auditoría, M2).
+ */
+export async function liberarIntento(
+  base: BaseDeAsociacion,
+  clave: Buffer,
+): Promise<void> {
+  await base.execute(sql`
+    UPDATE public.limite_uso SET contador = GREATEST(contador - 1, 0)
+     WHERE clave = ${clave}`);
 }
 
 /** Borra el contador de una clave (un login correcto reinicia **su** clave, no la de origen). */
@@ -145,7 +163,8 @@ export async function limpiarLimites(
        SELECT ctid FROM public.limite_uso
         WHERE ventana_desde < now() - make_interval(secs => ${antiguedadSegundos})
           AND (bloqueado_hasta IS NULL OR bloqueado_hasta < now())
-        LIMIT ${lote})`);
+        LIMIT ${lote}
+        FOR UPDATE SKIP LOCKED)`);
   const borradasPorVencer = vencidas.rowCount ?? 0;
   if (borradasPorVencer >= lote) return borradasPorVencer;
 
@@ -159,7 +178,8 @@ export async function limpiarLimites(
         ORDER BY ventana_desde ASC
         LIMIT LEAST(
           ${restante},
-          GREATEST((SELECT count(*) FROM public.limite_uso) - ${tope}, 0)))`);
+          GREATEST((SELECT count(*) FROM public.limite_uso) - ${tope}, 0))
+        FOR UPDATE SKIP LOCKED)`);
   return borradasPorVencer + (excedentes.rowCount ?? 0);
 }
 
