@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { crearServicioContrasenas } from "./contrasenas.js";
 import { ColaLlena } from "./semaforo.js";
 import { conAsociacion } from "../base-de-datos.js";
+import { TERMINOS_VERSION } from "./terminos.js";
 import { tokenDelCorreo } from "../pruebas/correo.js";
 import { crearEntornoHttp, type EntornoHttp } from "../pruebas/http-acceso.js";
 
@@ -189,7 +190,7 @@ describe("POST /registros/confirmar (CA-23)", () => {
     );
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({
-      terminos_version: "pendiente",
+      terminos_version: TERMINOS_VERSION,
       rol: "miembro",
       asignado_por: null,
       nombre: "Ana Pérez",

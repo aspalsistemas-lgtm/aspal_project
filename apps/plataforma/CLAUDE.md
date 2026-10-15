@@ -183,7 +183,7 @@ asociaciones son dos cuentas, sin tablas globales de acceso.
   los enlaces vigentes (hasta 3).
 - **No existen cuentas sin verificar**: `registro_pendiente` no es una cuenta; persona
   y cuenta se crean al confirmar, con el correo verificado y la versión de términos
-  (`acceso/terminos.ts`, hoy un marcador a la espera del texto legal).
+  (`acceso/terminos.ts`: la fecha del aviso de privacidad del sitio; un test avisa si el texto legal cambia sin revisar la versión).
 - **Invitaciones.** Aceptar revalida **dentro de la sentencia que reclama el token** que
   el invitador sigue siendo administrador activo; perder el rol o el estado revoca sus
   pendientes. Una pendiente por (correo, rol).

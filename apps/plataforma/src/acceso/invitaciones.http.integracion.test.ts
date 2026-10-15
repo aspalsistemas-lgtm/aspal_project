@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { crearServicioContrasenas } from "./contrasenas.js";
 import { ColaLlena } from "./semaforo.js";
 import { conAsociacion } from "../base-de-datos.js";
+import { TERMINOS_VERSION } from "./terminos.js";
 import { tokenDelCorreo } from "../pruebas/correo.js";
 import { crearEntornoHttp, type EntornoHttp } from "../pruebas/http-acceso.js";
 
@@ -280,7 +281,7 @@ describe("POST /invitaciones/aceptar (CA-26)", () => {
     expect(rows[0]).toMatchObject({
       rol: "representante",
       asignado_por: jefe.personaId,
-      terminos_version: "pendiente",
+      terminos_version: TERMINOS_VERSION,
     });
     expect(rows[0].correo_verificado_en).toBeInstanceOf(Date);
     await expect(e.entrar("inv-a", correo, NUEVA)).resolves.toEqual(expect.any(String));

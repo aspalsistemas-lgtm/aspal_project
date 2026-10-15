@@ -497,7 +497,8 @@ Decisiones y desvíos respecto a lo escrito arriba:
   2026-10-17). `token_correo.tipo` solo admite `recuperar_contrasena` por ahora.
 - **`registro_pendiente` no lleva `terminos_version`:** la aceptación se registra al
   confirmar, en `cuenta_acceso` (`terminos_version`, `terminos_aceptados_en`). La
-  versión es el marcador `pendiente` hasta que el responsable entregue el texto legal.
+  versión es `2024-04`, la fecha del aviso de privacidad que ya publica el sitio
+  (decisión del responsable, 2026-10-17: se toma el texto existente).
 - **Reclamar antes de hashear** (CA-23): el token se valida con una lectura, y luego se
   _reclama_ con una sentencia atómica **antes** del scrypt; solo el ganador hashea y, si
   el hash no puede hacerse (cola llena), se libera. Mejora lo previsto: 20
