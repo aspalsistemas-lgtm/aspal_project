@@ -37,7 +37,7 @@ import {
   reiniciarLimite,
   reservarIntento,
 } from "./limites.js";
-import { limpiarTodo } from "./limpieza.js";
+import { limpiezaOportunista } from "./limpieza.js";
 import { ColaLlena } from "./semaforo.js";
 import {
   buscarCuentaParaAcceso,
@@ -47,7 +47,6 @@ import {
   revocarSesion,
 } from "./sesiones.js";
 
-const PROBABILIDAD_DE_LIMPIEZA = 0.02;
 const REINTENTO_COLA_LLENA_SEGUNDOS = 5;
 
 const CUERPO_LOGIN = z.object({
@@ -112,16 +111,7 @@ export function registrarSesiones(
       const claveOrigen = claveHmac(secretoClaves, "login:origen", origen);
       const claveGlobal = claveHmac(secretoClaves, "login:cuenta", correoLimite);
 
-      // Limpieza oportunista, con cualquier intento (no solo los correctos: un atacante
-      // que nunca acierta es justo quien llena las tablas). Un fallo aquí nunca estropea
-      // el login.
-      if (
-        Math.random() < (dependencias.probabilidadLimpieza ?? PROBABILIDAD_DE_LIMPIEZA)
-      ) {
-        await enAsociacion(asociacionId, limpiarTodo).catch(() =>
-          peticion.log.warn("la limpieza oportunista falló"),
-        );
-      }
+      await limpiezaOportunista(dependencias, peticion);
 
       // Paso 1: contar el intento y leer la cuenta, en una transacción corta que se confirma.
       const previo = await enAsociacion(asociacionId, async (base) => {

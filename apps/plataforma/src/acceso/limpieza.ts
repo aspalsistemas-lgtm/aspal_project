@@ -8,6 +8,8 @@
  * está usando esas mismas filas.
  */
 import { sql } from "drizzle-orm";
+import type { FastifyRequest } from "fastify";
+import type { Dependencias } from "../app.js";
 import type { BaseDeAsociacion } from "../base-de-datos.js";
 import { LIMPIEZA_POR_DEFECTO, limpiarLimites } from "./limites.js";
 import { limpiarSesiones } from "./sesiones.js";
@@ -56,4 +58,23 @@ export async function limpiarTodo(base: BaseDeAsociacion): Promise<void> {
   await limpiarLimites(base, LIMPIEZA_POR_DEFECTO);
   await limpiarSesiones(base, LIMPIEZA_POR_DEFECTO.lote);
   await limpiarCorreo(base, LIMPIEZA_POR_DEFECTO.lote);
+}
+
+const PROBABILIDAD_POR_DEFECTO = 0.02;
+
+/**
+ * Con poca probabilidad, limpia las tablas de acceso de la asociación. Se llama con
+ * **cualquier** intento (no solo los correctos): quien nunca acierta es justo quien las
+ * llena. Un fallo aquí nunca estropea la petición.
+ */
+export async function limpiezaOportunista(
+  dependencias: Pick<Dependencias, "enAsociacion" | "probabilidadLimpieza">,
+  peticion: FastifyRequest,
+): Promise<void> {
+  if (Math.random() >= (dependencias.probabilidadLimpieza ?? PROBABILIDAD_POR_DEFECTO)) {
+    return;
+  }
+  await dependencias
+    .enAsociacion(peticion.asociacion!.id, limpiarTodo)
+    .catch(() => peticion.log.warn("la limpieza oportunista falló"));
 }

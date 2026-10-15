@@ -8,6 +8,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 import cookie from "@fastify/cookie";
 import type { ServicioContrasenas } from "./acceso/contrasenas.js";
 import type { ServicioCorreo } from "./correo/servicio.js";
+import { registrarRecuperacion } from "./acceso/rutas-recuperacion.js";
 import { registrarGestionDePersonas } from "./acceso/rutas-personas.js";
 import { registrarSesiones } from "./acceso/rutas-sesion.js";
 import { registrarAsociaciones } from "./asociaciones/rutas.js";
@@ -75,6 +76,7 @@ export function construirApp(
   registrarAsociaciones(app, dependencias);
   registrarSesiones(app, dependencias);
   registrarGestionDePersonas(app, dependencias);
+  registrarRecuperacion(app, dependencias);
   registrarSalud(app, dependencias);
   return app;
 }
