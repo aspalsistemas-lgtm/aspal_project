@@ -17,6 +17,7 @@ import {
   plantillaRecuperacion,
 } from "../correo/plantillas.js";
 import { cuerpoError } from "../zod-fastify.js";
+import { cuerpoEnlaceInvalido } from "./errores.js";
 import { claveDeOrigen, esCorreoValido, normalizarCorreo } from "./claves.js";
 import { validarContrasena } from "./contrasenas.js";
 import { limpiezaOportunista } from "./limpieza.js";
@@ -49,8 +50,7 @@ const RESPUESTA_ERROR = z.object({
   }),
 });
 
-export const enlaceInvalido = () =>
-  cuerpoError("ENLACE_INVALIDO", "El enlace no es válido o ya caducó");
+const enlaceInvalido = cuerpoEnlaceInvalido;
 
 const REINTENTO_COLA_LLENA_SEGUNDOS = 5;
 

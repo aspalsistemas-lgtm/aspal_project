@@ -37,6 +37,7 @@ import {
   reiniciarLimite,
   reservarIntento,
 } from "./limites.js";
+import { codigoPostgres } from "./errores.js";
 import { limpiezaOportunista } from "./limpieza.js";
 import { ColaLlena } from "./semaforo.js";
 import {
@@ -217,7 +218,7 @@ export function registrarSesiones(
       }).catch((error: unknown) => {
         // Contención con una revocación o un cambio de credenciales (lock_timeout o
         // interbloqueo): la sesión no nace, igual que si la versión hubiera cambiado.
-        const codigo = (error as { code?: string } | null)?.code;
+        const codigo = codigoPostgres(error);
         if (codigo === "55P03" || codigo === "40P01") return null;
         throw error;
       });
