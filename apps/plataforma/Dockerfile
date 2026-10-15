@@ -21,5 +21,7 @@ COPY --from=compilacion /app/apps/plataforma/dist apps/plataforma/dist
 COPY apps/plataforma/migraciones apps/plataforma/migraciones
 USER node
 EXPOSE 3000
-# Migraciones primero: si fallan, el servidor no arranca con un esquema a medias.
-CMD ["sh", "-c", "node apps/plataforma/dist/migrar.js && exec node apps/plataforma/dist/servidor.js"]
+# Solo el servidor. Preparar la base y migrar lo hace el servicio «migrador» de
+# compose.yaml con la misma imagen y otras credenciales: este proceso nunca tiene
+# la URL de administrador (plan del corte 2, §3).
+CMD ["node", "apps/plataforma/dist/servidor.js"]

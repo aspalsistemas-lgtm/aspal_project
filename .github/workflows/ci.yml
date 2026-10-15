@@ -61,8 +61,10 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U aspal -d aspal_prueba"
           --health-interval 2s --health-timeout 3s --health-retries 15
+    # La base de pruebas la recrea, prepara y migra el propio globalSetup.
     env:
-      DATABASE_URL_PRUEBA: postgres://aspal:aspal_local@localhost:5433/aspal_prueba
+      DATABASE_URL_PRUEBA_ADMIN: postgres://aspal:aspal_local@localhost:5433/aspal_prueba
+      DATABASE_URL_PRUEBA_APP: postgres://aspal_app:aspal_app_local_ci@localhost:5433/aspal_prueba
     steps:
       - uses: actions/checkout@v4
 

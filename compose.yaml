@@ -1,7 +1,7 @@
 # Entorno local de la plataforma (decisión del 2026-10-14: todo se desarrolla en
 # Docker y se mueve a la nube más adelante). Las credenciales son solo locales.
 #
-#   npm run db:levantar          solo PostgreSQL, para npm run dev:plataforma
+#   npm run db:levantar          solo PostgreSQL (y prepara los roles), para dev:plataforma
 #   npm run plataforma:levantar  PostgreSQL + la plataforma en contenedor
 #
 # Puertos 5433 y 5010: el 5432 y el 5000-5001 los usa otro proyecto de la máquina.
@@ -25,18 +25,39 @@ services:
       timeout: 3s
       retries: 15
 
+  # Una sola ejecución: crea los roles, ajusta privilegios y migra, con la URL de
+  # administrador. La plataforma no arranca hasta que termina bien.
+  migrador:
+    build:
+      context: .
+      dockerfile: apps/plataforma/Dockerfile
+    command:
+      [
+        "sh",
+        "-c",
+        "node apps/plataforma/dist/preparar-base.js && node apps/plataforma/dist/migrar.js",
+      ]
+    environment:
+      DATABASE_URL_ADMIN: postgres://aspal:aspal_local@db:5432/aspal
+      DATABASE_PASSWORD_APP: aspal_app_local
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Solo conoce la URL de aspal_app: sin superusuario ni BYPASSRLS, sujeta a RLS.
   plataforma:
     build:
       context: .
       dockerfile: apps/plataforma/Dockerfile
     environment:
-      DATABASE_URL: postgres://aspal:aspal_local@db:5432/aspal
+      DATABASE_URL: postgres://aspal_app:aspal_app_local@db:5432/aspal
+      DOMINIO_BASE: localhost
       PORT: "3000"
     ports:
       - "5010:3000"
     depends_on:
-      db:
-        condition: service_healthy
+      migrador:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/health || exit 1"]
       interval: 5s

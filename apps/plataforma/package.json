@@ -9,12 +9,13 @@
     "node": "22.x"
   },
   "scripts": {
-    "dev": "tsx watch src/servidor.ts",
-    "build": "esbuild src/servidor.ts src/migrar.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "dev": "tsx watch --env-file=local.env src/servidor.ts",
+    "build": "esbuild src/servidor.ts src/migrar.ts src/preparar-base.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "node dist/servidor.js",
     "check": "tsc",
+    "db:preparar": "tsx --env-file=local.env src/preparar-base.ts",
+    "db:migrar": "tsx --env-file=local.env src/migrar.ts",
     "db:generar": "drizzle-kit generate",
-    "db:migrar": "tsx src/migrar.ts",
     "test": "vitest run",
     "test:integracion": "vitest run --config vitest.integracion.config.ts"
   },

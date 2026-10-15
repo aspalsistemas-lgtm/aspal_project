@@ -34,11 +34,12 @@
     "check:plataforma": "npm run check -w @aspal/plataforma",
     "test:plataforma": "npm run test -w @aspal/plataforma",
     "test:integracion": "npm run test:integracion -w @aspal/plataforma",
-    "db:levantar": "docker compose up -d --wait db",
+    "db:levantar": "docker compose up -d --wait db && npm run db:preparar",
     "db:migrar": "npm run db:migrar -w @aspal/plataforma",
     "db:generar": "npm run db:generar -w @aspal/plataforma",
     "plataforma:levantar": "docker compose up -d --build --wait",
-    "plataforma:detener": "docker compose down"
+    "plataforma:detener": "docker compose down",
+    "db:preparar": "npm run db:preparar -w @aspal/plataforma"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
