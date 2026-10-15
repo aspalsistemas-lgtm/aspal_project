@@ -484,6 +484,32 @@ tests primero, **fusión en `staging` y rama borrada** al cerrar cada una:
 
 **3b** y **3c** siguen el mismo patrón y se detallan al abrirlas.
 
+### 6.1 3b: lo que se construyó y en qué se apartó del plan
+
+Rama `feat/plataforma-acceso-b` (aprobada el 2026-10-17), en el orden: contrato en
+`docs/api/plataforma.md` → servicio de correo (`nodemailer`, Mailpit en local) →
+migración `0006` → presupuestos de envío y limpieza → recuperación → registro abierto →
+invitaciones → auditoría independiente.
+
+Decisiones y desvíos respecto a lo escrito arriba:
+
+- **El enlace mágico (CA-27) queda fuera del corte** (decisión del responsable,
+  2026-10-17). `token_correo.tipo` solo admite `recuperar_contrasena` por ahora.
+- **`registro_pendiente` no lleva `terminos_version`:** la aceptación se registra al
+  confirmar, en `cuenta_acceso` (`terminos_version`, `terminos_aceptados_en`). La
+  versión es el marcador `pendiente` hasta que el responsable entregue el texto legal.
+- **Reclamar antes de hashear** (CA-23): el token se valida con una lectura, y luego se
+  _reclama_ con una sentencia atómica **antes** del scrypt; solo el ganador hashea y, si
+  el hash no puede hacerse (cola llena), se libera. Mejora lo previsto: 20
+  confirmaciones simultáneas cuestan un scrypt, no veinte.
+- **Aceptar una invitación revalida al invitador dentro de la misma sentencia** que
+  reclama el token (no solo antes).
+- **Presupuestos** (CA-24): recuperación admite 3 por hora por destinatario (el correo
+  pudo perderse); registro y aviso, 1. Origen 10 por hora y 500 al día por asociación,
+  por tipo.
+- **Correo tras el commit:** `conSesion` ofrece `alConfirmar` para encolar el envío solo
+  cuando la transacción se confirma.
+
 **Riesgos principales:** (1) tiempos distintos que delaten cuentas → se cuentan
 las llamadas a scrypt por rama, no milisegundos; (2) la carrera del login → test
 con gancho que pausa tras el scrypt; (3) una matriz de `puede()` incompleta en

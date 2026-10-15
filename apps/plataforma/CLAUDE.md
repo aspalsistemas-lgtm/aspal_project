@@ -4,7 +4,7 @@
 > Decisiones de fondo: `docs/plans/2026-10-01-001-feat-plataforma-etapa-0-plan.md`
 > (D1–D15). Aislamiento: `docs/plans/2026-10-15-001-feat-plataforma-corte-2-asociaciones-plan.md`.
 > Datos: `docs/database-design.md`. Contratos: `docs/api/plataforma.md`.
-> Última actualización: octubre de 2026 (Etapa 1, corte 3a)
+> Última actualización: octubre de 2026 (Etapa 1, corte 3b)
 
 ---
 
@@ -35,6 +35,7 @@ src/
 ├── esquema.ts         ← esquema de Drizzle
 ├── asociaciones/      ← subdominios, análisis del Host, GET /asociaciones/actual
 ├── acceso/            ← sesiones, contraseñas, límites, permisos, gestión de personas
+├── correo/            ← SMTP (nodemailer solo en transporte-smtp.ts), cola, plantillas, enlaces
 ├── http/              ← protección común: Host, Origin, límite grueso, categorías
 ├── salud/             ← GET /health
 └── pruebas/           ← preparación de integración, guardianes, dependencias falsas
@@ -159,6 +160,35 @@ asociaciones son dos cuentas, sin tablas globales de acceso.
   por correo. Solo el correo canónico (sin alias) reinicia su contador.
 - **Crear sesión** bloquea la cuenta y la persona (`FOR NO KEY UPDATE`/`FOR SHARE`):
   sin ello un login concurrente a una revocación sobreviviría a ella.
+
+### Correo, registro, recuperación e invitaciones (corte 3b)
+
+- **Correo (`correo/`).** `ServicioCorreo.encolar` **no bloquea**: cola acotada, tope
+  global por hora y un fallo solo se registra como evento (nunca direcciones ni
+  texto de error). Las plantillas no llevan campos libres de quien solicita. Los
+  enlaces se construyen solo con configuración y el subdominio resuelto
+  (`correo/enlaces.ts`), con el token en el **fragmento**. Un correo que depende de
+  una transacción se encola con `contexto.alConfirmar(...)`: sale tras el commit.
+  En local lo recoge Mailpit (`docker compose up -d correo`; web en `:8025`).
+- **Tokens de un solo uso** (registro, recuperación, invitación): 32 bytes, solo el
+  SHA-256 en la base. Se **validan** (solo lectura) antes de hashear; se **reclaman**
+  con una sentencia atómica **antes** del scrypt (de 20 simultáneas gana una y las
+  demás cuestan cero); si el hash falla, se **liberan**. Todo enlace malo es el
+  mismo `400 ENLACE_INVALIDO`.
+- **Solicitudes** (`POST /registros`, `POST /solicitudes-recuperacion`): siempre
+  `202`, sin revelar si hay cuenta, si el registro está abierto ni si hay presupuesto.
+- **Presupuestos de envío** (`acceso/presupuestos.ts`): separados por tipo
+  (registro, recuperación, aviso, invitación), por destinatario, origen y día de la
+  asociación; el origen se cuenta primero y corta. Una solicitud nueva no invalida
+  los enlaces vigentes (hasta 3).
+- **No existen cuentas sin verificar**: `registro_pendiente` no es una cuenta; persona
+  y cuenta se crean al confirmar, con el correo verificado y la versión de términos
+  (`acceso/terminos.ts`, hoy un marcador a la espera del texto legal).
+- **Invitaciones.** Aceptar revalida **dentro de la sentencia que reclama el token** que
+  el invitador sigue siendo administrador activo; perder el rol o el estado revoca sus
+  pendientes. Una pendiente por (correo, rol).
+- **Errores de PostgreSQL**: usa `codigoPostgres(error)` (Drizzle envuelve el error de
+  `pg` en `cause`); la `UNIQUE` es el árbitro final ante carreras.
 
 **Reglas para los cortes siguientes** (decididas en la revisión del corte 2):
 
