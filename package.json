@@ -39,7 +39,8 @@
     "db:generar": "npm run db:generar -w @aspal/plataforma",
     "plataforma:levantar": "docker compose up -d --build --wait",
     "plataforma:detener": "docker compose down",
-    "db:preparar": "npm run db:preparar -w @aspal/plataforma"
+    "db:preparar": "npm run db:preparar -w @aspal/plataforma",
+    "db:sembrar": "npm run db:sembrar -w @aspal/plataforma"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

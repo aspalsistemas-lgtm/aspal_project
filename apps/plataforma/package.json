@@ -17,7 +17,8 @@
     "db:migrar": "tsx --env-file=local.env src/migrar.ts",
     "db:generar": "drizzle-kit generate",
     "test": "vitest run",
-    "test:integracion": "vitest run --config vitest.integracion.config.ts"
+    "test:integracion": "vitest run --config vitest.integracion.config.ts",
+    "db:sembrar": "tsx --env-file=local.env src/sembrar.ts"
   },
   "devDependencies": {
     "@types/node": "22.20.5",
