@@ -24,13 +24,14 @@ let admin: pg.Pool;
 let app: pg.Pool;
 
 /** Ejecuta SQL como aspal_app dentro del contexto de una asociación. */
-function enAsociacion<T = Record<string, unknown>>(
+function enAsociacion<T extends pg.QueryResultRow = Record<string, unknown>>(
   asociacion: string,
   texto: string,
   valores: unknown[] = [],
 ): Promise<pg.QueryResult<T>> {
+  // El cliente de la transacción de conAsociacion, para SQL con parámetros $n.
   return conAsociacion(app, asociacion, (base) =>
-    (base.$client as pg.PoolClient).query<T>(texto, valores),
+    (base as unknown as { $client: pg.PoolClient }).$client.query<T>(texto, valores),
   );
 }
 
